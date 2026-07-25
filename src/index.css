@@ -17,6 +17,10 @@
     --danger: #FF4D4D;
   }
 
+  html {
+    font-size: 80%; /* Scales down all Tailwind rem values to 80% */
+  }
+
   body {
     @apply bg-canvas text-text-primary font-sans antialiased;
     margin: 0;
