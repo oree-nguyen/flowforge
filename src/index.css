@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-canvas: #0A0A0C;
+    --bg-panel: rgba(20, 20, 22, 0.85);
+    --bg-node: #1C1C1F;
+    --accent-lime: #C6F135;
+    --accent-blue-frame: rgba(59, 91, 255, 0.12);
+    --border-subtle: #2A2A2E;
+    --text-primary: #F2F2F0;
+    --text-muted: #8A8A8F;
+    --danger: #FF4D4D;
+  }
+
+  body {
+    @apply bg-canvas text-text-primary font-sans antialiased;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling on canvas */
+  }
+}
+
+@layer utilities {
+  .backdrop-blur-panel {
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  @apply rounded-2xl bg-node shadow-lg border border-border-subtle text-text-primary;
+}
+
+.react-flow__handle {
+  @apply w-3 h-3 bg-text-muted border-2 border-node;
+}
+
+.react-flow__handle-valid {
+  @apply bg-accent-lime;
+}
+
+/* Custom scrollbar for panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border-subtle rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-text-muted;
+}
