@@ -5,6 +5,13 @@ import { type OpenRouterModel } from '../services/openRouterApi';
 
 export type ToolMode = 'select' | 'pan';
 
+export interface APIKeyItem {
+  id: string;
+  name: string;
+  key: string;
+  isActive: boolean;
+}
+
 export interface SavedWorkflow {
   id: string;
   name: string;
@@ -31,7 +38,8 @@ export interface ToolbarVisibility {
 interface WorkflowState {
   workflowName: string;
   workflowEnabled: boolean;
-  apiKey: string;
+  apiKey: string; // Legacy / computed active key
+  apiKeys: APIKeyItem[];
   toolMode: ToolMode;
   autoOpenProperties: boolean;
   isPropertiesPanelOpen: boolean;
@@ -44,7 +52,13 @@ interface WorkflowState {
 
   setWorkflowName: (name: string) => void;
   setWorkflowEnabled: (enabled: boolean) => void;
-  setApiKey: (key: string) => void;
+  
+  // API Key Management
+  setApiKey: (key: string) => void; // Legacy fallback
+  addApiKey: (name: string, key: string) => void;
+  removeApiKey: (id: string) => void;
+  setActiveApiKey: (id: string) => void;
+
   setToolMode: (mode: ToolMode) => void;
   setAutoOpenProperties: (val: boolean) => void;
   setPropertiesPanelOpen: (val: boolean) => void;
@@ -130,6 +144,7 @@ export const useWorkflowStore = create<WorkflowState>()(
       workflowName: 'New Workflow',
       workflowEnabled: false,
       apiKey: '',
+      apiKeys: [],
       toolMode: 'select',
       autoOpenProperties: false,
       isPropertiesPanelOpen: false,
@@ -152,7 +167,40 @@ export const useWorkflowStore = create<WorkflowState>()(
         set({ workflowName: name });
       },
       setWorkflowEnabled: (enabled) => set({ workflowEnabled: enabled }),
-      setApiKey: (key) => set({ apiKey: key }),
+      
+      // API Key Management
+      setApiKey: (key) => {
+        const { apiKeys } = get();
+        if (apiKeys.length === 0) {
+          set({ apiKeys: [{ id: Date.now().toString(), name: 'Default', key, isActive: true }], apiKey: key });
+        } else {
+          set({ apiKey: key });
+        }
+      },
+      addApiKey: (name, key) => {
+        const { apiKeys } = get();
+        const isFirst = apiKeys.length === 0;
+        const newKeys = [...apiKeys, { id: Date.now().toString(), name, key, isActive: isFirst }];
+        set({ apiKeys: newKeys, ...(isFirst ? { apiKey: key } : {}) });
+      },
+      removeApiKey: (id) => {
+        const { apiKeys } = get();
+        const filtered = apiKeys.filter(k => k.id !== id);
+        // If we removed the active one, activate the first available
+        if (apiKeys.find(k => k.id === id)?.isActive && filtered.length > 0) {
+          filtered[0].isActive = true;
+          set({ apiKeys: filtered, apiKey: filtered[0].key });
+        } else {
+          set({ apiKeys: filtered, ...(filtered.length === 0 ? { apiKey: '' } : {}) });
+        }
+      },
+      setActiveApiKey: (id) => {
+        const { apiKeys } = get();
+        const mapped = apiKeys.map(k => ({ ...k, isActive: k.id === id }));
+        const activeKey = mapped.find(k => k.isActive)?.key || '';
+        set({ apiKeys: mapped, apiKey: activeKey });
+      },
+
       setToolMode: (mode) => set({ toolMode: mode }),
       setAutoOpenProperties: (val) => set({ autoOpenProperties: val }),
       setPropertiesPanelOpen: (val) => set({ isPropertiesPanelOpen: val }),
@@ -398,6 +446,19 @@ export const useWorkflowStore = create<WorkflowState>()(
 
                 canvasEngine.updateNodeData(node.id, { output: outputText, isGenerating: false });
 
+                // Auto Download Text Output
+                if (data.autoDownload) {
+                  const blob = new Blob([outputText], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `output_${node.id}_${Date.now()}.txt`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }
+
                 // Propagate text output to downstream input.text nodes
                 const allOutEdgesText = allEdges.filter(e => e.source === node.id);
                 for (const outEdge of allOutEdgesText) {
@@ -455,6 +516,17 @@ export const useWorkflowStore = create<WorkflowState>()(
                   output: { previewUrl, indexedDbKey, driveFileId, sizeBytes: blob.size, createdAt: new Date().toISOString() },
                   isGenerating: false,
                 });
+
+                // Auto Download Media Output
+                if (data.autoDownload) {
+                  const a = document.createElement('a');
+                  a.href = previewUrl;
+                  const ext = node.type === 'ai.imageGen' ? 'png' : 'mp4';
+                  a.download = `media_${node.id}_${Date.now()}.${ext}`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                }
 
                 // Propagate image/video output to downstream input.image nodes
                 const allOutEdgesMedia = allEdges.filter(e => e.source === node.id);

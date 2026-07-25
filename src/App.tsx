@@ -7,11 +7,20 @@ import { RecenterButton } from './components/RecenterButton';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { SettingsModal } from './components/SettingsModal';
 import { ImageLibraryModal } from './components/ImageLibraryModal';
+import { ShortcutGuide } from './components/ShortcutGuide';
 import { useWorkflowStore } from './store/workflowStore';
+import { useAutoSave } from './hooks/useAutoSave';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  // Hooks
+  useAutoSave();
+  useKeyboardShortcuts(() => setIsGuideOpen(prev => !prev));
+
   // Wait for zustand/persist hydration to complete before rendering canvas
   const [hydrated, setHydrated] = useState(false);
 
@@ -59,6 +68,8 @@ function App() {
       
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
+      
+      <ShortcutGuide isOpen={isGuideOpen} onToggle={() => setIsGuideOpen(!isGuideOpen)} />
     </div>
   );
 }

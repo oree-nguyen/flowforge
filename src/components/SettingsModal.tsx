@@ -6,15 +6,20 @@ import { getStorageEstimate, requestPersistentStorage } from '../services/mediaS
 
 export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { 
-    apiKey, 
-    setApiKey, 
+    apiKey,
+    apiKeys,
+    setApiKey,
+    addApiKey,
+    removeApiKey,
+    setActiveApiKey,
     autoOpenProperties, 
     setAutoOpenProperties,
     toolbarVisibility,
     setToolbarVisibility
   } = useWorkflowStore();
 
-  const [tempKey, setTempKey] = useState(apiKey);
+  const [tempKeyName, setTempKeyName] = useState('OpenRouter Key');
+  const [tempKey, setTempKey] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   
@@ -36,16 +41,23 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
         }
       });
       requestPersistentStorage();
+      
+      // Auto-migrate legacy apiKey
+      if (apiKey && (!apiKeys || apiKeys.length === 0)) {
+        addApiKey('Legacy Key', apiKey);
+      }
     }
   }, [isOpen]);
 
-  const checkKey = async () => {
+  const checkAndAddKey = async () => {
     if (!tempKey) return;
     setStatus('checking');
     try {
       await fetchModels(tempKey);
       setStatus('success');
-      setApiKey(tempKey);
+      addApiKey(tempKeyName || 'Unnamed Key', tempKey);
+      setTempKey('');
+      setTempKeyName('OpenRouter Key');
     } catch (e: any) {
       setStatus('error');
       setErrorMsg(e.message || 'Invalid API Key');
@@ -106,39 +118,79 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
           <div className="flex flex-col gap-6">
             {/* OpenRouter API Key */}
             <div className="flex flex-col gap-2 bg-canvas/40 border border-border-subtle rounded-xl p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
+              <div className="flex items-center gap-2 text-sm font-medium text-text-primary mb-2">
                 <Key size={16} className="text-accent-lime" />
-                <span>OpenRouter API Key</span>
+                <span>API Keys</span>
               </div>
-              <p className="text-xs text-text-muted">Stored locally in your browser. Never sent to external servers.</p>
+              <p className="text-xs text-text-muted mb-3">Stored locally in your browser. Toggle to select the active key.</p>
               
-              <div className="flex gap-2 mt-2">
-                <input 
-                  type="password"
-                  placeholder="sk-or-v1-..."
-                  className="flex-1 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary font-mono placeholder:font-sans placeholder:text-text-muted"
-                  value={tempKey}
-                  onChange={(e) => {
-                    setTempKey(e.target.value);
-                    setStatus('idle');
-                  }}
-                />
-                <button 
-                  onClick={checkKey}
-                  disabled={status === 'checking' || !tempKey}
-                  className="bg-white/10 hover:bg-white/20 text-text-primary px-3 py-2 rounded-xl text-xs font-medium transition-colors disabled:opacity-50"
-                >
-                  {status === 'checking' ? 'Checking...' : 'Check'}
-                </button>
+              {/* List of keys */}
+              {apiKeys && apiKeys.length > 0 && (
+                <div className="flex flex-col gap-2 mb-4">
+                  {apiKeys.map((k) => (
+                    <div key={k.id} className={`flex items-center justify-between p-2 rounded-xl border ${k.isActive ? 'border-accent-lime bg-accent-lime/10' : 'border-border-subtle bg-black/20'}`}>
+                      <div className="flex items-center gap-2 overflow-hidden flex-1">
+                        <div 
+                          className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${k.isActive ? 'border-accent-lime bg-accent-lime' : 'border-border-subtle hover:border-text-muted'}`}
+                          onClick={() => setActiveApiKey(k.id)}
+                        >
+                          {k.isActive && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
+                        </div>
+                        <div className="flex flex-col flex-1 overflow-hidden">
+                          <span className="text-xs text-text-primary font-medium truncate">{k.name}</span>
+                          <span className="text-[10px] text-text-muted font-mono truncate">{k.key.substring(0, 10)}...{k.key.substring(k.key.length - 4)}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => removeApiKey(k.id)}
+                        className="p-1.5 text-text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors ml-2"
+                        title="Delete API Key"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add New Key */}
+              <div className="flex flex-col gap-2 mt-2 pt-3 border-t border-border-subtle">
+                <span className="text-xs font-medium text-text-muted">Add New Key</span>
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    placeholder="Name (e.g. Work, Personal)"
+                    className="w-1/3 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary placeholder:text-text-muted"
+                    value={tempKeyName}
+                    onChange={(e) => setTempKeyName(e.target.value)}
+                  />
+                  <input 
+                    type="password"
+                    placeholder="sk-or-v1-..."
+                    className="flex-1 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary font-mono placeholder:font-sans placeholder:text-text-muted"
+                    value={tempKey}
+                    onChange={(e) => {
+                      setTempKey(e.target.value);
+                      setStatus('idle');
+                    }}
+                  />
+                  <button 
+                    onClick={checkAndAddKey}
+                    disabled={status === 'checking' || !tempKey}
+                    className="bg-white/10 hover:bg-white/20 text-text-primary px-3 py-2 rounded-xl text-xs font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {status === 'checking' ? '...' : 'Add'}
+                  </button>
+                </div>
               </div>
               
               {status === 'success' && (
-                <div className="flex items-center gap-1.5 text-accent-lime text-xs mt-1">
-                  <CheckCircle2 size={14} /> Key is valid
+                <div className="flex items-center gap-1.5 text-accent-lime text-xs mt-2">
+                  <CheckCircle2 size={14} /> Key added successfully
                 </div>
               )}
               {status === 'error' && (
-                <div className="flex items-center gap-1.5 text-danger text-xs mt-1">
+                <div className="flex items-center gap-1.5 text-danger text-xs mt-2">
                   <AlertCircle size={14} /> {errorMsg}
                 </div>
               )}
