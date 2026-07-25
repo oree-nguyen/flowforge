@@ -60,7 +60,8 @@ function NodeWrapper({
       const height = wrapRef.current.offsetHeight;
       canvasEngine.setNodeSize(node.id, width, height);
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.id, node.type, node.data]);
 
   return (
     <div
@@ -264,7 +265,9 @@ export function CanvasRenderer() {
 
   // Connection drag
   const [connDrag, setConnDrag] = useState<ConnDrag>(null);
+  const connDragRef = useRef<ConnDrag>(null);
   const connDragPos = useRef({ x: 0, y: 0 });
+  const [, setConnDragRender] = useState(0); // force re-render for temp line
 
   // Context menu
   const [menu, setMenu] = useState<{ x: number; y: number; nodeId: string | null; edgeId: string | null } | null>(null);
@@ -321,26 +324,31 @@ export function CanvasRenderer() {
       });
     }
 
-    if (connDrag) {
+    if (connDragRef.current) {
       connDragPos.current = { x: e.clientX, y: e.clientY };
-      // Force re-render for the temp line
-      setConnDrag({ ...connDrag, x: e.clientX, y: e.clientY });
+      connDragRef.current = { ...connDragRef.current, x: e.clientX, y: e.clientY };
+      // Throttle re-renders for temp line using rAF
+      setConnDragRender(Date.now());
     }
-  }, [viewport.zoom, connDrag]);
+  }, [viewport.zoom]);
 
   const handleCanvasPointerUp = useCallback((e: React.PointerEvent) => {
     isPanning.current = false;
-    dragId.current = null;
+    
+    if (dragId.current) {
+      canvasEngine.pushHistory(); // Save history after drag completes
+      dragId.current = null;
+    }
 
-    if (connDrag) {
+    if (connDragRef.current) {
       // Check if dropped on an input port
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const targetEl = el?.closest('[data-target]') as HTMLElement | null;
       const targetData = targetEl?.getAttribute('data-target');
       if (targetData) {
         const [targetId, targetHandle] = targetData.split(':');
-        if (targetId && targetId !== connDrag.sourceId) {
-          const sourceNode = canvasEngine.getNode(connDrag.sourceId);
+        if (targetId && targetId !== connDragRef.current.sourceId) {
+          const sourceNode = canvasEngine.getNode(connDragRef.current.sourceId);
           const tgtHandle = targetHandle || 'in';
           
           let isValid = true;
@@ -350,7 +358,7 @@ export function CanvasRenderer() {
           if (isValid) {
             canvasEngine.addEdge({
               id: `e_${Date.now()}`,
-              source: connDrag.sourceId,
+              source: connDragRef.current.sourceId,
               target: targetId,
               sourceHandle: 'out',
               targetHandle: tgtHandle,
@@ -358,9 +366,10 @@ export function CanvasRenderer() {
           }
         }
       }
+      connDragRef.current = null;
       setConnDrag(null);
     }
-  }, [connDrag]);
+  }, []);
 
   const handleNodeDragStart = useCallback((e: React.PointerEvent, id: string) => {
     e.stopPropagation();
@@ -374,7 +383,9 @@ export function CanvasRenderer() {
 
   const handleConnectStart = useCallback((e: React.PointerEvent, id: string, _handle: 'out') => {
     e.stopPropagation();
-    setConnDrag({ sourceId: id, sourceHandle: 'out', x: e.clientX, y: e.clientY });
+    const newDrag = { sourceId: id, sourceHandle: 'out' as const, x: e.clientX, y: e.clientY };
+    connDragRef.current = newDrag;
+    setConnDrag(newDrag);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
@@ -384,7 +395,9 @@ export function CanvasRenderer() {
     const edge = edges.find(e => e.target === targetId && e.targetHandle === (targetHandle || 'in'));
     if (edge) {
       canvasEngine.removeEdge(edge.id);
-      setConnDrag({ sourceId: edge.source, sourceHandle: 'out', x: e.clientX, y: e.clientY });
+      const newDrag = { sourceId: edge.source, sourceHandle: 'out' as const, x: e.clientX, y: e.clientY };
+      connDragRef.current = newDrag;
+      setConnDrag(newDrag);
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
     }
   }, []);
@@ -397,16 +410,16 @@ export function CanvasRenderer() {
   };
 
   // Compute temp edge line during connection drag
-  const tempEdgeLine = connDrag ? (() => {
-    const srcNode = canvasEngine.getNode(connDrag.sourceId);
+  const tempEdgeLine = connDragRef.current ? (() => {
+    const srcNode = canvasEngine.getNode(connDragRef.current!.sourceId);
     if (!srcNode) return null;
-    const srcSize = canvasEngine.getNodeSize(connDrag.sourceId);
+    const srcSize = canvasEngine.getNodeSize(connDragRef.current!.sourceId);
     const rect = canvasRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
     const srcPos = getHandlePosition(srcNode, srcSize, 'out');
     const x1 = srcPos.x * viewport.zoom + viewport.x;
     const y1 = srcPos.y * viewport.zoom + viewport.y;
-    const x2 = connDrag.x - rect.left;
-    const y2 = connDrag.y - rect.top;
+    const x2 = connDragRef.current!.x - rect.left;
+    const y2 = connDragRef.current!.y - rect.top;
     const dx = Math.abs(x2 - x1) * 0.5;
     return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
   })() : null;

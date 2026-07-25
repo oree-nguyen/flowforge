@@ -82,6 +82,15 @@ class CanvasEngine {
     this.listeners.forEach(fn => fn());
   }
 
+  private rafId: number | null = null;
+  private notifyThrottled() {
+    if (this.rafId !== null) return;
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = null;
+      this.notify();
+    });
+  }
+
   // Node CRUD
   addNode(node: NodeData) {
     this.nodes.set(node.id, { ...node });
@@ -92,7 +101,7 @@ class CanvasEngine {
     const node = this.nodes.get(id);
     if (node) {
       this.nodes.set(id, { ...node, ...updates });
-      this.notify();
+      this.notifyThrottled(); // Throttle drag updates
     }
   }
 
@@ -278,7 +287,7 @@ class CanvasEngine {
 
   panBy(dx: number, dy: number) {
     this.viewport = { ...this.viewport, x: this.viewport.x + dx, y: this.viewport.y + dy };
-    this.notify();
+    this.notifyThrottled(); // Throttle pan updates
   }
 
   zoomTo(zoom: number, cx?: number, cy?: number) {
