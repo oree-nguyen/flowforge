@@ -1,6 +1,7 @@
 import { type NodeProps } from '../NodeTypes';
 import { getModelMetadata } from '../../store/modelCatalog';
 import { useWorkflowStore } from '../../store/workflowStore';
+import { canvasEngine } from '../../engine/canvasEngine';
 import { Type, Image as ImageIcon, FileText } from 'lucide-react';
 
 export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
@@ -33,7 +34,15 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
             <span className="text-[10px] font-mono px-2 py-0.5 bg-[#9C27B0]/20 rounded text-[#9C27B0] shrink-0">Text</span>
           </div>
           
-          <div className="p-4 flex flex-col gap-3">
+          <div className="p-3 flex flex-col gap-2">
+            <textarea
+              className="w-full bg-canvas/80 border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary outline-none focus:border-accent-lime resize-none min-h-[75px] font-mono leading-relaxed"
+              placeholder="Enter prompt..."
+              value={(data.prompt as string) || ''}
+              onChange={(e) => canvasEngine.updateNodeData(id, { prompt: e.target.value })}
+              onPointerDown={e => e.stopPropagation()}
+            />
+
             {data.isGenerating && (
               <div className="flex items-center gap-2 text-xs text-accent-lime">
                 <div className="w-3 h-3 border-2 border-accent-lime border-t-transparent rounded-full animate-spin"></div>
@@ -41,13 +50,10 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
               </div>
             )}
             
-            {data.output && !data.isGenerating ? (
-               <div className="bg-canvas border border-border-subtle rounded-xl p-3 text-xs text-text-muted max-h-24 overflow-hidden relative select-text">
-                  <p className="line-clamp-3">{data.output as string}</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-canvas to-transparent"></div>
+            {data.output && !data.isGenerating && (
+               <div className="bg-canvas border border-border-subtle rounded-xl p-2.5 text-[11px] text-text-muted max-h-24 overflow-y-auto select-text font-mono">
+                  <p>{data.output as string}</p>
                </div>
-            ) : !data.isGenerating && (
-               <div className="text-xs text-text-muted italic">Ready</div>
             )}
           </div>
         </div>

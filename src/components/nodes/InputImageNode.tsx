@@ -16,26 +16,32 @@ export function InputImageNode({ id, data, selected }: NodeProps) {
     reader.readAsDataURL(file);
   };
 
+  const imageSrc = (data.file as string) || (data.image as string);
+
   const removeImage = () => {
-    canvasEngine.updateNodeData(id, { file: null });
+    canvasEngine.updateNodeData(id, { file: null, image: null });
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div className={`w-[260px] bg-node rounded-2xl shadow-lg border ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'} overflow-hidden transition-all`}>
-      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-        <span className="text-sm font-medium text-text-primary">Input Image</span>
+      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+          <span className="text-sm font-medium text-text-primary">Input Image</span>
+        </div>
+        <span className="text-[10px] text-text-muted font-mono">Input</span>
       </div>
       
       <div className="p-4">
-        {data.file ? (
-          <div className="relative group rounded-xl overflow-hidden bg-canvas border border-border-subtle aspect-video flex items-center justify-center">
-            <img src={data.file as string} alt="Input" className="max-w-full max-h-full object-contain" />
+        {imageSrc ? (
+          <div className="relative group rounded-xl overflow-hidden bg-canvas border border-border-subtle aspect-square flex items-center justify-center">
+            <img src={imageSrc} alt="Input" className="w-full h-full object-cover" />
             <button 
               onClick={removeImage}
               onPointerDown={e => e.stopPropagation()}
               className="absolute top-2 right-2 bg-panel/80 p-1.5 rounded-lg text-text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+              title="Remove image"
             >
               <X size={14} />
             </button>
