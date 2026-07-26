@@ -374,6 +374,22 @@ export const useWorkflowStore = create<WorkflowState>()(
 
               if (srcNode.type === 'input.text' && srcData.text) {
                 promptParts.push(srcData.text as string);
+              } else if (srcNode.type === 'input.file' && srcData.extractedFile) {
+                const ef = srcData.extractedFile as any;
+                if (ef.text) {
+                  const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
+                  let lang = '';
+                  if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
+                  if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
+                  if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
+                  if (['.xml', '.svg'].includes(ext)) lang = 'xml';
+
+                  const mdFormattedContent = lang
+                    ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
+                    : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
+
+                  promptParts.push(mdFormattedContent);
+                }
               } else if (srcNode.type === 'ai.textGen' && typeof srcData.output === 'string') {
                 promptParts.push(`=== Output từ node "${srcName}" ===\n${srcData.output}`);
               }
@@ -424,9 +440,20 @@ export const useWorkflowStore = create<WorkflowState>()(
                       }
                     });
                   } else {
+                    const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
+                    let lang = '';
+                    if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
+                    if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
+                    if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
+                    if (['.xml', '.svg'].includes(ext)) lang = 'xml';
+
+                    const mdFormattedContent = lang
+                      ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
+                      : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
+
                     contentParts.push({
                       type: 'text',
-                      text: `\n[Content from file: ${ef.name}]\n${ef.text}\n[End of file]`,
+                      text: `\n\n${mdFormattedContent}\n\n`,
                     });
                   }
                 }
