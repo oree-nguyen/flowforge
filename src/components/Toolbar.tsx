@@ -27,7 +27,7 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
 
   return (
     <>
-      <div className="absolute left-6 top-6 bottom-24 w-[56px] bg-panel backdrop-blur-panel border border-border-subtle rounded-2xl flex flex-col items-center py-3 z-10 shadow-xl overflow-hidden">
+      <div className="absolute left-2 sm:left-6 top-3 sm:top-6 bottom-20 sm:bottom-24 w-[48px] sm:w-[56px] bg-panel backdrop-blur-panel border border-border-subtle rounded-2xl flex flex-col items-center py-2.5 sm:py-3 z-10 shadow-xl overflow-hidden">
         
         {/* Primary Actions */}
         <div className="flex flex-col gap-3 w-full px-2 items-center">

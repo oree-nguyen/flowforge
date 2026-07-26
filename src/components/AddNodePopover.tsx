@@ -86,11 +86,11 @@ export function AddNodePopover({ isOpen, onClose }: { isOpen: boolean, onClose: 
             onClick={onClose}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, x: -20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.95, x: -20 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed left-24 top-24 z-50 w-[420px] max-h-[82vh] bg-panel backdrop-blur-panel border border-border-subtle rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed left-4 right-4 top-16 sm:left-24 sm:right-auto sm:top-24 sm:w-[420px] max-h-[85vh] bg-panel backdrop-blur-panel border border-border-subtle rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50"
           >
             {/* Header Tabs */}
             <div className="flex border-b border-border-subtle p-2 gap-2 bg-white/5 shrink-0">
