@@ -122,7 +122,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#0A0A0C] text-white font-sans overflow-x-hidden selection:bg-accent-lime selection:text-black">
+    <div className="w-full h-screen bg-[#0A0A0C] text-white font-sans overflow-y-auto overflow-x-hidden selection:bg-accent-lime selection:text-black touch-auto">
       
       {/* --- TOP NAVBAR --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0C]/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
