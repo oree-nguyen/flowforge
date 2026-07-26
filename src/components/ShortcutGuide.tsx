@@ -10,7 +10,7 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
   const [activeCategory, setActiveCategory] = useState<'shortcuts' | 'api' | 'tips' | 'about'>('shortcuts');
 
   return (
-    <div className="absolute bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="absolute bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
       {/* The Guide Panel */}
       <div 
         className={`mb-4 overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right ${
@@ -144,10 +144,10 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
         </div>
       </div>
 
-      {/* Toggle Button */}
+      {/* Toggle Button - always clickable */}
       <button
         onClick={onToggle}
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+        className={`pointer-events-auto w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
           isOpen 
             ? 'bg-black border-2 border-accent-lime text-accent-lime shadow-[0_0_20px_rgba(163,230,53,0.3)]' 
             : 'bg-accent-lime text-black shadow-xl hover:scale-105'

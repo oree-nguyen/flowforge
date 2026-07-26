@@ -64,12 +64,11 @@ function App() {
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
           <RecenterButton />
         </div>
+        <ShortcutGuide isOpen={isGuideOpen} onToggle={() => setIsGuideOpen(!isGuideOpen)} />
       </div>
       
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
-      
-      <ShortcutGuide isOpen={isGuideOpen} onToggle={() => setIsGuideOpen(!isGuideOpen)} />
     </div>
   );
 }
