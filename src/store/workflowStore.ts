@@ -309,10 +309,22 @@ export const useWorkflowStore = create<WorkflowState>()(
         if (savedWorkflows.length <= 1) return;
 
         const filtered = savedWorkflows.filter(w => w.id !== id);
-        set({ savedWorkflows: filtered });
-
+        
         if (currentWorkflowId === id) {
-          get().loadWorkflow(filtered[0].id);
+          // Manually load the first available workflow to avoid triggering saveCurrentWorkflow on the deleted ID
+          const target = filtered[0];
+          set({ 
+            savedWorkflows: filtered,
+            currentWorkflowId: target.id,
+            workflowName: target.name,
+          });
+          if (target.canvasData) {
+            canvasEngine.deserialize(target.canvasData);
+          } else {
+            canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+          }
+        } else {
+          set({ savedWorkflows: filtered });
         }
       },
 
@@ -610,7 +622,7 @@ export const useWorkflowStore = create<WorkflowState>()(
             }
           }
         } catch (error: any) {
-          alert('Workflow Execution error: ' + error.message);
+          toast.error('Workflow Execution error: ' + error.message);
         } finally {
           set({ isExecuting: false });
         }

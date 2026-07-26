@@ -20,6 +20,12 @@ export function TopBar() {
 
   const [isSavedGlow, setIsSavedGlow] = useState(false);
   const [isRecoveryOpen, setIsRecoveryOpen] = useState(false);
+  
+  // Custom dialog states
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [promptDialog, setPromptDialog] = useState<{ isOpen: boolean, action: 'new' | 'switch_new' }>({ isOpen: false, action: 'new' });
+  const [promptInputValue, setPromptInputValue] = useState('New Workflow');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const nodeCount = useSyncExternalStore(
@@ -36,10 +42,10 @@ export function TopBar() {
   const handleSelectWorkflow = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     if (val === 'NEW_WORKFLOW') {
-      const name = prompt('Nhập tên cho Workflow mới:', 'New Workflow');
-      if (name) {
-        createNewWorkflow(name);
-      }
+      setPromptInputValue('New Workflow');
+      setPromptDialog({ isOpen: true, action: 'switch_new' });
+      // Reset select back to current since we haven't created it yet
+      e.target.value = currentWorkflowId;
     } else {
       loadWorkflow(val);
     }
@@ -121,11 +127,7 @@ export function TopBar() {
           {/* Delete current workflow */}
           {savedWorkflows.length > 1 && (
             <button
-              onClick={() => {
-                if (confirm(`Xóa workflow "${workflowName}"?`)) {
-                  deleteWorkflow(currentWorkflowId);
-                }
-              }}
+              onClick={() => setDeleteDialog(true)}
               className="p-2 hover:bg-red-500/10 hover:text-red-400 text-text-muted rounded-xl transition-colors"
               title="Delete workflow"
             >
@@ -136,8 +138,8 @@ export function TopBar() {
           {/* New workflow */}
           <button
             onClick={() => {
-              const name = prompt('Tên Workflow mới:', 'New Workflow');
-              if (name) createNewWorkflow(name);
+              setPromptInputValue('New Workflow');
+              setPromptDialog({ isOpen: true, action: 'new' });
             }}
             className="p-2 hover:bg-border-subtle text-text-muted hover:text-text-primary rounded-xl transition-colors"
             title="New workflow"
@@ -177,6 +179,64 @@ export function TopBar() {
       </div>
 
       {isRecoveryOpen && <RecoveryModal onClose={() => setIsRecoveryOpen(false)} />}
+      
+      {/* Delete Confirmation Dialog */}
+      {deleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-panel border border-border-subtle p-6 rounded-2xl w-[320px] shadow-2xl flex flex-col gap-4">
+            <h3 className="text-white font-semibold">Delete Workflow</h3>
+            <p className="text-sm text-text-muted">Are you sure you want to delete "{workflowName}"? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2 mt-2">
+              <button onClick={() => setDeleteDialog(false)} className="px-4 py-2 rounded-xl text-sm text-text-muted hover:bg-white/5">Cancel</button>
+              <button 
+                onClick={() => {
+                  deleteWorkflow(currentWorkflowId);
+                  setDeleteDialog(false);
+                }} 
+                className="px-4 py-2 rounded-xl text-sm bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Workflow Prompt Dialog */}
+      {promptDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-panel border border-border-subtle p-6 rounded-2xl w-[320px] shadow-2xl flex flex-col gap-4">
+            <h3 className="text-white font-semibold">New Workflow</h3>
+            <input 
+              autoFocus
+              type="text"
+              value={promptInputValue}
+              onChange={e => setPromptInputValue(e.target.value)}
+              className="w-full bg-black/20 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent-lime"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && promptInputValue.trim()) {
+                  createNewWorkflow(promptInputValue.trim());
+                  setPromptDialog({ isOpen: false, action: 'new' });
+                }
+              }}
+            />
+            <div className="flex justify-end gap-2 mt-2">
+              <button onClick={() => setPromptDialog({ isOpen: false, action: 'new' })} className="px-4 py-2 rounded-xl text-sm text-text-muted hover:bg-white/5">Cancel</button>
+              <button 
+                onClick={() => {
+                  if (promptInputValue.trim()) {
+                    createNewWorkflow(promptInputValue.trim());
+                    setPromptDialog({ isOpen: false, action: 'new' });
+                  }
+                }} 
+                className="px-4 py-2 rounded-xl text-sm bg-accent-lime text-black font-medium hover:brightness-110 transition-all"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
