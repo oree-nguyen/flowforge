@@ -17,15 +17,12 @@
     --danger: #FF4D4D;
   }
 
-  html {
-    font-size: 80%; /* Scales down all Tailwind rem values to 80% */
-  }
-
   body {
     @apply bg-canvas text-text-primary font-sans antialiased;
     margin: 0;
     padding: 0;
     overflow: hidden; /* Prevent scrolling on canvas */
+    zoom: 0.8; /* Scale entire UI + pointer coordinates to 80% */
   }
 }
 
