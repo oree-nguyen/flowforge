@@ -39,6 +39,9 @@ export const IMAGE_MODELS: ModelMetadata[] = [
   // Free Models
   { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Free/Low cost)', free: true, inputs: ['text'] },
 
+  // Google
+  { id: 'google/gemini-banana-nano-2-pro', name: 'Gemini Banana Nano 2 Pro', free: false, inputs: ['text', 'image'] },
+
   // Paid Models
   { id: 'black-forest-labs/flux-1-pro', name: 'FLUX.1 Pro', free: false, inputs: ['text'] },
   { id: 'black-forest-labs/flux-1.1-pro-ultra', name: 'FLUX 1.1 Pro Ultra', free: false, inputs: ['text'] },
@@ -46,6 +49,9 @@ export const IMAGE_MODELS: ModelMetadata[] = [
 ];
 
 export const VIDEO_MODELS: ModelMetadata[] = [
+  // Google
+  { id: 'google/veo-3.1-pro', name: 'Google Veo 3.1 Pro', free: false, inputs: ['text', 'image'] },
+
   // Paid Models
   { id: 'luma/ray', name: 'Luma Ray', free: false, inputs: ['text', 'image'] },
   { id: 'luma/dream-machine', name: 'Luma Dream Machine', free: false, inputs: ['text', 'image'] },
