@@ -2,12 +2,16 @@ import { useSyncExternalStore } from 'react';
 import { canvasEngine } from '../../engine/canvasEngine';
 import { Image, Sparkles } from 'lucide-react';
 import { ModelSelector } from '../ModelSelector';
+import { getModelMetadata } from '../../store/modelCatalog';
+import { useWorkflowStore } from '../../store/workflowStore';
 
 export function ImageGenProperties({ nodeId }: { nodeId: string }) {
   const node = useSyncExternalStore(
     cb => canvasEngine.subscribe(cb),
     () => canvasEngine.getNode(nodeId)
   );
+
+  const fetchedModels = useWorkflowStore(state => state.fetchedModels);
 
   if (!node) return null;
   const data = node.data;
@@ -16,18 +20,22 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
     canvasEngine.updateNodeData(nodeId, { [key]: value });
   };
 
-  const isUseOwnPrompt = data.useOwnPrompt !== false; // Default true
   const ratios = ['9:16', '3:4', '1:1', '4:3', '16:9'];
   const currentRatio = (data.aspectRatio as string) || '9:16';
+  const modelId = (data.model as string) || 'black-forest-labs/flux-1-schnell';
+  const meta = getModelMetadata(modelId, fetchedModels);
+  const displayName = meta?.name || modelId;
 
   return (
     <div className="flex flex-col p-4 gap-5">
-      {/* Node Header */}
+      {/* Node Header - Dynamic Name */}
       <div className="flex items-center gap-2">
         <div className="w-5 h-5 rounded flex items-center justify-center bg-[#FF9800]/20 text-[#FF9800]">
            <Image size={14} />
         </div>
-        <span className="text-sm font-semibold text-white">ChatGPT Image</span>
+        <span className="text-sm font-semibold text-white truncate" title={displayName}>
+          {displayName}
+        </span>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -36,20 +44,10 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
         </label>
         <input 
           className="bg-transparent border border-border-subtle rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-accent-lime"
-          placeholder="GPT Image 2"
+          placeholder="GPT Image Node"
           value={(data.nodeName as string) || ''}
           onChange={(e) => handleChange('nodeName', e.target.value)}
         />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-white">Use own prompt</label>
-        <div 
-          className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${isUseOwnPrompt ? 'bg-accent-lime' : 'bg-border-subtle'}`}
-          onClick={() => handleChange('useOwnPrompt', !isUseOwnPrompt)}
-        >
-          <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${isUseOwnPrompt ? 'translate-x-4' : 'translate-x-0'}`} />
-        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -62,27 +60,14 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
             placeholder="E.g.: A cute cat playing with yarn, cinematic lighting"
             value={(data.prompt as string) || ''}
             onChange={(e) => handleChange('prompt', e.target.value)}
-            disabled={!isUseOwnPrompt}
           />
-          <div className="absolute bottom-2 right-2">
-            <button className="text-[10px] border border-border-subtle rounded px-2 py-1 text-text-muted hover:text-white hover:border-white transition-colors bg-[#1a1a1a]">
-              ⊚ Preview
-            </button>
-          </div>
         </div>
         <div className="text-right text-[10px] text-text-muted">
           {((data.prompt as string) || '').length}/30.000
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-text-muted">Mention Mode (Advanced)</label>
-        <select className="bg-transparent border border-border-subtle rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-accent-lime appearance-none">
-          <option>Settings</option>
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-2 mt-2">
+      <div className="flex flex-col gap-2 mt-1">
         <label className="text-xs font-medium text-white">Image ratio</label>
         <div className="flex gap-1">
           {ratios.map(r => (
@@ -97,29 +82,79 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5 mt-2">
-        <label className="text-xs text-text-muted">Reference Images (max 4)</label>
-        <button className="w-full py-2 border border-border-subtle border-dashed rounded-lg text-xs text-text-muted hover:text-white hover:border-white/50 transition-colors flex items-center justify-center gap-2">
-          <span>🖼️</span> Select / Upload image
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-1.5 mt-4">
+      <div className="flex flex-col gap-1.5 mt-1">
         <label className="text-xs text-text-muted">Model</label>
         <ModelSelector 
           modality="image"
-          className="bg-transparent border border-border-subtle rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-accent-lime appearance-none"
-          value={(data.model as string) || 'black-forest-labs/flux-1-schnell'}
+          value={modelId}
           onChange={(e) => handleChange('model', e.target.value)}
         />
       </div>
 
-      <div className="flex items-center gap-2 mt-2 cursor-pointer text-text-muted hover:text-white transition-colors">
-        <span className="text-[10px]">▶</span>
-        <span className="text-xs">Advanced settings</span>
+      {/* Advanced Settings Collapsible */}
+      <div className="flex flex-col border border-border-subtle rounded-xl overflow-hidden mt-1 bg-white/5">
+        <div 
+          className="flex items-center justify-between px-3 py-2.5 cursor-pointer hover:bg-white/5 transition-colors select-none"
+          onClick={() => handleChange('showAdvanced', !data.showAdvanced)}
+        >
+          <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
+            ⚙️ Advanced settings
+          </span>
+          <span className="text-xs text-text-muted">{data.showAdvanced ? '▲' : '▼'}</span>
+        </div>
+
+        {data.showAdvanced && (
+          <div className="p-3 border-t border-border-subtle flex flex-col gap-3.5 bg-canvas/40">
+            {/* Steps */}
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center text-xs">
+                <label className="text-text-muted font-medium">Steps</label>
+                <span className="text-accent-lime font-mono text-[11px]">{data.steps || 25}</span>
+              </div>
+              <input 
+                type="range"
+                min={1}
+                max={50}
+                step={1}
+                className="accent-accent-lime cursor-pointer"
+                value={data.steps || 25}
+                onChange={(e) => handleChange('steps', parseInt(e.target.value))}
+              />
+            </div>
+
+            {/* Guidance Scale */}
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center text-xs">
+                <label className="text-text-muted font-medium">Guidance Scale</label>
+                <span className="text-accent-lime font-mono text-[11px]">{data.guidanceScale || 7.5}</span>
+              </div>
+              <input 
+                type="range"
+                min={1}
+                max={20}
+                step={0.5}
+                className="accent-accent-lime cursor-pointer"
+                value={data.guidanceScale || 7.5}
+                onChange={(e) => handleChange('guidanceScale', parseFloat(e.target.value))}
+              />
+            </div>
+
+            {/* Seed */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-text-muted font-medium">Seed (Optional)</label>
+              <input 
+                type="number"
+                className="bg-transparent border border-border-subtle rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-accent-lime"
+                placeholder="Random (-1)"
+                value={data.seed !== undefined ? data.seed : ''}
+                onChange={(e) => handleChange('seed', e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between mt-2">
         <label className="text-xs font-medium text-white">Auto download</label>
         <div 
           className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${data.autoDownload ? 'bg-accent-lime' : 'bg-border-subtle'}`}

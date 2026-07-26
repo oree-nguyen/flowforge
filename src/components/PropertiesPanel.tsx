@@ -7,6 +7,8 @@ import { ImageGenProperties } from './properties/ImageGenProperties';
 import { VideoGenProperties } from './properties/VideoGenProperties';
 import { DownloadProperties } from './properties/DownloadProperties';
 import { FileProperties } from './properties/FileProperties';
+import { AudioGenProperties } from './properties/AudioGenProperties';
+import { TranscriptionProperties } from './properties/TranscriptionProperties';
 import { X, Power, Bug } from 'lucide-react';
 
 export function PropertiesPanel() {
@@ -30,6 +32,10 @@ export function PropertiesPanel() {
         return <ImageGenProperties nodeId={selectedNode.id} />;
       case 'ai.videoGen':
         return <VideoGenProperties nodeId={selectedNode.id} />;
+      case 'ai.audioGen':
+        return <AudioGenProperties nodeId={selectedNode.id} />;
+      case 'ai.transcription':
+        return <TranscriptionProperties nodeId={selectedNode.id} />;
       case 'util.download':
         return <DownloadProperties nodeId={selectedNode.id} />;
       case 'input.file':

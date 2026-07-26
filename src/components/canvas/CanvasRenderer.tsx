@@ -11,6 +11,8 @@ import { InputImageNode } from '../nodes/InputImageNode';
 import { AITextGenNode } from '../nodes/AITextGenNode';
 import { AIImageGenNode } from '../nodes/AIImageGenNode';
 import { AIVideoGenNode } from '../nodes/AIVideoGenNode';
+import { AIAudioGenNode } from '../nodes/AIAudioGenNode';
+import { AITranscriptionNode } from '../nodes/AITranscriptionNode';
 import { NoteNode } from '../nodes/NoteNode';
 import { UtilDownloadNode } from '../nodes/UtilDownloadNode';
 import { InputFileNode } from '../nodes/InputFileNode';
@@ -21,6 +23,8 @@ const NODE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'ai.textGen': AITextGenNode,
   'ai.imageGen': AIImageGenNode,
   'ai.videoGen': AIVideoGenNode,
+  'ai.audioGen': AIAudioGenNode,
+  'ai.transcription': AITranscriptionNode,
   'note': NoteNode,
   'util.download': UtilDownloadNode,
   'input.file': InputFileNode,

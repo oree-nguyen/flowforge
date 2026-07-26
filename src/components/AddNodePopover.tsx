@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Type, Image as ImageIcon, Sparkles, Download, StickyNote, Bot, Camera, Video, AlertCircle, Loader2, FileText, Headphones, Binary, Search, Mic, FileAudio } from 'lucide-react';
+import { Type, Image as ImageIcon, Sparkles, StickyNote, Bot, Camera, Video, AlertCircle, Loader2, FileText, Headphones, Binary, Search, Mic, FileAudio } from 'lucide-react';
 import { canvasEngine } from '../engine/canvasEngine';
 import { fetchModels, groupModelsByProviderAndModality, type ExpandedModality } from '../services/openRouterApi';
 
@@ -52,12 +52,13 @@ export function AddNodePopover({ isOpen, onClose }: { isOpen: boolean, onClose: 
   const nodeTypes = [
     { type: 'input.text', label: 'Input Text', icon: <Type size={18} />, color: 'bg-border-subtle' },
     { type: 'input.image', label: 'Input Image', icon: <ImageIcon size={18} />, color: 'bg-border-subtle' },
+    { type: 'input.file', label: 'Other Input', icon: <FileText size={18} />, color: 'bg-orange-500/20 text-orange-400' },
+    { type: 'note', label: 'Note', icon: <StickyNote size={18} />, color: 'bg-amber-500/20 text-amber-500' },
     { type: 'ai.textGen', label: 'AI Text Gen', icon: <Bot size={18} />, color: 'bg-[#9C27B0]/20 text-[#9C27B0]' },
     { type: 'ai.imageGen', label: 'AI Image Gen', icon: <Camera size={18} />, color: 'bg-[#FF9800]/20 text-[#FF9800]' },
     { type: 'ai.videoGen', label: 'AI Video Gen', icon: <Video size={18} />, color: 'bg-accent-lime/20 text-accent-lime' },
-    { type: 'util.download', label: 'Download', icon: <Download size={18} />, color: 'bg-border-subtle' },
-    { type: 'note', label: 'Note', icon: <StickyNote size={18} />, color: 'bg-amber-500/20 text-amber-500' },
-    { type: 'input.file', label: 'Other Input', icon: <FileText size={18} />, color: 'bg-orange-500/20 text-orange-400' },
+    { type: 'ai.audioGen', label: 'AI Audio Gen', icon: <Headphones size={18} />, color: 'bg-[#F59E0B]/20 text-[#F59E0B]' },
+    { type: 'ai.transcription', label: 'AI Transcription', icon: <Mic size={18} />, color: 'bg-[#10B981]/20 text-[#10B981]' },
   ];
 
   const categories: { key: ExpandedModality | 'all'; label: string; icon: React.ReactNode }[] = [

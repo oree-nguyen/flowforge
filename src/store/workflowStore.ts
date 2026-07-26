@@ -546,6 +546,26 @@ export const useWorkflowStore = create<WorkflowState>()(
                   }
                 }
 
+              } else if (node.type === 'ai.audioGen') {
+                canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
+                const hideReasoning = data.hideReasoning !== false;
+                const messages = [{ role: 'user', content: `Generate audio for: ${promptText}` }];
+                const response = await chatCompletion(apiKey, data.model as string, messages, {
+                  max_tokens: 4096,
+                  reasoning: hideReasoning ? { exclude: true } : undefined,
+                });
+                const content = response.choices?.[0]?.message?.content || '';
+                canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
+              } else if (node.type === 'ai.transcription') {
+                canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
+                const hideReasoning = data.hideReasoning !== false;
+                const messages = [{ role: 'user', content: `Transcribe the audio from connected input. Content: ${promptText}` }];
+                const response = await chatCompletion(apiKey, data.model as string, messages, {
+                  max_tokens: 4096,
+                  reasoning: hideReasoning ? { exclude: true } : undefined,
+                });
+                const content = response.choices?.[0]?.message?.content || '';
+                canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
               } else if (node.type === 'ai.imageGen' || node.type === 'ai.videoGen') {
                 canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Generating...' } });
 

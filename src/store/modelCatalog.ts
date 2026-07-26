@@ -53,12 +53,25 @@ export const VIDEO_MODELS: ModelMetadata[] = [
   { id: 'kling/video', name: 'Kling Video', free: false, inputs: ['text', 'image'] },
 ];
 
+export const AUDIO_MODELS: ModelMetadata[] = [
+  { id: 'openai/tts-1', name: 'OpenAI TTS-1', free: false, inputs: ['text'] },
+  { id: 'openai/tts-1-hd', name: 'OpenAI TTS-1 HD', free: false, inputs: ['text'] },
+  { id: 'elevenlabs/multilingual-v2', name: 'ElevenLabs Multilingual v2', free: false, inputs: ['text'] },
+];
+
+export const TRANSCRIPTION_MODELS: ModelMetadata[] = [
+  { id: 'openai/whisper', name: 'OpenAI Whisper', free: false, inputs: ['audio'] },
+  { id: 'openai/whisper-large-v3', name: 'Whisper Large v3', free: false, inputs: ['audio'] },
+];
+
 export function getModelCatalog(type: ModelModality, fetchedModels: OpenRouterModel[] = []): ModelMetadata[] {
   let staticList: ModelMetadata[] = [];
   switch (type) {
     case 'text': staticList = TEXT_MODELS; break;
     case 'image': staticList = IMAGE_MODELS; break;
     case 'video': staticList = VIDEO_MODELS; break;
+    case 'audio': staticList = AUDIO_MODELS; break;
+    case 'transcription': staticList = TRANSCRIPTION_MODELS; break;
     default: staticList = []; break;
   }
 
@@ -72,12 +85,12 @@ export function getModelCatalog(type: ModelModality, fetchedModels: OpenRouterMo
       const modality = (m.architecture?.modality || '').toLowerCase();
       if (type === 'image') return modality.includes('image') || m.id.includes('flux') || m.id.includes('dall-e');
       if (type === 'video') return modality.includes('video') || m.id.includes('luma') || m.id.includes('minimax');
-      if (type === 'audio') return modality.includes('audio');
+      if (type === 'audio') return modality.includes('audio') || m.id.includes('tts');
       if (type === 'embeddings') return modality.includes('embedding') || m.id.includes('embed');
       if (type === 'rerank') return modality.includes('rerank');
       if (type === 'speech') return modality.includes('speech') || m.id.includes('tts');
       if (type === 'transcription') return modality.includes('transcription') || m.id.includes('whisper');
-      return !modality.includes('image') && !modality.includes('video') && !modality.includes('embedding');
+      return !modality.includes('image') && !modality.includes('video') && !modality.includes('embedding') && !modality.includes('audio');
     })
     .map(m => {
       const isFree = m.id.includes(':free') || m.pricing?.prompt === '0';
@@ -128,7 +141,7 @@ export function getModelMetadata(modelId: string, fetchedModels: OpenRouterModel
     }
   }
 
-  const allStatic = [...TEXT_MODELS, ...IMAGE_MODELS, ...VIDEO_MODELS];
+  const allStatic = [...TEXT_MODELS, ...IMAGE_MODELS, ...VIDEO_MODELS, ...AUDIO_MODELS, ...TRANSCRIPTION_MODELS];
   const staticFound = allStatic.find(m => m.id === modelId);
   if (staticFound) return staticFound;
 

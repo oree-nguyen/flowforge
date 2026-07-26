@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
-import { Settings, LayoutGrid, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText } from 'lucide-react';
+import { Settings, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText } from 'lucide-react';
 import { AddNodePopover } from './AddNodePopover';
 import { canvasEngine } from '../engine/canvasEngine';
-import { toast } from '../store/toastStore';
 
 export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings?: () => void, onOpenImageLibrary?: () => void }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -98,15 +97,6 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
           {isVisible('settings') && (
             <ToolButton icon={<Settings size={18} />} tooltip="Settings" onClick={onOpenSettings} />
           )}
-        </div>
-
-        <div className="w-8 h-[1px] bg-border-subtle my-3"></div>
-
-        {/* Templates Placeholder */}
-        <div className="flex flex-col gap-1 w-full px-2 items-center">
-           <button className="w-10 h-10 rounded-xl flex items-center justify-center text-border-subtle cursor-not-allowed" onClick={() => toast.info('Templates feature coming in next phase')}>
-              <LayoutGrid size={18} />
-           </button>
         </div>
       </div>
       
