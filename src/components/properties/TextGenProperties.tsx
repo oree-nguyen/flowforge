@@ -90,22 +90,75 @@ export function TextGenProperties({ nodeId }: { nodeId: string }) {
         />
       </div>
 
-      <div className="flex items-center gap-2 mt-2 cursor-pointer text-text-muted hover:text-white transition-colors">
-        <span className="text-[10px]">▶</span>
-        <span className="text-xs">Advanced settings</span>
-      </div>
-
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex flex-col">
-          <label className="text-xs font-medium text-white">Ẩn reasoning trace</label>
-          <span className="text-[10px] text-text-muted">Ẩn chuỗi suy luận nội bộ của AI reasoning models</span>
-        </div>
+      {/* Advanced Settings Collapsible */}
+      <div className="flex flex-col border border-border-subtle rounded-xl overflow-hidden mt-2 bg-white/5">
         <div 
-          className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${(data.hideReasoning !== false) ? 'bg-accent-lime' : 'bg-border-subtle'}`}
-          onClick={() => handleChange('hideReasoning', data.hideReasoning === false ? true : false)}
+          className="flex items-center justify-between px-3 py-2.5 cursor-pointer hover:bg-white/5 transition-colors select-none"
+          onClick={() => handleChange('showAdvanced', !data.showAdvanced)}
         >
-          <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${(data.hideReasoning !== false) ? 'translate-x-4' : 'translate-x-0'}`} />
+          <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
+            ⚙️ Advanced settings
+          </span>
+          <span className="text-xs text-text-muted">{data.showAdvanced ? '▲' : '▼'}</span>
         </div>
+
+        {data.showAdvanced && (
+          <div className="p-3 border-t border-border-subtle flex flex-col gap-3.5 bg-canvas/40">
+            {/* Max Tokens */}
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center text-xs">
+                <label className="text-text-muted font-medium">Max Tokens</label>
+                <span className="text-accent-lime font-mono text-[11px]">{data.maxTokens || 16000}</span>
+              </div>
+              <input 
+                type="number"
+                min={512}
+                max={32000}
+                step={512}
+                className="bg-transparent border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-accent-lime"
+                placeholder="16000"
+                value={data.maxTokens !== undefined ? data.maxTokens : 16000}
+                onChange={(e) => handleChange('maxTokens', parseInt(e.target.value) || 16000)}
+              />
+              <span className="text-[10px] text-text-muted">Giới hạn độ dài output (mặc định: 16,000 cho giáo án dài).</span>
+            </div>
+
+            {/* Temperature */}
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center text-xs">
+                <label className="text-text-muted font-medium">Temperature</label>
+                <span className="text-accent-lime font-mono text-[11px]">{data.temperature !== undefined ? data.temperature : 0.7}</span>
+              </div>
+              <input 
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                className="accent-accent-lime cursor-pointer"
+                value={data.temperature !== undefined ? data.temperature : 0.7}
+                onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+              />
+              <div className="flex justify-between text-[9px] text-text-muted">
+                <span>0.0 (Chính xác/Logic)</span>
+                <span>1.0 (Sáng tạo)</span>
+              </div>
+            </div>
+
+            {/* Hide Reasoning Trace */}
+            <div className="flex items-center justify-between pt-1 border-t border-border-subtle/50">
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-white">Ẩn reasoning trace</label>
+                <span className="text-[10px] text-text-muted">Gửi parameter reasoning.exclude đến API</span>
+              </div>
+              <div 
+                className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${(data.hideReasoning !== false) ? 'bg-accent-lime' : 'bg-border-subtle'}`}
+                onClick={() => handleChange('hideReasoning', data.hideReasoning === false ? true : false)}
+              >
+                <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${(data.hideReasoning !== false) ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between mt-2">

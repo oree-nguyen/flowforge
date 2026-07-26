@@ -434,12 +434,21 @@ export const useWorkflowStore = create<WorkflowState>()(
 
                 console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${data.model}):`, JSON.stringify(messages, null, 2));
 
-                const response = await chatCompletion(apiKey, data.model as string, messages, {
-                  temperature: data.temperature || 1,
-                  top_p: data.topP || 1,
-                  max_tokens: data.maxTokens || 4096,
+                const hideReasoning = data.hideReasoning !== false;
+                const requestParams: any = {
+                  temperature: typeof data.temperature === 'number' ? data.temperature : 0.7,
+                  top_p: typeof data.topP === 'number' ? data.topP : 1,
+                  max_tokens: data.maxTokens || 16000,
                   response_format: data.responseFormat === 'json' ? { type: 'json_object' } : undefined,
-                });
+                };
+
+                if (hideReasoning) {
+                  requestParams.reasoning = { exclude: true };
+                }
+
+                console.log(`[FlowForge Request API Params] Node "${data.label || node.id}":`, requestParams);
+
+                const response = await chatCompletion(apiKey, data.model as string, messages, requestParams);
 
                 const choiceMessage = response.choices?.[0]?.message || {};
                 console.log(`[FlowForge Response Raw Message] Node "${data.label || node.id}":`, choiceMessage);
@@ -456,7 +465,6 @@ export const useWorkflowStore = create<WorkflowState>()(
                   }
                 }
 
-                const hideReasoning = data.hideReasoning !== false; // Default: true (hide reasoning)
                 let finalOutput = rawContent;
 
                 if (!hideReasoning && reasoningTrace) {
