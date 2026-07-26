@@ -282,14 +282,64 @@ export const useWorkflowStore = create<WorkflowState>()(
         canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
       },
 
-      importWorkflow: (workflow: SavedWorkflow) => {
+      importWorkflow: (workflow: any) => {
         const { currentWorkflowId, savedWorkflows } = get();
         if (currentWorkflowId) {
           get().saveCurrentWorkflow();
         }
 
-        // Ensure unique ID to avoid conflicts
-        const importedWf = { ...workflow, id: `wf_imported_${Date.now()}` };
+        // Helper to convert base64 data URIs to lightweight Blob URLs
+        const convertDataUri = (str: any) => {
+          if (typeof str === 'string' && str.startsWith('data:')) {
+            try {
+              const parts = str.split(',');
+              const mimeMatch = parts[0].match(/:(.*?);/);
+              const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+              const bstr = atob(parts[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              const blob = new Blob([u8arr], { type: mime });
+              return URL.createObjectURL(blob);
+            } catch (e) {
+              return str;
+            }
+          }
+          return str;
+        };
+
+        const canvasData = workflow.canvasData || workflow;
+        const sanitizedNodes = (canvasData.nodes || []).map((node: any) => {
+          const data = { ...node.data };
+          if (data.file) {
+            data.file = convertDataUri(data.file);
+            data.imageUrl = data.file;
+          }
+          if (data.imageUrl) {
+            data.imageUrl = convertDataUri(data.imageUrl);
+          }
+          if (data.output?.previewUrl) {
+            const previewUrl = convertDataUri(data.output.previewUrl);
+            data.output = { ...data.output, previewUrl };
+          }
+          return { ...node, data };
+        });
+
+        const sanitizedCanvasData = {
+          ...canvasData,
+          nodes: sanitizedNodes,
+          edges: canvasData.edges || [],
+          viewport: canvasData.viewport || { x: 0, y: 0, zoom: 1 }
+        };
+
+        const importedWf: SavedWorkflow = {
+          id: `wf_imported_${Date.now()}`,
+          name: workflow.name || workflow.workflowName || 'Imported Workflow',
+          updatedAt: new Date().toISOString(),
+          canvasData: sanitizedCanvasData
+        };
 
         set({
           savedWorkflows: [...savedWorkflows, importedWf],
@@ -297,11 +347,7 @@ export const useWorkflowStore = create<WorkflowState>()(
           workflowName: importedWf.name,
         });
 
-        if (importedWf.canvasData) {
-          canvasEngine.deserialize(importedWf.canvasData);
-        } else {
-          canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
-        }
+        canvasEngine.deserialize(sanitizedCanvasData);
       },
 
       deleteWorkflow: (id: string) => {
@@ -650,16 +696,37 @@ export const useWorkflowStore = create<WorkflowState>()(
     }),
     {
       name: 'flowforge-workflow-storage',
-      partialize: (state) => ({
-        workflowName: state.workflowName,
-        workflowEnabled: state.workflowEnabled,
-        apiKey: state.apiKey,
-        autoOpenProperties: state.autoOpenProperties,
-        savedWorkflows: state.savedWorkflows,
-        currentWorkflowId: state.currentWorkflowId,
-        toolbarVisibility: state.toolbarVisibility,
-        fetchedModels: state.fetchedModels,
-      }),
+      partialize: (state) => {
+        // Strip heavy base64 data: strings from savedWorkflows before saving to localStorage
+        const sanitizedWorkflows = state.savedWorkflows.map(wf => ({
+          ...wf,
+          canvasData: {
+            ...wf.canvasData,
+            nodes: (wf.canvasData?.nodes || []).map((node: any) => {
+              const data = node.data || {};
+              const file = typeof data.file === 'string' && data.file.startsWith('data:') ? '[Embedded Image]' : data.file;
+              const output = data.output ? {
+                ...data.output,
+                previewUrl: typeof data.output?.previewUrl === 'string' && data.output.previewUrl.startsWith('data:')
+                  ? '[Embedded Output]'
+                  : data.output?.previewUrl
+              } : data.output;
+              return { ...node, data: { ...data, file, output } };
+            })
+          }
+        }));
+
+        return {
+          workflowName: state.workflowName,
+          workflowEnabled: state.workflowEnabled,
+          apiKey: state.apiKey,
+          autoOpenProperties: state.autoOpenProperties,
+          savedWorkflows: sanitizedWorkflows,
+          currentWorkflowId: state.currentWorkflowId,
+          toolbarVisibility: state.toolbarVisibility,
+          fetchedModels: state.fetchedModels,
+        };
+      },
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         try {

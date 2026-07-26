@@ -102,8 +102,48 @@ export function DemoCanvas() {
     // Save the real workflow state so we can restore it later
     savedStateRef.current = canvasEngine.serialize();
 
+    // Convert base64 data URIs to lightweight Blob URLs for smooth rendering
+    const convertDataUri = (str: any) => {
+      if (typeof str === 'string' && str.startsWith('data:')) {
+        try {
+          const parts = str.split(',');
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const blob = new Blob([u8arr], { type: mime });
+          return URL.createObjectURL(blob);
+        } catch (e) {
+          return str;
+        }
+      }
+      return str;
+    };
+
+    const sanitizedNodes = (DEMO_WORKFLOW_DATA.nodes || []).map((node: any) => {
+      const data = { ...node.data };
+      if (data.file) {
+        data.file = convertDataUri(data.file);
+        data.imageUrl = data.file;
+      }
+      if (data.imageUrl) {
+        data.imageUrl = convertDataUri(data.imageUrl);
+      }
+      if (data.output?.previewUrl) {
+        data.output = { ...data.output, previewUrl: convertDataUri(data.output.previewUrl) };
+      }
+      return { ...node, data };
+    });
+
     // Load the demo workflow
-    canvasEngine.deserialize(DEMO_WORKFLOW_DATA as any);
+    canvasEngine.deserialize({
+      ...DEMO_WORKFLOW_DATA,
+      nodes: sanitizedNodes
+    } as any);
 
     return () => {
       // On unmount, restore the real workflow
