@@ -56,7 +56,7 @@ export function PropertiesPanel() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 400, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed right-4 top-[72px] bottom-4 w-[380px] bg-panel/95 backdrop-blur-2xl border border-border-subtle rounded-2xl shadow-2xl z-20 flex flex-col text-text-primary font-sans overflow-hidden"
+          className="fixed right-4 top-[72px] bottom-4 w-[calc(100vw-32px)] sm:w-[380px] max-w-[420px] bg-panel/95 backdrop-blur-2xl border border-border-subtle rounded-2xl shadow-2xl z-20 flex flex-col text-text-primary font-sans overflow-hidden"
         >
           {/* Header Tabs */}
           <div className="flex items-center justify-between px-3 pt-2.5 border-b border-border-subtle bg-white/5">

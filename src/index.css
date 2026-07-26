@@ -17,8 +17,23 @@
     --danger: #FF4D4D;
   }
 
+  /* Default: Laptop / Large Desktop */
   html {
-    font-size: 80%; /* Scale rem-based UI to 80% visually */
+    font-size: 80%; /* Optimal for Laptops (~1366x768 to 1920x1080) */
+  }
+
+  /* iPad / Tablet (768px - 1024px) */
+  @media (max-width: 1024px) {
+    html {
+      font-size: 75%;
+    }
+  }
+
+  /* Mobile / Mobile Landscape (< 768px) */
+  @media (max-width: 767px) {
+    html {
+      font-size: 70%;
+    }
   }
 
   body {
@@ -26,6 +41,7 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
+    touch-action: none; /* Prevent default browser pinch-zoom/scroll on touch devices */
   }
 }
 
