@@ -3,6 +3,7 @@ import { Play, Settings, Scissors, Copy, Plus, Trash2 } from 'lucide-react';
 import { canvasEngine, type NodeData } from '../../engine/canvasEngine';
 import { useCanvasEngine } from '../../engine/useCanvasEngine';
 import { useWorkflowStore } from '../../store/workflowStore';
+import { useTouchGestures } from '../../hooks/useTouchGestures';
 
 // Node type → component mapping
 import { InputTextNode } from '../nodes/InputTextNode';
@@ -83,27 +84,38 @@ function NodeWrapper({
         }
       }}
     >
-      {/* Output port handle */}
+      {/* Output port handle with expanded touch target */}
       <div
         style={{
           position: 'absolute',
-          right: -8,
+          right: -16,
           top: '50%',
           transform: 'translateY(-50%)',
-          width: 16,
-          height: 16,
-          borderRadius: '50%',
-          background: 'var(--accent-lime)',
-          border: '2px solid var(--canvas)',
+          width: 36,
+          height: 36,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           cursor: 'crosshair',
           zIndex: 10,
-          boxShadow: '0 0 8px rgba(198,241,53,0.6)',
+          touchAction: 'none',
         }}
         onPointerDown={(e) => {
           e.stopPropagation();
           onConnectStart(e, node.id, 'out');
         }}
-      />
+      >
+        <div
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            background: 'var(--accent-lime)',
+            border: '2px solid var(--canvas)',
+            boxShadow: '0 0 8px rgba(198,241,53,0.6)',
+          }}
+        />
+      </div>
       {/* Input port handle - Only render default if not custom */}
       {!['ai.imageGen', 'ai.videoGen', 'ai.textGen', 'input.file'].includes(node.type) && (
         <div
@@ -253,6 +265,9 @@ function getHandlePosition(node: NodeData, size: { width: number, height: number
 export function CanvasRenderer() {
   const { nodes, edges, viewport, selectedIds } = useCanvasEngine();
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Hook touch gestures for pinch zoom & 1-finger pan
+  useTouchGestures(canvasRef, viewport.zoom);
 
   // Panning state
   const isPanning = useRef(false);
