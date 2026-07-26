@@ -95,7 +95,7 @@ export const DEFAULT_DEMO_CANVAS_DATA = {
     {
       id: 'node_ref_img',
       type: 'input.image',
-      position: { x: 50, y: 80 },
+      position: { x: 40, y: 80 },
       data: {
         label: 'Reference Image',
         image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
@@ -105,43 +105,46 @@ export const DEFAULT_DEMO_CANVAS_DATA = {
     {
       id: 'node_prompt_1',
       type: 'ai.textGen',
-      position: { x: 400, y: 50 },
+      position: { x: 380, y: 40 },
       data: {
         model: 'meta-llama/llama-3.3-70b-instruct:free',
-        nodeName: 'Prompt Node',
-        prompt: 'Animate the reference character into an 8-second cinematic video. Slow dolly-in toward subject with smooth motion.'
+        nodeName: 'Prompt',
+        prompt: 'Animate the reference character into an 8-second cinematic video. Slow dolly-in toward the subject with smooth gimbal motion. Hair and fabric react gently to a soft breeze. Warm golden-hour lighting with volumetric light rays. Subtle parallax between the subject and background. Maintain identity and wardrobe across every frame.'
       }
     },
     {
       id: 'node_video_1',
       type: 'ai.videoGen',
-      position: { x: 760, y: 40 },
+      position: { x: 740, y: 30 },
       data: {
         model: 'minimax/video-01',
-        nodeName: 'Flow Video',
-        aspectRatio: '16:9'
+        nodeName: 'Flow — Video',
+        aspectRatio: '16:9',
+        output: {
+          previewUrl: 'https://images.unsplash.com/photo-1547447134-cd3f5c716030?auto=format&fit=crop&w=800&q=80'
+        }
       }
     },
     {
       id: 'node_prompt_2',
       type: 'ai.textGen',
-      position: { x: 400, y: 320 },
+      position: { x: 380, y: 340 },
       data: {
         model: 'google/gemini-2.0-flash-exp:free',
-        nodeName: 'Secondary Style',
-        prompt: 'Reimagine the reference subject as a bold poster shot. High contrast studio lighting with deep shadows.'
+        nodeName: 'Prompt',
+        prompt: 'Reimagine the reference subject as a bold poster shot. High-contrast studio lighting with deepside shadows. Vibrant accent colors and crisp clean edges. Confident pose with a direct gaze to camera. Glossy magazine-cover aesthetic. Sharp focus and fine detail on textures.'
       }
     },
     {
       id: 'node_image_1',
       type: 'ai.imageGen',
-      position: { x: 760, y: 320 },
+      position: { x: 740, y: 340 },
       data: {
         model: 'black-forest-labs/flux-1-schnell',
-        nodeName: 'Grok / FLUX Image',
+        nodeName: 'Grok — Image',
         aspectRatio: '16:9',
         output: {
-          previewUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80'
+          previewUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80'
         }
       }
     }
@@ -152,7 +155,7 @@ export const DEFAULT_DEMO_CANVAS_DATA = {
     { id: 'e3', source: 'node_ref_img', target: 'node_prompt_2', targetHandle: 'text' },
     { id: 'e4', source: 'node_prompt_2', target: 'node_image_1', targetHandle: 'text' },
   ],
-  viewport: { x: 20, y: 20, zoom: 0.85 }
+  viewport: { x: 30, y: 30, zoom: 0.85 }
 };
 
 // Topological Sort function for Execution Order
