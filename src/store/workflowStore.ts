@@ -441,14 +441,44 @@ export const useWorkflowStore = create<WorkflowState>()(
                   response_format: data.responseFormat === 'json' ? { type: 'json_object' } : undefined,
                 });
 
-                const outputText = response.choices?.[0]?.message?.content || 'No output.';
-                console.log(`[FlowForge Response] Node "${data.label || node.id}":`, outputText);
+                const choiceMessage = response.choices?.[0]?.message || {};
+                console.log(`[FlowForge Response Raw Message] Node "${data.label || node.id}":`, choiceMessage);
 
-                canvasEngine.updateNodeData(node.id, { output: outputText, isGenerating: false });
+                let rawContent = choiceMessage.content || '';
+                let reasoningTrace = choiceMessage.reasoning || choiceMessage.reasoning_content || '';
+
+                // Handle models that embed reasoning trace directly inside content with <think>...</think> or similar tags
+                if (!reasoningTrace && typeof rawContent === 'string') {
+                  const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/i);
+                  if (thinkMatch) {
+                    reasoningTrace = thinkMatch[1].trim();
+                    rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                  }
+                }
+
+                const hideReasoning = data.hideReasoning !== false; // Default: true (hide reasoning)
+                let finalOutput = rawContent;
+
+                if (!hideReasoning && reasoningTrace) {
+                  finalOutput = `[Reasoning Trace]\n${reasoningTrace}\n\n[Final Output]\n${rawContent}`;
+                }
+
+                if (!finalOutput) {
+                  finalOutput = typeof rawContent === 'string' ? rawContent : 'No output.';
+                }
+
+                console.log(`[FlowForge Extracted Output] Node "${data.label || node.id}":`, finalOutput);
+
+                canvasEngine.updateNodeData(node.id, { 
+                  output: finalOutput, 
+                  rawContent: rawContent,
+                  debugReasoning: reasoningTrace,
+                  isGenerating: false 
+                });
 
                 // Auto Download Text Output
                 if (data.autoDownload) {
-                  const blob = new Blob([outputText], { type: 'text/plain' });
+                  const blob = new Blob([finalOutput], { type: 'text/plain' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
@@ -464,7 +494,7 @@ export const useWorkflowStore = create<WorkflowState>()(
                 for (const outEdge of allOutEdgesText) {
                   const targetNode = canvasEngine.getNode(outEdge.target);
                   if (targetNode?.type === 'input.text') {
-                    canvasEngine.updateNodeData(outEdge.target, { text: outputText, filledByAI: true });
+                    canvasEngine.updateNodeData(outEdge.target, { text: rawContent || finalOutput, filledByAI: true });
                   }
                 }
 

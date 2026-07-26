@@ -96,6 +96,19 @@ export function TextGenProperties({ nodeId }: { nodeId: string }) {
       </div>
 
       <div className="flex items-center justify-between mt-4">
+        <div className="flex flex-col">
+          <label className="text-xs font-medium text-white">Ẩn reasoning trace</label>
+          <span className="text-[10px] text-text-muted">Ẩn chuỗi suy luận nội bộ của AI reasoning models</span>
+        </div>
+        <div 
+          className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${(data.hideReasoning !== false) ? 'bg-accent-lime' : 'bg-border-subtle'}`}
+          onClick={() => handleChange('hideReasoning', data.hideReasoning === false ? true : false)}
+        >
+          <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${(data.hideReasoning !== false) ? 'translate-x-4' : 'translate-x-0'}`} />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-2">
         <label className="text-xs font-medium text-white">Auto download</label>
         <div 
           className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${data.autoDownload ? 'bg-accent-lime' : 'bg-border-subtle'}`}

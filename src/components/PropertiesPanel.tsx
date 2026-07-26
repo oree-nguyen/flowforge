@@ -84,7 +84,28 @@ export function PropertiesPanel() {
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {activeTab === 'config' ? renderContent() : (
-              <div className="p-6 text-center text-xs text-text-muted">No execution results yet. Click Run on the toolbar to execute this workflow.</div>
+              <div className="p-4 flex flex-col gap-4">
+                {selectedNode?.data?.output ? (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-accent-lime">Final Output</span>
+                      <pre className="p-3 bg-canvas border border-border-subtle rounded-xl text-xs text-text-primary whitespace-pre-wrap font-mono select-text">
+                        {String(selectedNode.data.output)}
+                      </pre>
+                    </div>
+                    {selectedNode.data.debugReasoning && (
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-semibold text-text-muted">Reasoning Trace (Debug)</span>
+                        <pre className="p-3 bg-canvas/50 border border-border-subtle rounded-xl text-xs text-text-muted whitespace-pre-wrap font-mono select-text max-h-60 overflow-y-auto">
+                          {String(selectedNode.data.debugReasoning)}
+                        </pre>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-6 text-center text-xs text-text-muted">No execution results yet. Click Run on the toolbar to execute this workflow.</div>
+                )}
+              </div>
             )}
           </div>
 
