@@ -81,7 +81,11 @@ export function TopBar() {
       <div className="h-[56px] w-full bg-panel backdrop-blur-panel border-b border-border-subtle flex items-center justify-between px-4 z-20 shrink-0">
         {/* Left side */}
         <div className="flex items-center gap-3">
-          <button className="p-2 hover:bg-border-subtle rounded-xl text-text-muted hover:text-text-primary transition-colors" title="Back">
+          <button 
+            onClick={() => { window.location.hash = '#/landing'; }}
+            className="p-2 hover:bg-border-subtle rounded-xl text-text-muted hover:text-text-primary transition-colors" 
+            title="Back to Landing Page"
+          >
             <ChevronLeft size={20} />
           </button>
 

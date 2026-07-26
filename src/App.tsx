@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LandingPage } from './components/LandingPage';
 import { TopBar } from './components/TopBar';
 import { Toolbar } from './components/Toolbar';
 import { Canvas } from './components/Canvas';
@@ -14,9 +15,41 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { ToastContainer } from './components/ToastContainer';
 
 function App() {
+  // Simple Hash-based routing: #/landing, #/workflow, or path based
+  const [route, setRoute] = useState<'landing' | 'workflow'>(() => {
+    const hash = window.location.hash;
+    const path = window.location.pathname;
+    if (hash === '#/workflow' || path.endsWith('/workflow')) return 'workflow';
+    return 'landing'; // Default page is Landing Page
+  });
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      const path = window.location.pathname;
+      if (hash === '#/workflow' || path.endsWith('/workflow')) {
+        setRoute('workflow');
+      } else {
+        setRoute('landing');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
+  }, []);
+
+  const navigateTo = (page: 'landing' | 'workflow') => {
+    setRoute(page);
+    window.location.hash = page === 'workflow' ? '#/workflow' : '#/landing';
+  };
 
   // Hooks
   useAutoSave();
@@ -26,8 +59,6 @@ function App() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // useWorkflowStore.persist.hasHydrated() may return true immediately
-    // if localStorage is already read. Otherwise wait for the event.
     if (useWorkflowStore.persist.hasHydrated()) {
       setHydrated(true);
     } else {
@@ -37,6 +68,10 @@ function App() {
       return unsub;
     }
   }, []);
+
+  if (route === 'landing') {
+    return <LandingPage onOpenWorkflow={() => navigateTo('workflow')} />;
+  }
 
   if (!hydrated) {
     return (
