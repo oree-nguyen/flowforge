@@ -90,74 +90,6 @@ const DEFAULT_TOOLBAR_VISIBILITY: ToolbarVisibility = {
 
 const DEFAULT_WORKFLOW_ID = 'default_wf';
 
-export const DEFAULT_DEMO_CANVAS_DATA = {
-  nodes: [
-    {
-      id: 'node_ref_img',
-      type: 'input.image',
-      position: { x: 40, y: 100 },
-      data: {
-        label: 'Reference Image',
-        image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-        fileName: 'portrait.png'
-      }
-    },
-    {
-      id: 'node_prompt_1',
-      type: 'ai.textGen',
-      position: { x: 370, y: 70 },
-      data: {
-        model: 'meta-llama/llama-3.3-70b-instruct:free',
-        nodeName: 'Prompt Node',
-        prompt: 'Animate the reference character into an 8-second cinematic video. Slow dolly-in toward subject with smooth motion.'
-      }
-    },
-    {
-      id: 'node_video_1',
-      type: 'ai.videoGen',
-      position: { x: 730, y: 50 },
-      data: {
-        model: 'minimax/video-01',
-        nodeName: 'Flow — Video',
-        aspectRatio: '16:9',
-        output: {
-          previewUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
-        }
-      }
-    },
-    {
-      id: 'node_prompt_2',
-      type: 'ai.textGen',
-      position: { x: 370, y: 320 },
-      data: {
-        model: 'google/gemini-2.0-flash-exp:free',
-        nodeName: 'Secondary Style',
-        prompt: 'Reimagine the reference subject as a bold poster shot. High contrast studio lighting with deep shadows.'
-      }
-    },
-    {
-      id: 'node_image_1',
-      type: 'ai.imageGen',
-      position: { x: 730, y: 320 },
-      data: {
-        model: 'black-forest-labs/flux-1-schnell',
-        nodeName: 'Grok / FLUX Image',
-        aspectRatio: '16:9',
-        output: {
-          previewUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80'
-        }
-      }
-    }
-  ],
-  edges: [
-    { id: 'e1', source: 'node_ref_img', target: 'node_prompt_1', targetHandle: 'text' },
-    { id: 'e2', source: 'node_prompt_1', target: 'node_video_1', targetHandle: 'text' },
-    { id: 'e3', source: 'node_ref_img', target: 'node_prompt_2', targetHandle: 'text' },
-    { id: 'e4', source: 'node_prompt_2', target: 'node_image_1', targetHandle: 'text' },
-  ],
-  viewport: { x: 40, y: 20, zoom: 0.85 }
-};
-
 // Topological Sort function for Execution Order
 function getExecutionOrder(nodes: NodeData[], edges: any[]): NodeData[] {
   const nodeMap = new Map<string, NodeData>();
@@ -223,9 +155,9 @@ export const useWorkflowStore = create<WorkflowState>()(
       savedWorkflows: [
         {
           id: DEFAULT_WORKFLOW_ID,
-          name: 'Cinematic Character Pipeline',
+          name: 'New Workflow',
           updatedAt: new Date().toISOString(),
-          canvasData: DEFAULT_DEMO_CANVAS_DATA,
+          canvasData: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
         }
       ],
       currentWorkflowId: DEFAULT_WORKFLOW_ID,

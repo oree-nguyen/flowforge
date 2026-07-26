@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Globe, ArrowRight, Play, ChevronRight, Layers, Cpu, ShieldCheck } from 'lucide-react';
-import { Canvas } from './Canvas';
-import { ZoomControls } from './ZoomControls';
-import { RecenterButton } from './RecenterButton';
 
 interface LandingPageProps {
   onOpenWorkflow: () => void;
@@ -25,7 +22,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       heroTag: '✨ Next-Gen Visual AI Orchestration',
       heroTitle: 'Build Complex Multi-Modal AI Workflows with FlowForge',
       heroSubtitle: 'Connect 400+ AI models including ChatGPT, Grok, FLUX, and MiniMax into seamless visual DAG execution nodes.',
-      openAppBtn: 'Open Full Editor',
+      openAppBtn: 'Open Workflow Editor',
       demoVideoBtn: 'Watch Demo',
       showcaseTitle: 'Real-time AI Generation Pipelines',
       showcaseSubtitle: 'Watch how FlowForge seamlessly streams outputs across text, image, and video models in parallel.',
@@ -49,7 +46,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       heroTag: '✨ Nền tảng điều phối AI trực quan thế hệ mới',
       heroTitle: 'Xây dựng quy trình AI Đa phương thức phức tạp với FlowForge',
       heroSubtitle: 'Kết nối 400+ model AI như ChatGPT, Grok, FLUX, MiniMax thành các node thực thi dạng đồ thị trực quan.',
-      openAppBtn: 'Mở Full Editor',
+      openAppBtn: 'Mở Workflow Editor',
       demoVideoBtn: 'Xem Video Demo',
       showcaseTitle: 'Các Chuỗi Sinh AI Theo Thời Gian Thực',
       showcaseSubtitle: 'Khám phá cách FlowForge stream nội dung tự động giữa các model Text, Image và Video song song.',
@@ -63,14 +60,14 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
     }
   }[lang];
 
-  // Video Card Items with scroll-triggered animations (clean high quality URLs)
+  // Video Card Items with scroll-triggered animations
   const videoCards = [
     {
       id: 1,
-      title: 'Reference Image to Cinematic Video',
+      title: 'Reference Image to 8-sec Video',
       tag: 'AI Video Gen',
       model: 'MiniMax Video-01',
-      gifUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+      gifUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
       prompt: 'Animate character with cinematic dolly zoom motion, golden hour lighting'
     },
     {
@@ -78,15 +75,15 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       title: 'Stylized 3D Character Rendering',
       tag: 'AI Image Gen',
       model: 'FLUX.1 Schnell',
-      gifUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
+      gifUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80',
       prompt: 'Skater boy in futuristic Neo Tokyo city, 8k render, octane render style'
     },
     {
       id: 3,
-      title: 'Cyberpunk Poster Generation',
+      title: 'Cyberpunk Billboard Generation',
       tag: 'AI Image Gen',
       model: 'Grok / FLUX Pro',
-      gifUrl: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=800&q=80',
+      gifUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
       prompt: 'Glossy magazine cover shot, neon vibrant colors, direct camera gaze'
     },
     {
@@ -94,7 +91,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       title: 'Voice Narration & Dubbing Pipeline',
       tag: 'AI Audio Gen',
       model: 'OpenAI TTS-1 HD',
-      gifUrl: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80',
+      gifUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
       prompt: 'Natural studio voiceover with soft warm acoustics and crisp dynamic range'
     }
   ];
@@ -179,7 +176,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           {t.heroSubtitle}
         </p>
 
-        <div className="flex items-center gap-4 mb-14">
+        <div className="flex items-center gap-4 mb-16">
           <button 
             onClick={onOpenWorkflow}
             className="px-8 py-3.5 rounded-2xl bg-accent-lime text-black font-bold text-sm hover:brightness-110 shadow-[0_0_30px_rgba(132,204,22,0.5)] transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
@@ -196,33 +193,125 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           </a>
         </div>
 
-        {/* --- INTERACTIVE REAL WORKFLOW CANVAS (FULL LIVE ENGINE) --- */}
-        <div className="w-full relative rounded-3xl border border-white/15 bg-[#121216] shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
-          {/* Title bar */}
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-[#17171C]">
+        {/* --- WORKFLOW CANVAS MOCKUP (INTERACTIVE) --- */}
+        <div 
+          onClick={onOpenWorkflow}
+          className="w-full relative rounded-3xl border border-white/15 hover:border-accent-lime/60 bg-[#121216] p-6 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden cursor-pointer group transition-all"
+        >
+          {/* Subtle grid background */}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+
+          {/* Canvas Mockup Title bar */}
+          <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
               <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
               <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              <span className="text-xs text-text-muted ml-2 font-mono">Interactive Sandbox: Cinematic Character pipeline.flow</span>
+              <span className="text-xs text-text-muted ml-2 font-mono">Workflow: Cinematic Character pipeline.flow</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-text-muted hidden sm:inline">💡 Drag nodes or connect ports to test!</span>
-              <div className="flex items-center gap-1.5 text-xs text-accent-lime">
-                <span className="w-2 h-2 rounded-full bg-accent-lime animate-ping" />
-                Live Interactive Canvas
-              </div>
+            <div className="flex items-center gap-2 text-xs text-accent-lime group-hover:scale-105 transition-transform">
+              <span className="w-2 h-2 rounded-full bg-accent-lime animate-ping" />
+              Click to Interact & Edit Workflow ➔
             </div>
           </div>
 
-          {/* Real Interactive Canvas Frame */}
-          <div className="relative h-[540px] w-full overflow-hidden bg-canvas">
-            <Canvas />
-            <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
-              <ZoomControls />
-            </div>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-              <RecenterButton />
+          {/* Mockup Canvas Container with Nodes and SVG Wires */}
+          <div className="relative min-h-[500px] w-full flex items-center justify-center py-6">
+            
+            {/* SVG Connecting Wires */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-accent-lime/40 stroke-[2] fill-none">
+              {/* Path 1: Image Node -> Text Node */}
+              <path d="M 280 250 C 340 250, 340 180, 400 180" className="stroke-purple-500/60" />
+              {/* Path 2: Text Node -> Video Node */}
+              <path d="M 640 180 C 700 180, 700 200, 760 200" className="stroke-accent-lime" />
+              {/* Path 3: Image Node -> Sub Text Node */}
+              <path d="M 280 250 C 340 250, 340 380, 400 380" className="stroke-orange-500/60" />
+              {/* Path 4: Sub Text Node -> Image Node 2 */}
+              <path d="M 640 380 C 700 380, 700 380, 760 380" className="stroke-orange-400" />
+            </svg>
+
+            {/* Layout Grid of Nodes */}
+            <div className="relative w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center z-10 text-left">
+              
+              {/* LEFT NODE: Reference Image */}
+              <div className="bg-[#1A1A22] border border-purple-500/40 rounded-2xl p-3 shadow-xl hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-purple-400 mb-2">
+                  <span>🖼️ Reference Image</span>
+                  <span className="text-white/40">Input</span>
+                </div>
+                <div className="relative h-64 rounded-xl overflow-hidden border border-white/10 bg-black">
+                  <img 
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" 
+                    alt="Ref Character" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur text-[10px] text-white">portrait.png</div>
+                </div>
+              </div>
+
+              {/* MIDDLE NODES: Prompts */}
+              <div className="flex flex-col gap-6">
+                {/* Text Prompt 1 */}
+                <div className="bg-[#1A1A22] border border-border-subtle rounded-2xl p-4 shadow-xl">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-text-muted mb-1.5">
+                    <span>💬 Prompt Node</span>
+                    <span className="text-accent-lime">AI Text Gen</span>
+                  </div>
+                  <p className="text-xs text-white/80 bg-black/40 p-2.5 rounded-xl border border-white/5 font-mono">
+                    "Animate the reference character into an 8-second cinematic video. Slow dolly-in toward subject with smooth motion."
+                  </p>
+                </div>
+
+                {/* Text Prompt 2 */}
+                <div className="bg-[#1A1A22] border border-border-subtle rounded-2xl p-4 shadow-xl">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-text-muted mb-1.5">
+                    <span>💬 Secondary Style</span>
+                    <span className="text-orange-400">AI Text Gen</span>
+                  </div>
+                  <p className="text-xs text-white/80 bg-black/40 p-2.5 rounded-xl border border-white/5 font-mono">
+                    "Reimagine the reference subject as a bold poster shot. High contrast studio lighting with deep shadows."
+                  </p>
+                </div>
+              </div>
+
+              {/* RIGHT NODES: Generated Video & Image */}
+              <div className="flex flex-col gap-6">
+                {/* Video Generation Result */}
+                <div className="bg-[#1A1A22] border border-accent-lime/50 rounded-2xl p-3 shadow-[0_0_30px_rgba(132,204,22,0.15)] transform hover:-translate-y-1 transition-all">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-accent-lime mb-2">
+                    <span>🎬 Flow — Video</span>
+                    <span className="px-1.5 py-0.5 bg-accent-lime/20 rounded text-[9px]">MiniMax Video-01</span>
+                  </div>
+                  <div className="relative h-44 rounded-xl overflow-hidden border border-accent-lime/30 bg-black">
+                    <img 
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" 
+                      alt="AI Video Output" 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center text-black shadow-lg">
+                        <Play size={18} className="ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image Generation Result */}
+                <div className="bg-[#1A1A22] border border-orange-400/40 rounded-2xl p-3 shadow-xl transform hover:-translate-y-1 transition-all">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-orange-400 mb-2">
+                    <span>🖼️ Grok / FLUX Image</span>
+                    <span className="px-1.5 py-0.5 bg-orange-400/20 rounded text-[9px]">FLUX 1.1 Pro</span>
+                  </div>
+                  <div className="relative h-32 rounded-xl overflow-hidden border border-white/10 bg-black">
+                    <img 
+                      src="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80" 
+                      alt="AI Image Output" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
