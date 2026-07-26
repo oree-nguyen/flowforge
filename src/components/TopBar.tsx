@@ -3,6 +3,7 @@ import { ChevronLeft, Save, Plus, FolderOpen, Trash2, Database } from 'lucide-re
 import { useWorkflowStore } from '../store/workflowStore';
 import { canvasEngine } from '../engine/canvasEngine';
 import { RecoveryModal } from './RecoveryModal';
+import { toast } from '../store/toastStore';
 
 export function TopBar() {
   const { 
@@ -55,12 +56,12 @@ export function TopBar() {
         const parsed = JSON.parse(content);
         if (parsed.canvasData && Array.isArray(parsed.canvasData.nodes)) {
           importWorkflow(parsed);
-          alert('Import workflow thành công!');
+          toast.success('Import workflow thành công!');
         } else {
-          alert('File JSON không đúng định dạng workflow của FlowForge.');
+          toast.error('File JSON không đúng định dạng workflow của FlowForge.');
         }
       } catch (err) {
-        alert('Lỗi khi đọc file JSON: ' + (err as Error).message);
+        toast.error('Lỗi khi đọc file JSON: ' + (err as Error).message);
       }
     };
     reader.readAsText(file);

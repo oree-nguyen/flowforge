@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { canvasEngine, type NodeData } from '../engine/canvasEngine';
+import { toast } from './toastStore';
 import { type OpenRouterModel } from '../services/openRouterApi';
 
 export type ToolMode = 'select' | 'pan';
@@ -318,7 +319,7 @@ export const useWorkflowStore = create<WorkflowState>()(
       executeWorkflow: async () => {
         const { apiKey } = get();
         if (!apiKey) {
-          alert('Please set your OpenRouter API key in Settings first.');
+          toast.warning('Please set your OpenRouter API key in Settings first.');
           return;
         }
 

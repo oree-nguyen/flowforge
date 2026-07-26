@@ -11,6 +11,7 @@ import { ShortcutGuide } from './components/ShortcutGuide';
 import { useWorkflowStore } from './store/workflowStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { ToastContainer } from './components/ToastContainer';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -69,6 +70,7 @@ function App() {
       
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
+      <ToastContainer />
     </div>
   );
 }
