@@ -9,45 +9,51 @@ export function useDemoScroll(containerRef: RefObject<HTMLElement | null>) {
     const el = containerRef.current;
     if (!el) return;
 
-    // IntersectionObserver for entrance animation trigger (when 20% visible)
+    // IntersectionObserver: trigger isVisible when 10% of container is in view
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
     observer.observe(el);
 
-    // Scroll listener for calculating progress inside sticky section
-    let rafId: number;
-
+    // Calculate scroll progress using window scroll (requires outer container to use natural scroll)
     const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      const el = containerRef.current;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
       const windowHeight = window.innerHeight;
       const totalScrollableHeight = rect.height - windowHeight;
 
-      if (totalScrollableHeight <= 0) return;
+      if (totalScrollableHeight <= 0) {
+        // If section is shorter than viewport, use intersection ratio
+        const ratio = Math.max(0, Math.min(1, 1 - (rect.bottom - windowHeight) / rect.height));
+        setScrollProgress(ratio);
+        return;
+      }
 
-      // Current distance scrolled inside the sticky container
+      // How far user has scrolled INTO the container
+      // rect.top = distance from top of viewport to top of element
+      // When rect.top = 0 → user just reached the element → progress = 0
+      // When rect.top = -(totalScrollableHeight) → user at bottom → progress = 1
       const currentScroll = -rect.top;
       const rawProgress = currentScroll / totalScrollableHeight;
       const clampedProgress = Math.max(0, Math.min(1, rawProgress));
 
-      rafId = requestAnimationFrame(() => {
-        setScrollProgress(clampedProgress);
-      });
+      setScrollProgress(clampedProgress);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    // Initial check
+    handleScroll();
 
     return () => {
       observer.disconnect();
       window.removeEventListener('scroll', handleScroll);
-      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [containerRef]);
 

@@ -276,12 +276,13 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
   return (
     <div
       ref={containerRef}
-      className={`relative w-full rounded-2xl border border-white/15 bg-[#0C0C0E] overflow-hidden shadow-2xl transition-all duration-700 ${
-        isVisible
-          ? 'translate-y-0 scale-100 opacity-100'
-          : 'translate-y-24 scale-90 opacity-0'
-      }`}
-      style={{ height: 540 }}
+      className="relative w-full rounded-2xl border border-white/15 bg-[#0C0C0E] overflow-hidden shadow-2xl"
+      style={{
+        height: 540,
+        transition: 'transform 700ms cubic-bezier(0.22,1,0.36,1), opacity 600ms ease-out',
+        transform: isVisible ? 'translate(0, 0) scale(1)' : 'translate(24px, 40px) scale(0.93)',
+        opacity: isVisible ? 1 : 0,
+      }}
       onPointerMove={handlePointerMoveNode}
       onPointerUp={handlePointerUpNode}
     >

@@ -126,7 +126,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   }, []);
 
   return (
-    <div className="w-full h-screen bg-[#0A0A0C] text-white font-sans overflow-y-auto overflow-x-hidden selection:bg-accent-lime selection:text-black touch-auto">
+    <div className="bg-[#0A0A0C] text-white font-sans overflow-x-hidden selection:bg-accent-lime selection:text-black">
       
       {/* --- TOP NAVBAR --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0C]/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
@@ -198,12 +198,31 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </div>
 
         {/* --- STICKY SCROLL-DRIVEN WORKFLOW DEMO --- */}
-        <div ref={demoScrollRef} className="relative w-full h-[300vh] my-10">
-          <div className="sticky top-20 w-full z-30">
-            <DemoCanvas scrollProgress={scrollProgress} isVisible={isVisible} />
-          </div>
-        </div>
       </section>
+
+      {/* Sticky section outside the hero section for proper sticky behavior */}
+      <div ref={demoScrollRef} className="relative w-full" style={{ height: '300vh' }}>
+        <div className="sticky top-20 px-6 max-w-7xl mx-auto z-30 pt-4">
+          {/* Scroll hint + progress bar */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-white/40 font-mono tracking-wide">
+              ↓ Scroll to simulate workflow building
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-1 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full bg-accent-lime rounded-full transition-all duration-100"
+                  style={{ width: `${scrollProgress * 100}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-white/40 font-mono w-8 text-right">
+                {Math.round(scrollProgress * 100)}%
+              </span>
+            </div>
+          </div>
+          <DemoCanvas scrollProgress={scrollProgress} isVisible={isVisible} />
+        </div>
+      </div>
 
       {/* --- SECTION 2: VIDEO SHOWCASE (SCROLL-TRIGGERED STAGGER ANIMATION) --- */}
       <section id="showcase" ref={showcaseRef} className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10">
