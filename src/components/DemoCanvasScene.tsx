@@ -427,20 +427,22 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[textNode1.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, textNode1.id)}
-            className="w-[300px] bg-[#141417] border border-white/15 rounded-2xl p-4 shadow-xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white/80 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-accent-lime" />
-                Input Text
-              </span>
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                <span className="text-sm font-medium text-white">Input Text</span>
+              </div>
               <span className="text-[10px] text-white/40 font-mono">text</span>
             </div>
-            <div className="bg-[#0A0A0C] border border-white/10 rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
-              {typedText1 || <span className="text-white/30 italic">Waiting for prompt input...</span>}
-              {enableTyping && typedText1.length < fullText1.length && (
-                <span className="inline-block w-1.5 h-3.5 bg-accent-lime ml-0.5 animate-pulse" />
-              )}
+            <div className="p-4">
+              <div className="bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
+                {typedText1 || <span className="text-white/30 italic">Waiting for prompt input...</span>}
+                {enableTyping && typedText1.length < fullText1.length && (
+                  <span className="inline-block w-1.5 h-3.5 bg-accent-lime ml-0.5 animate-pulse" />
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -454,28 +456,35 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imgNode1.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imgNode1.id)}
-            className="w-[300px] bg-[#141417] border border-white/15 rounded-2xl p-4 shadow-xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white/80 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-400" />
-                Input Image (Toy Car)
-              </span>
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                <span className="text-sm font-medium text-white">Input Image</span>
+              </div>
               <span className="text-[10px] text-white/40 font-mono">image</span>
             </div>
-            <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-white/10 rounded-xl overflow-hidden flex items-center justify-center">
-              {!img1Loaded && enableUploading ? (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
-                  <RefreshCw size={18} className="animate-spin text-white/60" />
-                  <span className="text-[10px] text-white/60 font-mono">Uploading car ref image...</span>
-                </div>
-              ) : (
-                <img
-                  src={imgNode1.data.file || imgNode1.data.imageUrl}
-                  alt="Red toy car"
-                  className="w-full h-full object-cover"
-                />
-              )}
+            <div className="p-4">
+              <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl overflow-hidden flex items-center justify-center">
+                {!img1Loaded && enableUploading ? (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
+                    <RefreshCw size={18} className="animate-spin text-white/60" />
+                    <span className="text-[10px] text-white/60 font-mono">Uploading...</span>
+                  </div>
+                ) : img1Loaded ? (
+                  <img
+                    src={imgNode1.data.file || imgNode1.data.imageUrl}
+                    alt="Red toy car"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-white/30">
+                    <Lock size={16} />
+                    <span className="text-[10px] font-mono">Waiting for input</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -489,28 +498,35 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imgNode2.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imgNode2.id)}
-            className="w-[300px] bg-[#141417] border border-white/15 rounded-2xl p-4 shadow-xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white/80 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-purple-400" />
-                Input Image (Boy Ref)
-              </span>
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                <span className="text-sm font-medium text-white">Input Image</span>
+              </div>
               <span className="text-[10px] text-white/40 font-mono">image</span>
             </div>
-            <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-white/10 rounded-xl overflow-hidden flex items-center justify-center">
-              {!img2Loaded && enableUploading ? (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
-                  <RefreshCw size={18} className="animate-spin text-white/60" />
-                  <span className="text-[10px] text-white/60 font-mono">Uploading boy character ref...</span>
-                </div>
-              ) : (
-                <img
-                  src={imgNode2.data.file || imgNode2.data.imageUrl}
-                  alt="3D Boy"
-                  className="w-full h-full object-cover"
-                />
-              )}
+            <div className="p-4">
+              <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl overflow-hidden flex items-center justify-center">
+                {!img2Loaded && enableUploading ? (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
+                    <RefreshCw size={18} className="animate-spin text-white/60" />
+                    <span className="text-[10px] text-white/60 font-mono">Uploading...</span>
+                  </div>
+                ) : img2Loaded ? (
+                  <img
+                    src={imgNode2.data.file || imgNode2.data.imageUrl}
+                    alt="3D Boy"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-white/30">
+                    <Lock size={16} />
+                    <span className="text-[10px] font-mono">Waiting for input</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -524,19 +540,18 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imageGenNode.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imageGenNode.id)}
-            className="w-[360px] bg-[#141417] border border-white/20 rounded-2xl p-4 shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60"
+            className="w-[320px] bg-[#1a1a1a] border border-[#2A2A2E] rounded-xl shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60 overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white flex items-center gap-2">
+            <div className="px-4 py-3 bg-[#1C1C1F] border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-yellow-400" />
-                Google: Nano Banana 2 (Gemini 3.1 Flash Image)
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 font-mono">
-                AI Image
-              </span>
+                <span className="text-xs font-medium text-white truncate max-w-[200px]" title="Google: Nano Banana 2 (Gemini 3.1 Flash Image)">
+                  Google: Nano Banana 2...
+                </span>
+              </div>
+              <span className="text-[10px] text-yellow-300 font-mono">AI Image</span>
             </div>
-
-            <div className="relative w-full h-[280px] bg-[#0A0A0C] border border-white/10 rounded-xl overflow-hidden flex items-center justify-center">
+            <div className="relative w-full h-[320px] bg-[#0A0A0C] flex items-center justify-center">
               {isRunning && !imageGenDone ? (
                 /* Gemini Mesh Wave Animation Effect */
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
@@ -548,12 +563,17 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
                     <div className="h-full bg-gradient-to-r from-yellow-400 to-lime-400 animate-pulse w-3/4" />
                   </div>
                 </div>
-              ) : (
+              ) : imageGenDone ? (
                 <img
                   src={imageGenNode.data.output?.previewUrl}
                   alt="Generated 3D Boy with Car"
                   className="w-full h-full object-cover transition-all duration-700"
                 />
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-white/30">
+                  <Sparkles size={32} />
+                  <span className="text-xs font-mono">Ready to Generate</span>
+                </div>
               )}
             </div>
           </div>
@@ -568,20 +588,22 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[textNode2.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, textNode2.id)}
-            className="w-[300px] bg-[#141417] border border-white/15 rounded-2xl p-4 shadow-xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white/80 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-accent-lime" />
-                Video Prompt
-              </span>
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                <span className="text-sm font-medium text-white">Input Text</span>
+              </div>
               <span className="text-[10px] text-white/40 font-mono">text</span>
             </div>
-            <div className="bg-[#0A0A0C] border border-white/10 rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
-              {typedText2 || <span className="text-white/30 italic">Waiting for video prompt...</span>}
-              {enableTyping && typedText2.length < fullText2.length && (
-                <span className="inline-block w-1.5 h-3.5 bg-accent-lime ml-0.5 animate-pulse" />
-              )}
+            <div className="p-4">
+              <div className="bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
+                {typedText2 || <span className="text-white/30 italic">Waiting for prompt input...</span>}
+                {enableTyping && typedText2.length < fullText2.length && (
+                  <span className="inline-block w-1.5 h-3.5 bg-accent-lime ml-0.5 animate-pulse" />
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -595,36 +617,39 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[videoGenNode.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, videoGenNode.id)}
-            className="w-[380px] bg-[#141417] border border-white/20 rounded-2xl p-4 shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60"
+            className="w-[320px] bg-[#1a1a1a] border border-[#2A2A2E] rounded-xl shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60 overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-white flex items-center gap-2">
-                <Sparkles size={14} className="text-emerald-400" />
-                Google Veo 3.1 Pro
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono">
-                AI Video
-              </span>
+            <div className="px-4 py-3 bg-[#1C1C1F] border-b border-[#2A2A2E] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Play size={14} className="text-green-400" />
+                <span className="text-xs font-medium text-white truncate max-w-[200px]" title="Google Veo 3.1 Pro">
+                  Google Veo 3.1 Pro
+                </span>
+              </div>
+              <span className="text-[10px] text-green-300 font-mono">AI Video</span>
             </div>
-
-            <div className="relative w-full h-[280px] bg-[#0A0A0C] border border-white/10 rounded-xl overflow-hidden flex items-center justify-center">
-              {isRunning && !videoGenDone ? (
-                /* Gemini Mesh Wave Animation Effect for Video */
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-teal-900 to-cyan-950 animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
+            <div className="relative w-full h-[240px] bg-[#0A0A0C] flex items-center justify-center">
+              {isRunning && !videoGenDone && imageGenDone ? (
+                /* Generative UI wave for Video */
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#112240] to-[#233554] animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
                   <div className="w-12 h-12 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
                   <span className="text-xs font-bold text-emerald-300 font-mono tracking-wide">
-                    Google Veo 3.1 Video Rendering...
+                    Rendering Video Frames...
                   </span>
-                  <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse w-1/2" />
-                  </div>
                 </div>
-              ) : (
-                <img
+              ) : videoGenDone ? (
+                <video
                   src={videoGenNode.data.output?.previewUrl}
-                  alt="Generated Video Output"
+                  autoPlay
+                  loop
+                  muted
                   className="w-full h-full object-cover transition-all duration-700"
                 />
+              ) : (
+                <div className="flex flex-col items-center gap-3 text-white/30">
+                  <Play size={32} />
+                  <span className="text-xs font-mono">Ready to Generate</span>
+                </div>
               )}
             </div>
           </div>
