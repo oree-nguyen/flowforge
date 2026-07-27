@@ -287,40 +287,70 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
     }
   };
 
+  // Force re-measure DOM handle positions on state changes
+  const [, setDomTick] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDomTick((t) => t + 1));
+    return () => cancelAnimationFrame(id);
+  }, [
+    scrollProgress,
+    showText1,
+    showImg1,
+    showImg2,
+    showImageGen,
+    showEdges1,
+    showText2,
+    showVideoGen,
+    showEdges2,
+    typedText1,
+    typedText2,
+    img1Loaded,
+    img2Loaded,
+    positions,
+  ]);
+
   // Helper to compute exact node port handle positions for 100% pixel-perfect wire alignment
   const getPortPos = (nodeId: string, type: 'out' | 'in', index = 0) => {
     const pos = positions[nodeId] || { x: 0, y: 0 };
 
-    // 1. Input Text Nodes (node_1785078061639, node_1785078196386_79) -> Width 260, Height 191
+    // Dynamic DOM measurement (100% pixel-perfect precision matching actual rendered DOM handle center)
+    if (containerRef.current) {
+      const selector = type === 'out' 
+        ? `[data-demohandle="${nodeId}:out"]` 
+        : `[data-demohandle="${nodeId}:in:${index}"]`;
+      const handleEl = containerRef.current.querySelector(selector) as HTMLElement | null;
+      const nodeEl = containerRef.current.querySelector(`[data-demonodeid="${nodeId}"]`) as HTMLElement | null;
+
+      if (handleEl && nodeEl) {
+        const nodeRect = nodeEl.getBoundingClientRect();
+        const handleRect = handleEl.getBoundingClientRect();
+        if (nodeRect.width > 0 && handleRect.width > 0 && viewport.zoom > 0) {
+          const relX = (handleRect.left + handleRect.width / 2 - nodeRect.left) / viewport.zoom;
+          const relY = (handleRect.top + handleRect.height / 2 - nodeRect.top) / viewport.zoom;
+          return { x: pos.x + relX, y: pos.y + relY };
+        }
+      }
+    }
+
+    // Static fallbacks if DOM element is not yet rendered
     if (nodeId.includes('61639') || nodeId.includes('196386')) {
-      if (type === 'out') return { x: pos.x + 260, y: pos.y + 95.5 };
-      return { x: pos.x, y: pos.y + 95.5 };
+      return { x: pos.x + (type === 'out' ? 260 : 0), y: pos.y + 95.5 };
     }
-
-    // 2. Input Image Nodes (node_1785078059250, node_1785078056303) -> Width 260, Height 205
     if (nodeId.includes('59250') || nodeId.includes('56303')) {
-      if (type === 'out') return { x: pos.x + 260, y: pos.y + 102.5 };
-      return { x: pos.x, y: pos.y + 102.5 };
+      return { x: pos.x + (type === 'out' ? 260 : 0), y: pos.y + 102.5 };
     }
-
-    // 3. AI Image Gen Node (node_1785078086464) -> Frame 320x320 (aspect 1:1)
     if (nodeId.includes('86464')) {
       if (type === 'out') return { x: pos.x + 320, y: pos.y + 160 };
-      // Port inputs on left: 0 -> Text (120), 1 -> Image (160), 2 -> File (200)
       const inputYOffsets = [120, 160, 200];
       return { x: pos.x - 26, y: pos.y + (inputYOffsets[index] ?? 160) };
     }
-
-    // 4. AI Video Gen Node (node_1785078245473) -> Frame 320x180 (aspect 16:9)
     if (nodeId.includes('45473')) {
       if (type === 'out') return { x: pos.x + 320, y: pos.y + 90 };
-      // Port inputs on left: 0 -> Image (70), 1 -> Text (110)
       const inputYOffsets = [70, 110];
       return { x: pos.x - 26, y: pos.y + (inputYOffsets[index] ?? 90) };
     }
 
-    if (type === 'out') return { x: pos.x + 260, y: pos.y + 100 };
-    return { x: pos.x, y: pos.y + 100 };
+    return { x: pos.x + (type === 'out' ? 260 : 0), y: pos.y + 100 };
   };
 
   return (
@@ -491,6 +521,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
         {/* --- NODE 1: INPUT TEXT --- */}
         {showText1 && textNode1 && (
           <div
+            data-demonodeid={textNode1.id}
             style={{
               position: 'absolute',
               left: positions[textNode1.id]?.x,
@@ -500,7 +531,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
             className="w-[260px] bg-node rounded-2xl shadow-lg border border-border-subtle overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-text-muted"
           >
             {/* Output Port Handle */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${textNode1.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
 
             <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2 rounded-t-2xl">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
@@ -526,6 +557,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
         {/* --- NODE 2: INPUT IMAGE 1 (Red Car) --- */}
         {showImg1 && imgNode1 && (
           <div
+            data-demonodeid={imgNode1.id}
             style={{
               position: 'absolute',
               left: positions[imgNode1.id]?.x,
@@ -535,7 +567,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
             className="w-[260px] bg-node rounded-2xl shadow-lg border border-border-subtle overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-text-muted"
           >
             {/* Output Port Handle */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${imgNode1.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
 
             <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2 rounded-t-2xl">
               <div className="w-2 h-2 rounded-full bg-purple-400" />
@@ -564,6 +596,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
         {/* --- NODE 3: INPUT IMAGE 2 (3D Boy) --- */}
         {showImg2 && imgNode2 && (
           <div
+            data-demonodeid={imgNode2.id}
             style={{
               position: 'absolute',
               left: positions[imgNode2.id]?.x,
@@ -573,7 +606,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
             className="w-[260px] bg-node rounded-2xl shadow-lg border border-border-subtle overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-text-muted"
           >
             {/* Output Port Handle */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${imgNode2.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
 
             <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2 rounded-t-2xl">
               <div className="w-2 h-2 rounded-full bg-purple-400" />
@@ -602,6 +635,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
         {/* --- NODE 4: AI IMAGE GEN (Gemini Banana Nano 2 Pro) --- */}
         {showImageGen && imageGenNode && (
           <div
+            data-demonodeid={imageGenNode.id}
             style={{
               position: 'absolute',
               left: positions[imageGenNode.id]?.x,
@@ -651,25 +685,26 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
 
             {/* Input Handle Ports on Left */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
-              <div className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Text Input">
+              <div data-demohandle={`${imageGenNode.id}:in:0`} className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Text Input">
                 <Type size={14} />
               </div>
-              <div className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Image Input">
+              <div data-demohandle={`${imageGenNode.id}:in:1`} className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Image Input">
                 <ImageIcon size={14} />
               </div>
-              <div className="w-8 h-8 rounded-full border border-orange-400/50 bg-panel flex items-center justify-center text-orange-400 hover:text-orange-300 transition-colors shadow-md" title="File Input">
+              <div data-demohandle={`${imageGenNode.id}:in:2`} className="w-8 h-8 rounded-full border border-orange-400/50 bg-panel flex items-center justify-center text-orange-400 hover:text-orange-300 transition-colors shadow-md" title="File Input">
                 <FileText size={14} />
               </div>
             </div>
 
             {/* Output Port Handle on Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${imageGenNode.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
           </div>
         )}
 
         {/* --- NODE 5: INPUT TEXT 2 --- */}
         {showText2 && textNode2 && (
           <div
+            data-demonodeid={textNode2.id}
             style={{
               position: 'absolute',
               left: positions[textNode2.id]?.x,
@@ -679,7 +714,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
             className="w-[260px] bg-node rounded-2xl shadow-lg border border-border-subtle overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-text-muted"
           >
             {/* Output Port Handle */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${textNode2.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
 
             <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2 rounded-t-2xl">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
@@ -705,6 +740,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
         {/* --- NODE 6: AI VIDEO GEN (Google Veo 3.1 Pro) --- */}
         {showVideoGen && videoGenNode && (
           <div
+            data-demonodeid={videoGenNode.id}
             style={{
               position: 'absolute',
               left: positions[videoGenNode.id]?.x,
@@ -756,16 +792,16 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
 
             {/* Input Handle Ports on Left */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
-              <div className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Image Input">
+              <div data-demohandle={`${videoGenNode.id}:in:0`} className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Image Input">
                 <ImageIcon size={14} />
               </div>
-              <div className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Text Input">
+              <div data-demohandle={`${videoGenNode.id}:in:1`} className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white transition-colors shadow-md" title="Text Input">
                 <Type size={14} />
               </div>
             </div>
 
             {/* Output Port Handle on Right */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
+            <div data-demohandle={`${videoGenNode.id}:out`} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full bg-accent-lime border-2 border-canvas shadow-[0_0_8px_rgba(198,241,53,0.6)] z-20" />
           </div>
         )}
       </div>
