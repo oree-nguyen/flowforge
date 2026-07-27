@@ -9,6 +9,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
+  const [demoCompleted, setDemoCompleted] = useState(false);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
 
@@ -220,9 +221,16 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
               </span>
             </div>
           </div>
-          <DemoCanvas scrollProgress={scrollProgress} isVisible={isVisible} />
+          <DemoCanvas 
+            scrollProgress={scrollProgress} 
+            isVisible={isVisible} 
+            onRun={() => setDemoCompleted(true)} 
+          />
         </div>
       </div>
+
+      {/* --- CONTENT BELOW DEMO (UNLOCKED ONLY AFTER DEMO RUN) --- */}
+      <div className={`transition-all duration-1000 ease-in-out ${demoCompleted ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden pointer-events-none'}`}>
 
       {/* --- SECTION 2: VIDEO SHOWCASE (SCROLL-TRIGGERED STAGGER ANIMATION) --- */}
       <section id="showcase" ref={showcaseRef} className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10">
@@ -235,7 +243,6 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           </p>
         </div>
 
-        {/* Video Cards Grid with Scroll-Triggered Slide Up Animation */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {videoCards.map((card) => {
             const isVisible = visibleCards.includes(card.id);
@@ -252,10 +259,10 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                     alt={card.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur text-xs font-semibold text-accent-lime border border-accent-lime/30">
+                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-semibold text-accent-lime">
                     {card.tag}
                   </div>
-                  <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur text-xs font-mono text-white/80 border border-white/10">
+                  <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full text-xs font-mono text-white/70">
                     {card.model}
                   </div>
                 </div>
@@ -263,8 +270,8 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-accent-lime transition-colors">
                   {card.title}
                 </h3>
-                <p className="text-xs text-text-muted bg-white/5 p-3 rounded-xl border border-white/5 font-mono">
-                  "{card.prompt}"
+                <p className="text-xs font-mono text-text-muted bg-black/40 border border-white/5 p-3 rounded-xl">
+                  💬 "{card.prompt}"
                 </p>
               </div>
             );
@@ -273,7 +280,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       </section>
 
       {/* --- FEATURES STRIP --- */}
-      <section id="features" className="py-20 px-6 max-w-7xl mx-auto border-t border-white/10">
+      <section id="features" className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-[#14141A] border border-white/10 p-8 rounded-3xl flex flex-col gap-4">
             <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
@@ -309,6 +316,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </div>
         <p>© 2026 {t.footerRights}</p>
       </footer>
+      </div>
 
     </div>
   );

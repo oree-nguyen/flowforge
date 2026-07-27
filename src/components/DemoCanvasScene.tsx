@@ -15,6 +15,7 @@ import demoWorkflowRaw from '../data/demoWorkflowData.json';
 interface DemoCanvasSceneProps {
   scrollProgress: number; // 0 to 1
   isVisible: boolean;
+  onRun?: () => void;
 }
 
 // Convert Base64 data URIs to Blob URLs
@@ -39,7 +40,7 @@ const convertDataUri = (str: any) => {
   return str;
 };
 
-export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasSceneProps) {
+export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvasSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Extract and sanitize raw nodes & edges
@@ -86,11 +87,24 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
     if (!activeDragId.current) return;
     const dx = (e.clientX - dragStartPos.current.x) / viewport.zoom;
     const dy = (e.clientY - dragStartPos.current.y) / viewport.zoom;
+    
+    let newX = initialNodePos.current.x + dx;
+    let newY = initialNodePos.current.y + dy;
+
+    // Clamp node positions to stay within visible canvas container bounds
+    const minX = (0 - viewport.x) / viewport.zoom + 10;
+    const maxX = (1000 - 320 - viewport.x) / viewport.zoom - 10;
+    const minY = (0 - viewport.y) / viewport.zoom + 10;
+    const maxY = (540 - 240 - viewport.y) / viewport.zoom - 10;
+
+    newX = Math.max(minX, Math.min(maxX, newX));
+    newY = Math.max(minY, Math.min(maxY, newY));
+
     setPositions((prev) => ({
       ...prev,
       [activeDragId.current!]: {
-        x: initialNodePos.current.x + dx,
-        y: initialNodePos.current.y + dy,
+        x: newX,
+        y: newY,
       },
     }));
   };
@@ -99,29 +113,28 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
     activeDragId.current = null;
   };
 
-  // Viewport calculation: Auto-center and fit all 6 nodes
+  // Viewport calculation: Fixed canvas zoom & position based on initial layout (Does NOT recalculate when dragging nodes)
   const viewport = useMemo(() => {
-    const nodeCoords = Object.values(positions);
-    if (nodeCoords.length === 0) return { zoom: 0.48, x: -500, y: -60 };
+    const nodeCoords = rawCanvasData.nodes.map((n: any) => n.position);
+    if (nodeCoords.length === 0) return { zoom: 0.55, x: -500, y: -60 };
 
-    const minX = Math.min(...nodeCoords.map((p) => p.x));
-    const maxX = Math.max(...nodeCoords.map((p) => p.x)) + 340;
-    const minY = Math.min(...nodeCoords.map((p) => p.y));
-    const maxY = Math.max(...nodeCoords.map((p) => p.y)) + 320;
+    const minX = Math.min(...nodeCoords.map((p: any) => p.x));
+    const maxX = Math.max(...nodeCoords.map((p: any) => p.x)) + 340;
+    const minY = Math.min(...nodeCoords.map((p: any) => p.y));
+    const maxY = Math.max(...nodeCoords.map((p: any) => p.y)) + 320;
 
     const width = maxX - minX;
     const height = maxY - minY;
 
-    // Fixed container aspect assumption
     const containerW = 1000;
     const containerH = 500;
 
-    const zoom = Math.min(containerW / width, containerH / height) * 0.88;
+    const zoom = Math.min(containerW / width, containerH / height) * 0.95;
     const x = (containerW - width * zoom) / 2 - minX * zoom;
     const y = (containerH - height * zoom) / 2 - minY * zoom;
 
-    return { zoom: Math.max(0.38, Math.min(0.6, zoom)), x, y };
-  }, [positions]);
+    return { zoom: Math.max(0.42, Math.min(0.68, zoom)), x, y };
+  }, []); // Static viewport
 
   // Animation states driven by scrollProgress + Run trigger
   const [isRunning, setIsRunning] = useState(false);
@@ -160,6 +173,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
   const enableTyping = scrollProgress >= 0.68;
   const enableUploading = scrollProgress >= 0.78;
   const showRunBtn = scrollProgress >= 0.88;
+  const requireRunClick = scrollProgress >= 0.94 && !isRunning && !imageGenDone;
 
   // Typewriter effect logic
   useEffect(() => {
@@ -224,6 +238,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
   // Trigger Run AI Pipeline
   const handleRunWorkflow = () => {
     if (isRunning || (imageGenDone && videoGenDone)) return;
+    if (onRun) onRun();
     setIsRunning(true);
 
     // Step 1: Run ImageGen (2.2s)
@@ -335,11 +350,18 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative">
           <div className="flex items-center gap-1.5 text-[11px] text-white/40 font-medium">
             <Lock size={11} className="opacity-60" />
             Interactive Demo · Drag nodes to move
           </div>
+
+          {/* RUN BUTTON TOOLTIP */}
+          {requireRunClick && (
+            <div className="absolute right-0 -bottom-9 bg-accent-lime text-black px-3 py-1 rounded-lg text-[11px] font-bold shadow-2xl flex items-center gap-1.5 animate-bounce z-50 whitespace-nowrap">
+              <span>⚡ Vui lòng bấm Run Workflow để tiếp tục!</span>
+            </div>
+          )}
 
           {/* RUN BUTTON */}
           {showRunBtn && (
@@ -351,6 +373,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
                   ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300 animate-pulse'
                   : imageGenDone && videoGenDone
                   ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300'
+                  : requireRunClick
+                  ? 'bg-accent-lime text-black scale-110 shadow-[0_0_25px_rgba(132,204,22,0.8)] animate-bounce border-2 border-white'
                   : 'bg-accent-lime text-black hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(132,204,22,0.5)] animate-pulse'
               }`}
             >
@@ -386,9 +410,12 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
         <svg className="absolute inset-0 w-[5000px] h-[5000px] pointer-events-none z-0">
           <defs>
             <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#84cc16" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#22c55e" stopOpacity="0.9" />
+              <stop offset="0%" stopColor="rgba(198,241,53,0.4)" />
+              <stop offset="100%" stopColor="rgba(198,241,53,0.95)" />
             </linearGradient>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="rgba(198,241,53,0.85)" />
+            </marker>
           </defs>
 
           {/* Edges into ImageGen */}
@@ -400,7 +427,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="2"
+              strokeWidth="1.5"
+              markerEnd="url(#arrowhead)"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -412,7 +440,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="2"
+              strokeWidth="1.5"
+              markerEnd="url(#arrowhead)"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -424,7 +453,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="2"
+              strokeWidth="1.5"
+              markerEnd="url(#arrowhead)"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -438,7 +468,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="2"
+              strokeWidth="1.5"
+              markerEnd="url(#arrowhead)"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -450,7 +481,8 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="2"
+              strokeWidth="1.5"
+              markerEnd="url(#arrowhead)"
               className="transition-all duration-500 animate-pulse"
             />
           )}
