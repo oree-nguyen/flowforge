@@ -6,102 +6,7 @@ import { RecenterButton } from './RecenterButton';
 import { PropertiesPanel } from './PropertiesPanel';
 import { Lock } from 'lucide-react';
 
-// ─────────────────────────────────────────────
-// Dữ liệu workflow demo đã cập nhật từ file demo_workflow_1785078570786.json
-// ─────────────────────────────────────────────
-const DEMO_WORKFLOW_DATA = {
-  nodes: [
-    {
-      id: 'node_1785078135724',
-      type: 'input.text',
-      position: { x: 1158.65, y: 199.20 },
-      data: {
-        text: 'Tạo ảnh cậu bé đang chơi xe ô tô.',
-        nodeName: 'input_text_1',
-      },
-    },
-    {
-      id: 'node_1785078059250',
-      type: 'input.image',
-      position: { x: 1163.33, y: 442.87 },
-      data: {
-        file: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop&q=80',
-        imageUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop&q=80',
-        nodeName: 'input_image_1',
-      },
-    },
-    {
-      id: 'node_1785078086464',
-      type: 'ai.imageGen',
-      position: { x: 1564.15, y: 233.35 },
-      data: {
-        model: 'google/gemini-banana-nano-2-pro',
-        nodeName: 'ai_image_1',
-        aspectRatio: '1:1',
-        output: {
-          previewUrl: 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&auto=format&fit=crop&q=80'
-        }
-      },
-    },
-    {
-      id: 'node_1785078196386_79',
-      type: 'input.text',
-      position: { x: 1607.72, y: 643.08 },
-      data: {
-        text: 'Tạo video cầu bé đang chơi xe ô tô',
-        nodeName: 'input_text_2',
-      },
-    },
-    {
-      id: 'node_1785078245473',
-      type: 'ai.videoGen',
-      position: { x: 2012.82, y: 339.72 },
-      data: {
-        model: 'google/veo-3.1-pro',
-        nodeName: 'ai_video_1',
-        aspectRatio: '16:9',
-        output: {
-          previewUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZhcTBxaTFhZWhwZHA3dWxpdnRmcDVwZnkyZXRocDRnZnZhbWVzZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R1tvI9svvjDDy267/giphy.gif'
-        }
-      },
-    },
-  ],
-  edges: [
-    {
-      id: 'e_1785078161553',
-      source: 'node_1785078135724',
-      target: 'node_1785078086464',
-      sourceHandle: 'out',
-      targetHandle: 'prompt',
-    },
-    {
-      id: 'e_1785078135724',
-      source: 'node_1785078059250',
-      target: 'node_1785078086464',
-      sourceHandle: 'out',
-      targetHandle: 'image',
-    },
-    {
-      id: 'e_1785078459911',
-      source: 'node_1785078196386_79',
-      target: 'node_1785078245473',
-      sourceHandle: 'out',
-      targetHandle: 'text',
-    },
-    {
-      id: 'e_1785078482142',
-      source: 'node_1785078086464',
-      target: 'node_1785078245473',
-      sourceHandle: 'out',
-      targetHandle: 'image',
-    },
-  ],
-  viewport: {
-    zoom: 0.55,
-    x: -560,
-    y: -50,
-  },
-};
+import demoWorkflowRaw from '../data/demoWorkflowData.json';
 
 // ─────────────────────────────────────────────
 // READ-ONLY MODE: Landing page embedded demo
@@ -112,6 +17,8 @@ export function DemoCanvas() {
   useEffect(() => {
     // Save the real workflow state so we can restore it later
     savedStateRef.current = canvasEngine.serialize();
+
+    const rawCanvasData = (demoWorkflowRaw as any).canvasData || demoWorkflowRaw;
 
     // Convert base64 data URIs to lightweight Blob URLs for smooth rendering
     const convertDataUri = (str: any) => {
@@ -135,7 +42,7 @@ export function DemoCanvas() {
       return str;
     };
 
-    const sanitizedNodes = (DEMO_WORKFLOW_DATA.nodes || []).map((node: any) => {
+    const sanitizedNodes = (rawCanvasData.nodes || []).map((node: any) => {
       const data = { ...node.data };
       if (data.file) {
         data.file = convertDataUri(data.file);
@@ -150,10 +57,15 @@ export function DemoCanvas() {
       return { ...node, data };
     });
 
-    // Load the demo workflow
+    // Load the exact demo workflow with optimized viewport for demo canvas
     canvasEngine.deserialize({
-      ...DEMO_WORKFLOW_DATA,
-      nodes: sanitizedNodes
+      nodes: sanitizedNodes,
+      edges: rawCanvasData.edges || [],
+      viewport: {
+        zoom: 0.48,
+        x: -500,
+        y: -60
+      }
     } as any);
 
     return () => {
