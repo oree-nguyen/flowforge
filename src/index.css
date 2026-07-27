@@ -40,8 +40,15 @@
     @apply bg-canvas text-text-primary font-sans antialiased;
     margin: 0;
     padding: 0;
+    /* Default: allow scroll (for Landing Page) */
+    overflow: auto;
+    touch-action: auto;
+  }
+
+  /* Workflow editor: lock scroll and touch to prevent accidental panning */
+  body[data-page="workflow"] {
     overflow: hidden;
-    touch-action: none; /* Prevent default browser pinch-zoom/scroll on touch devices */
+    touch-action: none;
   }
 }
 

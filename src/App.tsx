@@ -49,7 +49,14 @@ function App() {
   const navigateTo = (page: 'landing' | 'workflow') => {
     setRoute(page);
     window.location.hash = page === 'workflow' ? '#/workflow' : '#/landing';
+    // Toggle body scroll lock: only lock for workflow editor
+    document.body.dataset.page = page;
   };
+
+  // Set initial body data-page on mount
+  useEffect(() => {
+    document.body.dataset.page = route;
+  }, [route]);
 
   // Hooks
   useAutoSave();
