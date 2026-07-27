@@ -272,15 +272,40 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
     }
   };
 
-  // Helper to compute node center port position
+  // Helper to compute exact node port handle positions for 100% pixel-perfect wire alignment
   const getPortPos = (nodeId: string, type: 'out' | 'in', index = 0) => {
     const pos = positions[nodeId] || { x: 0, y: 0 };
-    if (type === 'out') {
-      return { x: pos.x + 300, y: pos.y + 110 };
+
+    // 1. Input Text Nodes (node_1785078061639, node_1785078196386_79)
+    if (nodeId.includes('61639') || nodeId.includes('196386')) {
+      if (type === 'out') return { x: pos.x + 260, y: pos.y + 92 };
+      return { x: pos.x, y: pos.y + 92 };
     }
-    const step = 80;
-    const startY = pos.y + 70;
-    return { x: pos.x, y: startY + index * step };
+
+    // 2. Input Image Nodes (node_1785078059250, node_1785078056303)
+    if (nodeId.includes('59250') || nodeId.includes('56303')) {
+      if (type === 'out') return { x: pos.x + 260, y: pos.y + 112 };
+      return { x: pos.x, y: pos.y + 112 };
+    }
+
+    // 3. AI Image Gen Node (node_1785078086464) -> Frame 320x320 (aspect 1:1)
+    if (nodeId.includes('86464')) {
+      if (type === 'out') return { x: pos.x + 320, y: pos.y + 160 };
+      // Port inputs on left: 0 -> Text (120), 1 -> Image (160), 2 -> File (200)
+      const inputYOffsets = [120, 160, 200];
+      return { x: pos.x - 16, y: pos.y + (inputYOffsets[index] ?? 160) };
+    }
+
+    // 4. AI Video Gen Node (node_1785078245473) -> Frame 320x180 (aspect 16:9)
+    if (nodeId.includes('45473')) {
+      if (type === 'out') return { x: pos.x + 320, y: pos.y + 90 };
+      // Port inputs on left: 0 -> Image (70), 1 -> Text (110)
+      const inputYOffsets = [70, 110];
+      return { x: pos.x - 16, y: pos.y + (inputYOffsets[index] ?? 90) };
+    }
+
+    if (type === 'out') return { x: pos.x + 260, y: pos.y + 100 };
+    return { x: pos.x, y: pos.y + 100 };
   };
 
   return (
@@ -559,7 +584,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
             </div>
 
             {/* Main Frame */}
-            <div className="w-[320px] bg-[#1a1a1a] rounded-xl relative overflow-hidden transition-all border-2 border-border-subtle hover:border-text-muted aspect-[9/16]">
+            <div className="w-[320px] bg-[#1a1a1a] rounded-xl relative overflow-hidden transition-all border-2 border-border-subtle hover:border-text-muted aspect-[1/1]">
               {/* Preview or Placeholder */}
               {isRunning && !imageGenDone ? (
                 <div className="w-full h-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
