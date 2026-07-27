@@ -291,16 +291,16 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
   const getPortPos = (nodeId: string, type: 'out' | 'in', index = 0) => {
     const pos = positions[nodeId] || { x: 0, y: 0 };
 
-    // 1. Input Text Nodes (node_1785078061639, node_1785078196386_79)
+    // 1. Input Text Nodes (node_1785078061639, node_1785078196386_79) -> Width 260, Height 191
     if (nodeId.includes('61639') || nodeId.includes('196386')) {
-      if (type === 'out') return { x: pos.x + 260, y: pos.y + 92 };
-      return { x: pos.x, y: pos.y + 92 };
+      if (type === 'out') return { x: pos.x + 260, y: pos.y + 95.5 };
+      return { x: pos.x, y: pos.y + 95.5 };
     }
 
-    // 2. Input Image Nodes (node_1785078059250, node_1785078056303)
+    // 2. Input Image Nodes (node_1785078059250, node_1785078056303) -> Width 260, Height 205
     if (nodeId.includes('59250') || nodeId.includes('56303')) {
-      if (type === 'out') return { x: pos.x + 260, y: pos.y + 112 };
-      return { x: pos.x, y: pos.y + 112 };
+      if (type === 'out') return { x: pos.x + 260, y: pos.y + 102.5 };
+      return { x: pos.x, y: pos.y + 102.5 };
     }
 
     // 3. AI Image Gen Node (node_1785078086464) -> Frame 320x320 (aspect 1:1)
@@ -308,7 +308,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
       if (type === 'out') return { x: pos.x + 320, y: pos.y + 160 };
       // Port inputs on left: 0 -> Text (120), 1 -> Image (160), 2 -> File (200)
       const inputYOffsets = [120, 160, 200];
-      return { x: pos.x - 16, y: pos.y + (inputYOffsets[index] ?? 160) };
+      return { x: pos.x - 26, y: pos.y + (inputYOffsets[index] ?? 160) };
     }
 
     // 4. AI Video Gen Node (node_1785078245473) -> Frame 320x180 (aspect 16:9)
@@ -316,7 +316,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
       if (type === 'out') return { x: pos.x + 320, y: pos.y + 90 };
       // Port inputs on left: 0 -> Image (70), 1 -> Text (110)
       const inputYOffsets = [70, 110];
-      return { x: pos.x - 16, y: pos.y + (inputYOffsets[index] ?? 90) };
+      return { x: pos.x - 26, y: pos.y + (inputYOffsets[index] ?? 90) };
     }
 
     if (type === 'out') return { x: pos.x + 260, y: pos.y + 100 };
