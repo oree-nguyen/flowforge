@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Globe, ArrowRight, Play, ChevronRight, Layers, Cpu, ShieldCheck } from 'lucide-react';
+import { Globe, ArrowRight, Play, ChevronRight, Cpu, Layers, ShieldCheck } from 'lucide-react';
 import { DemoCanvas } from './DemoCanvas';
+import { useDemoScroll } from '../hooks/useDemoScroll';
 
 interface LandingPageProps {
   onOpenWorkflow: () => void;
@@ -8,6 +9,8 @@ interface LandingPageProps {
 
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
+  const demoScrollRef = useRef<HTMLDivElement>(null);
+  const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
 
   // Multi-language text dictionary
   const t = {
@@ -194,8 +197,12 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           </a>
         </div>
 
-        {/* --- WORKFLOW CANVAS: LIVE INTERACTIVE (real canvasEngine + demo nodes) --- */}
-        <DemoCanvas />
+        {/* --- STICKY SCROLL-DRIVEN WORKFLOW DEMO --- */}
+        <div ref={demoScrollRef} className="relative w-full h-[300vh] my-10">
+          <div className="sticky top-20 w-full z-30">
+            <DemoCanvas scrollProgress={scrollProgress} isVisible={isVisible} />
+          </div>
+        </div>
       </section>
 
       {/* --- SECTION 2: VIDEO SHOWCASE (SCROLL-TRIGGERED STAGGER ANIMATION) --- */}
