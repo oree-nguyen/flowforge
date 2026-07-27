@@ -276,12 +276,15 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-2xl border border-white/15 bg-[#0C0C0E] overflow-hidden shadow-2xl"
+      className="relative w-full rounded-2xl border border-white/15 bg-[#0A0A0C] overflow-hidden shadow-2xl"
       style={{
         height: 540,
         transition: 'transform 700ms cubic-bezier(0.22,1,0.36,1), opacity 600ms ease-out',
         transform: isVisible ? 'translate(0, 0) scale(1)' : 'translate(24px, 40px) scale(0.93)',
         opacity: isVisible ? 1 : 0,
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 0)',
+        backgroundSize: `${24 * viewport.zoom}px ${24 * viewport.zoom}px`,
+        backgroundPosition: `${viewport.x % (24 * viewport.zoom)}px ${viewport.y % (24 * viewport.zoom)}px`,
       }}
       onPointerMove={handlePointerMoveNode}
       onPointerUp={handlePointerUpNode}
@@ -362,7 +365,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="3.5"
+              strokeWidth="2"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -374,7 +377,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="3.5"
+              strokeWidth="2"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -386,7 +389,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="3.5"
+              strokeWidth="2"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -400,7 +403,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="3.5"
+              strokeWidth="2"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -412,7 +415,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               )}
               fill="none"
               stroke="url(#edgeGrad)"
-              strokeWidth="3.5"
+              strokeWidth="2"
               className="transition-all duration-500 animate-pulse"
             />
           )}
@@ -427,16 +430,19 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[textNode1.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, textNode1.id)}
-            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                 <span className="text-sm font-medium text-white">Input Text</span>
               </div>
               <span className="text-[10px] text-white/40 font-mono">text</span>
             </div>
-            <div className="p-4">
+            <div className="p-4 rounded-b-2xl overflow-hidden">
               <div className="bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
                 {typedText1 || <span className="text-white/30 italic">Waiting for prompt input...</span>}
                 {enableTyping && typedText1.length < fullText1.length && (
@@ -456,16 +462,19 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imgNode1.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imgNode1.id)}
-            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-400"></div>
                 <span className="text-sm font-medium text-white">Input Image</span>
               </div>
               <span className="text-[10px] text-white/40 font-mono">image</span>
             </div>
-            <div className="p-4">
+            <div className="p-4 rounded-b-2xl overflow-hidden">
               <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl overflow-hidden flex items-center justify-center">
                 {!img1Loaded && enableUploading ? (
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
@@ -498,16 +507,19 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imgNode2.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imgNode2.id)}
-            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-purple-400"></div>
                 <span className="text-sm font-medium text-white">Input Image</span>
               </div>
               <span className="text-[10px] text-white/40 font-mono">image</span>
             </div>
-            <div className="p-4">
+            <div className="p-4 rounded-b-2xl overflow-hidden">
               <div className="relative w-full h-[140px] bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl overflow-hidden flex items-center justify-center">
                 {!img2Loaded && enableUploading ? (
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer flex flex-col items-center justify-center gap-2">
@@ -540,18 +552,32 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[imageGenNode.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, imageGenNode.id)}
-            className="w-[320px] bg-[#1a1a1a] border border-[#2A2A2E] rounded-xl shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60 overflow-hidden"
+            className="w-[320px] bg-[#1a1a1a] rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.1)] cursor-grab active:cursor-grabbing transition-all duration-500 z-10 border-2 border-[#2A2A2E] hover:border-text-muted overflow-visible"
           >
-            <div className="px-4 py-3 bg-[#1C1C1F] border-b border-[#2A2A2E] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-yellow-400" />
-                <span className="text-xs font-medium text-white truncate max-w-[200px]" title="Google: Nano Banana 2 (Gemini 3.1 Flash Image)">
-                  Google: Nano Banana 2...
-                </span>
-              </div>
-              <span className="text-[10px] text-yellow-300 font-mono">AI Image</span>
+            {/* Floating Title (Outside Box) */}
+            <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
+              <Sparkles size={12} className="text-yellow-400" />
+              Google: Nano Banana 2...
             </div>
-            <div className="relative w-full h-[320px] bg-[#0A0A0C] flex items-center justify-center">
+
+            {/* Input Handles */}
+            <div className="absolute top-1/4 -left-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            <div className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            <div className="absolute top-3/4 -left-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+
+            {/* Top-left Play button simulation */}
+            <div className="absolute top-3 left-3 flex items-center justify-center w-6 h-6 bg-white rounded-full text-black shadow-lg z-20">
+              <Play size={12} className="ml-0.5" />
+            </div>
+
+            {/* Top-right Auto download toggle */}
+            <div className="absolute top-3 right-3 z-20 w-8 h-4 rounded-full bg-accent-lime flex items-center p-0.5 shadow-lg">
+              <div className="w-3 h-3 rounded-full bg-black translate-x-4"></div>
+            </div>
+
+            <div className="relative w-full h-[320px] bg-[#0A0A0C] flex items-center justify-center rounded-xl overflow-hidden">
               {isRunning && !imageGenDone ? (
                 /* Gemini Mesh Wave Animation Effect */
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
@@ -588,16 +614,19 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[textNode2.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, textNode2.id)}
-            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
+            className="w-[260px] bg-[#1C1C1F] rounded-2xl shadow-lg border border-[#2A2A2E] overflow-visible cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/50"
           >
-            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between">
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            
+            <div className="px-4 py-3 bg-white/5 border-b border-[#2A2A2E] flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                 <span className="text-sm font-medium text-white">Input Text</span>
               </div>
               <span className="text-[10px] text-white/40 font-mono">text</span>
             </div>
-            <div className="p-4">
+            <div className="p-4 rounded-b-2xl overflow-hidden">
               <div className="bg-[#0A0A0C] border border-[#2A2A2E] rounded-xl p-3 text-xs text-white/90 font-mono min-h-[60px] relative">
                 {typedText2 || <span className="text-white/30 italic">Waiting for prompt input...</span>}
                 {enableTyping && typedText2.length < fullText2.length && (
@@ -617,18 +646,31 @@ export function DemoCanvasScene({ scrollProgress, isVisible }: DemoCanvasScenePr
               top: positions[videoGenNode.id]?.y,
             }}
             onPointerDown={(e) => handlePointerDownNode(e, videoGenNode.id)}
-            className="w-[320px] bg-[#1a1a1a] border border-[#2A2A2E] rounded-xl shadow-2xl cursor-grab active:cursor-grabbing transition-all duration-500 z-10 hover:border-accent-lime/60 overflow-hidden"
+            className="w-[320px] bg-[#1a1a1a] rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-grab active:cursor-grabbing transition-all duration-500 z-10 border-2 border-[#2A2A2E] hover:border-text-muted overflow-visible"
           >
-            <div className="px-4 py-3 bg-[#1C1C1F] border-b border-[#2A2A2E] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Play size={14} className="text-green-400" />
-                <span className="text-xs font-medium text-white truncate max-w-[200px]" title="Google Veo 3.1 Pro">
-                  Google Veo 3.1 Pro
-                </span>
-              </div>
-              <span className="text-[10px] text-green-300 font-mono">AI Video</span>
+            {/* Floating Title (Outside Box) */}
+            <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
+              <Play size={12} className="text-green-400" />
+              Google Veo 3.1 Pro
             </div>
-            <div className="relative w-full h-[240px] bg-[#0A0A0C] flex items-center justify-center">
+
+            {/* Input Handles */}
+            <div className="absolute top-1/3 -left-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            <div className="absolute top-2/3 -left-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+            {/* Output Handle */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 rounded-full bg-[#1c1c1f] border-2 border-border-subtle z-10"></div>
+
+            {/* Top-left Play button simulation */}
+            <div className="absolute top-3 left-3 flex items-center justify-center w-6 h-6 bg-white rounded-full text-black shadow-lg z-20">
+              <Play size={12} className="ml-0.5" />
+            </div>
+
+            {/* Top-right Auto download toggle */}
+            <div className="absolute top-3 right-3 z-20 w-8 h-4 rounded-full bg-accent-lime flex items-center p-0.5 shadow-lg">
+              <div className="w-3 h-3 rounded-full bg-black translate-x-4"></div>
+            </div>
+
+            <div className="relative w-full h-[240px] bg-[#0A0A0C] flex items-center justify-center rounded-xl overflow-hidden">
               {isRunning && !videoGenDone && imageGenDone ? (
                 /* Generative UI wave for Video */
                 <div className="absolute inset-0 bg-gradient-to-br from-[#0a192f] via-[#112240] to-[#233554] animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
