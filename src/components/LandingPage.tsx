@@ -20,6 +20,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
+  const [demoCompleted, setDemoCompleted] = useState(false);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
 
@@ -332,9 +333,13 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           <DemoCanvas 
             scrollProgress={scrollProgress} 
             isVisible={isVisible} 
+            onComplete={() => setDemoCompleted(true)} 
           />
         </div>
       </div>
+
+      {/* --- CONTENT BELOW DEMO (UNLOCKED ONLY AFTER IMAGE & VIDEO RENDER COMPLETES) --- */}
+      <div className={`transition-all duration-1000 ease-in-out ${demoCompleted ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden pointer-events-none'}`}>
 
       {/* --- SECTION 2: VIDEO SHOWCASE (SCROLL-TRIGGERED STAGGER ANIMATION) --- */}
       <section id="showcase" ref={showcaseRef} className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10">
@@ -518,6 +523,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </div>
         <p>© 2026 {t.footerRights}</p>
       </footer>
+      </div>
 
     </div>
   );

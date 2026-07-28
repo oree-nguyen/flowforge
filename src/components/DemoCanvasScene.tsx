@@ -16,6 +16,7 @@ interface DemoCanvasSceneProps {
   scrollProgress: number; // 0 to 1
   isVisible: boolean;
   onRun?: () => void;
+  onComplete?: () => void;
 }
 
 // Convert Base64 data URIs to Blob URLs
@@ -40,7 +41,7 @@ const convertDataUri = (str: any) => {
   return str;
 };
 
-export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvasSceneProps) {
+export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }: DemoCanvasSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Extract and sanitize raw nodes & edges
@@ -229,6 +230,13 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
       handleRunWorkflow();
     }
   }, [scrollProgress, isRunning, imageGenDone, videoGenDone]);
+
+  // Notify parent component when generation finishes
+  useEffect(() => {
+    if (imageGenDone && videoGenDone && onComplete) {
+      onComplete();
+    }
+  }, [imageGenDone, videoGenDone, onComplete]);
 
   // Reset Run states if user scrolls back up
   useEffect(() => {
