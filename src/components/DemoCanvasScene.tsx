@@ -172,8 +172,6 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
   const showEdges2 = scrollProgress >= 0.60;
   const enableTyping = scrollProgress >= 0.68;
   const enableUploading = scrollProgress >= 0.78;
-  const showRunBtn = scrollProgress >= 0.88;
-  const requireRunClick = scrollProgress >= 0.94 && !isRunning && !imageGenDone;
 
   // Typewriter effect logic
   useEffect(() => {
@@ -224,6 +222,13 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
       clearTimeout(t2);
     };
   }, [enableUploading]);
+
+  // Auto-trigger Run AI Pipeline when scrollProgress reaches 0.85
+  useEffect(() => {
+    if (scrollProgress >= 0.85 && !isRunning && !imageGenDone && !videoGenDone) {
+      handleRunWorkflow();
+    }
+  }, [scrollProgress, isRunning, imageGenDone, videoGenDone]);
 
   // Reset Run states if user scrolls back up
   useEffect(() => {
@@ -380,52 +385,24 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun }: DemoCanvas
           </span>
         </div>
 
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-[11px] text-white/40 font-medium">
             <Lock size={11} className="opacity-60" />
             Interactive Demo · Drag nodes to move
           </div>
 
-          {/* RUN BUTTON TOOLTIP */}
-          {requireRunClick && (
-            <div className="absolute right-0 -bottom-9 bg-accent-lime text-black px-3 py-1 rounded-lg text-[11px] font-bold shadow-2xl flex items-center gap-1.5 animate-bounce z-50 whitespace-nowrap">
-              <span>⚡ Vui lòng bấm Run Workflow để tiếp tục!</span>
+          {/* Status Indicator */}
+          {isRunning ? (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-xs font-bold animate-pulse">
+              <RefreshCw size={13} className="animate-spin" />
+              <span>Generating AI Pipeline...</span>
             </div>
-          )}
-
-          {/* RUN BUTTON */}
-          {showRunBtn && (
-            <button
-              onClick={handleRunWorkflow}
-              disabled={isRunning}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-xl font-bold text-xs transition-all shadow-lg ${
-                isRunning
-                  ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300 animate-pulse'
-                  : imageGenDone && videoGenDone
-                  ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300'
-                  : requireRunClick
-                  ? 'bg-accent-lime text-black scale-110 shadow-[0_0_25px_rgba(132,204,22,0.8)] animate-bounce border-2 border-white'
-                  : 'bg-accent-lime text-black hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(132,204,22,0.5)] animate-pulse'
-              }`}
-            >
-              {isRunning ? (
-                <>
-                  <RefreshCw size={13} className="animate-spin" />
-                  <span>Generating AI Pipeline...</span>
-                </>
-              ) : imageGenDone && videoGenDone ? (
-                <>
-                  <CheckCircle size={13} />
-                  <span>Completed {downloaded && '· Downloaded ⬇'}</span>
-                </>
-              ) : (
-                <>
-                  <Play size={13} className="fill-black" />
-                  <span>▶ Run Workflow</span>
-                </>
-              )}
-            </button>
-          )}
+          ) : imageGenDone && videoGenDone ? (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-bold">
+              <CheckCircle size={13} />
+              <span>Completed {downloaded && '· Downloaded ⬇'}</span>
+            </div>
+          ) : null}
         </div>
       </div>
 
