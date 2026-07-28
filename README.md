@@ -6,19 +6,29 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
+<p align="center">
+  <a href="README.md"><b>English</b></a> •
+  <a href="README_VI.md">Tiếng Việt</a> •
+  <a href="README_ZH.md">中文</a> •
+  <a href="README_FR.md">Français</a> •
+  <a href="README_RU.md">Русский</a> •
+  <a href="README_JA.md">日本語</a> •
+  <a href="README_KO.md">한국어</a>
+</p>
+
 # ⚡ FlowForge
 
-**Visual AI Workflow Builder — Xây dựng pipeline AI bằng kéo-thả, không cần code.**
+**Visual AI Workflow Builder — Drag-and-drop multi-modal AI pipelines, zero code required.**
 
-FlowForge là một ứng dụng web client-side cho phép bạn thiết kế, kết nối và chạy các pipeline AI phức tạp thông qua giao diện đồ họa trực quan (node-based). Kết nối với **400+ model AI** từ OpenRouter (GPT-4o, Claude, Gemini, Llama, Flux, Luma,...) — tất cả chạy trực tiếp trên trình duyệt, không cần backend.
+FlowForge is a 100% client-side web application designed to let you visually build, chain, and execute complex AI pipelines using interactive DAG node graphs. Connect **400+ AI models** from OpenRouter (GPT-4o, Claude, Gemini, Llama, FLUX, MiniMax, etc.) — all executed directly inside your browser with 100% data privacy and zero backend server costs.
 
 ---
 
-## 🖼️ Tổng quan
+## 🖼️ Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  TopBar (Tên workflow · Auto-save · Run · Import/Export)    │
+│  TopBar (Workflow Name · Auto-save · Run · Import/Export)   │
 ├────┬────────────────────────────────────────────────┬───────┤
 │    │                                                │       │
 │ T  │            ✦ Canvas Workspace ✦                │ Pro-  │
@@ -36,70 +46,70 @@ FlowForge là một ứng dụng web client-side cho phép bạn thiết kế, k
 
 ---
 
-## ✨ Tính năng chính
+## ✨ Features
 
-### 🧩 Node-based Visual Editor
-- **Kéo-thả** để tạo và sắp xếp các node trên canvas vô hạn.
-- **Kết nối dây** (edges) giữa các node để xây dựng luồng dữ liệu.
-- **Zoom & Pan** mượt mà bằng cuộn chuột, kéo thả, hoặc cử chỉ cảm ứng.
-- **Undo/Redo** không giới hạn với `Ctrl+Z` / `Ctrl+Shift+Z`.
-- **Multi-select** node bằng `Ctrl+Click`.
+### 🧩 Node-Based Visual Editor
+- **Drag-and-Drop** workspace to arrange nodes freely on an infinite canvas.
+- **Wire Connections (Edges)** between node ports to establish dynamic data flows.
+- **Smooth Zoom & Pan** using mouse wheel, touch gestures, or dedicated canvas controls.
+- **Unlimited Undo/Redo** via `Ctrl+Z` / `Ctrl+Shift+Z`.
+- **Multi-Node Selection** using `Ctrl+Click`.
 
-### 🤖 Tích hợp 400+ Model AI qua OpenRouter
-- **Text Generation:** GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, Llama 3.1, DeepSeek, Qwen,...
-- **Image Generation:** DALL·E 3, Stable Diffusion XL, Flux, Midjourney,...
-- **Video Generation:** Luma Dream Machine, Runway Gen-3, MiniMax,...
-- **Audio / Speech / Embeddings / Rerank** — hỗ trợ đầy đủ các loại modality.
-- Duyệt model theo **provider** và **category** ngay trong ứng dụng.
-- Hỗ trợ nhiều API key cùng lúc, đặt tên và chuyển đổi nhanh.
+### 🤖 400+ AI Models via OpenRouter
+- **Text Generation:** GPT-4o, Claude 3.5 Sonnet, Gemini 2.0 Flash, Llama 3.1, DeepSeek, Qwen, etc.
+- **Image Generation:** DALL·E 3, Stable Diffusion XL, FLUX.1, Midjourney, etc.
+- **Video Generation:** Luma Dream Machine, Runway Gen-3, MiniMax, etc.
+- **Audio / Speech / Embeddings / Rerank** — full multi-modal support.
+- **Browse Models** by provider and modality directly within the app.
+- **Multi-API Key Management**: Store multiple keys, rename them, and switch between provider keys seamlessly.
 
-### 📄 Trích xuất nội dung File thông minh
-- Upload trực tiếp: `.pdf`, `.docx`, `.doc`, `.txt`, `.md`, `.csv`, `.json`, `.xml`, `.html`.
-- **PDF:** Trích xuất text qua `pdfjs-dist` + giữ base64 cho các model hỗ trợ đọc PDF gốc (Claude).
-- **DOCX:** Chuyển đổi sang text thuần qua `mammoth`.
-- Nội dung file được tự động format sang **Markdown** trước khi gửi API — giúp LLM đọc hiểu chính xác hơn.
+### 📄 Smart File Content Extraction
+- **Direct Upload Support:** `.pdf`, `.docx`, `.doc`, `.txt`, `.md`, `.csv`, `.json`, `.xml`, `.html`.
+- **PDF Extraction:** Text parsing via `pdfjs-dist` + native PDF base64 pass-through for vision-capable models (e.g. Claude).
+- **DOCX Extraction:** Converts Word documents into clean text via `mammoth`.
+- **Auto Markdown Conversion:** Formats file text into clean Markdown before sending to LLM APIs for optimal context comprehension.
 
-### 💾 Lưu trữ & Đồng bộ
-- **Auto-save** liên tục vào `localStorage` + `IndexedDB`.
-- **Multi-workflow:** Tạo, lưu, và chuyển đổi giữa nhiều workflow.
-- **Import/Export:** Xuất workflow dưới dạng JSON, import lại bất kỳ lúc nào.
-- **Google Drive Sync:** Đồng bộ workflow lên Google Drive (OAuth2).
-- **Recovery Mode:** Khôi phục workflow từ bản backup IndexedDB khi mất dữ liệu.
+### 💾 Local Storage & Cloud Auto-Sync
+- **Continuous Auto-Save** to `localStorage` and `IndexedDB`.
+- **Multi-Workflow Management:** Create, save, rename, and switch between workflows instantly.
+- **Import/Export:** Export complete DAG graphs as JSON and import anytime.
+- **Google Drive Sync:** OAuth2 integration to back up and sync workflows to personal Google Drive.
+- **Recovery Mode:** Auto-recover graphs from IndexedDB backups if local data is cleared.
 
-### 📱 Tối ưu Cảm ứng (Mobile & Tablet)
-- **Pinch-to-Zoom:** Chụm 2 ngón tay để thu phóng canvas.
-- **1-Finger Pan:** Vuốt 1 ngón trên vùng trống để di chuyển góc nhìn.
-- **Enlarged Touch Targets:** Vùng chạm port kết nối mở rộng 36×36px.
-- **Viewport meta** chặn browser zoom để trải nghiệm mượt như app native.
+### 📱 Touch-Optimized (Mobile & Tablet)
+- **Pinch-to-Zoom:** 2-finger zoom gesture.
+- **1-Finger Pan:** Smooth canvas panning on empty spaces.
+- **Enlarged Touch Targets:** Expanded 36×36px touch areas on node port handles.
+- **Viewport Lock:** Prevents accidental browser zooming for native app feel.
 
-### ⌨️ Phím tắt chuyên nghiệp
-| Phím | Hành động |
-|------|-----------|
+### ⌨️ Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
 | `Ctrl+Z` | Undo |
 | `Ctrl+Shift+Z` | Redo |
-| `Delete` / `Backspace` | Xóa node/edge đang chọn |
-| `Space` (giữ) | Chuyển sang chế độ Pan |
-| `Ctrl+S` | Lưu workflow |
-| `?` | Mở/đóng bảng phím tắt |
+| `Delete` / `Backspace` | Delete selected node/edge |
+| `Space` (hold) | Pan workspace mode |
+| `Ctrl+S` | Save workflow |
+| `?` | Toggle keyboard shortcuts modal |
 
 ---
 
-## 🗂️ Các loại Node
+## 🗂️ Node Types
 
-| Node | Mô tả | Đầu vào | Đầu ra |
-|------|--------|---------|--------|
-| **📝 Input Text** | Nhập văn bản tự do | — | Text |
-| **🖼️ Input Image** | Upload ảnh | — | Image URL |
-| **📄 Other Input (File)** | Upload file (PDF, DOCX, TXT,...) | — | Extracted Text |
-| **🤖 AI Text Gen** | Gọi LLM để sinh văn bản | Text + File | Generated Text |
-| **🎨 AI Image Gen** | Gọi model AI tạo ảnh | Text Prompt | Image |
-| **🎬 AI Video Gen** | Gọi model AI tạo video | Text + Image | Video |
-| **📥 Download** | Tải output về máy | Any output | File download |
-| **📌 Note** | Ghi chú trên canvas | — | — |
+| Node | Description | Input | Output |
+|------|-------------|-------|--------|
+| **📝 Input Text** | Plain text or prompt input | — | Text |
+| **🖼️ Input Image** | Image file or URL upload | — | Image URL |
+| **📄 Other Input (File)** | File upload (PDF, DOCX, TXT, etc.) | — | Extracted Text |
+| **🤖 AI Text Gen** | Call LLM for text generation | Text + File | Generated Text |
+| **🎨 AI Image Gen** | Call AI model for image synthesis | Text Prompt | Image |
+| **🎬 AI Video Gen** | Call AI model for video generation | Text + Image | Video |
+| **📥 Download** | Save output to disk | Any output | File Download |
+| **📌 Note** | Markdown notes on canvas | — | — |
 
 ---
 
-## 🏗️ Kiến trúc dự án
+## 🏗️ Project Architecture
 
 ```
 flowforge/
@@ -134,175 +144,98 @@ flowforge/
     │   ├── useKeyboardShortcuts.ts #  Global keyboard shortcut handler
     │   └── useTouchGestures.ts   #   Touch pinch-zoom & pan gestures
     │
-    ├── components/               # 🧱 UI Components
-    │   ├── TopBar.tsx            #   App header (name, save, run, import/export)
-    │   ├── Toolbar.tsx           #   Floating tool palette (left sidebar)
-    │   ├── Canvas.tsx            #   Canvas wrapper
-    │   ├── PropertiesPanel.tsx   #   Node property editor (right panel)
-    │   ├── ZoomControls.tsx      #   Zoom +/−/reset/fit buttons
-    │   ├── RecenterButton.tsx    #   Quick recenter viewport button
-    │   ├── AddNodePopover.tsx    #   Add node menu + model browser
-    │   ├── SettingsModal.tsx     #   Settings (API keys, storage, Drive sync)
-    │   ├── ImageLibraryModal.tsx #   Saved images browser
-    │   ├── RecoveryModal.tsx     #   Workflow recovery from backups
-    │   ├── ShortcutGuide.tsx     #   Keyboard shortcut overlay
-    │   ├── ToastContainer.tsx    #   Custom toast notifications
-    │   ├── ModelSelector.tsx     #   Model picker dropdown
-    │   │
-    │   ├── canvas/               #   Canvas internals
-    │   │   └── CanvasRenderer.tsx #    Node/edge rendering + pointer events
-    │   │
-    │   ├── nodes/                #   Custom node components
-    │   │   ├── AITextGenNode.tsx
-    │   │   ├── AIImageGenNode.tsx
-    │   │   ├── AIVideoGenNode.tsx
-    │   │   ├── InputTextNode.tsx
-    │   │   ├── InputImageNode.tsx
-    │   │   ├── InputFileNode.tsx
-    │   │   ├── NoteNode.tsx
-    │   │   ├── NoteFrameNode.tsx
-    │   │   └── UtilDownloadNode.tsx
-    │   │
-    │   └── properties/           #   Node property forms
-    │       ├── TextGenProperties.tsx
-    │       ├── ImageGenProperties.tsx
-    │       ├── VideoGenProperties.tsx
-    │       ├── FileProperties.tsx
-    │       └── DownloadProperties.tsx
-    │
-    └── types/                    # 📐 TypeScript type definitions
+    └── components/               # 🧱 UI Components
 ```
 
 ---
 
-## 🚀 Cài đặt & Chạy
+## 🚀 Getting Started
 
-### Yêu cầu
+### Prerequisites
 - **Node.js** ≥ 18
 - **npm** ≥ 9
 
-### Cài đặt
+### Installation
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/<your-username>/flowforge.git
 cd flowforge
 
-# Cài dependencies
+# Install dependencies
 npm install
 ```
 
-### Chạy Development Server
+### Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Mở trình duyệt tại `http://localhost:5173`
+Open browser at `http://localhost:5173`
 
-### Build Production
+### Production Build
 
 ```bash
 npm run build
 ```
 
-Output được tạo trong thư mục `dist/`, sẵn sàng deploy lên bất kỳ hosting tĩnh nào (Vercel, Netlify, GitHub Pages, Cloudflare Pages,...).
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
+The output in `dist/` is ready to deploy to any static host (GitHub Pages, Vercel, Netlify, Cloudflare Pages).
 
 ---
 
-## ⚙️ Cấu hình
+## ⚙️ Configuration
 
 ### OpenRouter API Key
+1. Create a free account at [openrouter.ai](https://openrouter.ai/).
+2. Generate an API Key at [openrouter.ai/keys](https://openrouter.ai/keys).
+3. Open **Settings** (⚙️) in FlowForge → Paste key → **Test & Save**.
+4. Supports **multiple API keys** with custom aliases and fast key switching.
 
-1. Đăng ký tài khoản tại [openrouter.ai](https://openrouter.ai/).
-2. Tạo API Key tại [openrouter.ai/keys](https://openrouter.ai/keys).
-3. Trong FlowForge, mở **Settings** (⚙️) → dán API Key → **Test & Save**.
-4. Hỗ trợ quản lý **nhiều API key** cùng lúc — đặt tên, chuyển đổi nhanh giữa các key.
-
-### Google Drive Sync (tuỳ chọn)
-
-1. Tạo Google Cloud project → bật Google Drive API.
-2. Tạo OAuth2 Client ID (Web application).
-3. Trong FlowForge Settings → nhập Client ID → **Authorize**.
-4. Workflow sẽ được sync lên Google Drive dưới dạng JSON.
+### Google Drive Sync (Optional)
+1. Create a Google Cloud project and enable Google Drive API.
+2. Create an OAuth2 Client ID (Web Application).
+3. In FlowForge Settings → Enter Client ID → **Authorize**.
+4. Workflows automatically sync to Google Drive as JSON.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Công nghệ | Vai trò |
-|-------|-----------|---------|
+| Layer | Technology | Role |
+|-------|------------|------|
 | **UI Framework** | React 19 | Component-based rendering |
 | **Language** | TypeScript 6.0 | Type safety |
 | **Build Tool** | Vite 8.1 | Dev server + production bundling |
 | **Styling** | Tailwind CSS 3.4 | Utility-first CSS |
-| **State** | Zustand 4.5 + Zundo | Global state + undo/redo middleware |
-| **Animation** | Framer Motion 11.5 | Smooth transitions & micro-animations |
-| **Icons** | Lucide React | Consistent icon set |
+| **State** | Zustand 4.5 + Zundo | Global state + undo/redo |
+| **Animation** | Framer Motion 11.5 | Smooth transitions |
+| **Icons** | Lucide React | Modern icon set |
 | **PDF Parser** | pdfjs-dist 6.1 | Client-side PDF text extraction |
 | **DOCX Parser** | Mammoth 1.12 | Client-side Word document parsing |
 | **Storage** | idb 8.0 (IndexedDB) | Persistent media & workflow storage |
 | **AI Gateway** | OpenRouter API | Access to 400+ AI models |
 | **Cloud Sync** | Google Drive API | Workflow backup & sync |
-| **Linter** | OxLint | Fast Rust-based linting |
 
 ---
 
-## 📐 Luồng hoạt động (Data Flow)
+## 🤝 Contributing
 
-```mermaid
-graph LR
-    A[Input Text] -->|text| D[AI Text Gen]
-    B[Input Image] -->|image| E[AI Image Gen]
-    C[Input File] -->|extracted text| D
-    C -->|base64 PDF| D
-    D -->|output| F[Download]
-    D -->|chained output| G[AI Text Gen #2]
-    E -->|image URL| H[AI Video Gen]
-    E -->|image| F
-```
-
-1. **Người dùng** tạo các node Input (text, ảnh, file) và kết nối tới các node AI.
-2. **Canvas Engine** phân tích DAG (Directed Acyclic Graph) để xác định thứ tự thực thi.
-3. Mỗi node AI gửi request tới **OpenRouter API** với prompt được tổng hợp từ tất cả input kết nối.
-4. Output được hiển thị trực tiếp trên node và có thể chain sang node tiếp theo.
-5. Kết quả cuối cùng có thể tải về qua node **Download**.
-
----
-
-## 🤝 Đóng góp
-
-Mọi đóng góp đều được chào đón! Để bắt đầu:
-
-1. **Fork** repository này.
-2. Tạo branch mới: `git checkout -b feature/ten-tinh-nang`
-3. Commit thay đổi: `git commit -m "Add: mô tả ngắn"`
-4. Push và tạo **Pull Request**.
-
-### Quy tắc commit
-```
-feat:     Tính năng mới
-fix:      Sửa lỗi
-refactor: Tái cấu trúc code (không thay đổi hành vi)
-style:    Thay đổi CSS/UI
-docs:     Cập nhật tài liệu
-perf:     Tối ưu hiệu suất
-```
+Contributions are welcome!
+1. **Fork** the repository.
+2. Create feature branch: `git checkout -b feature/your-feature-name`
+3. Commit changes: `git commit -m "feat: add amazing feature"`
+4. Push to branch: `git push origin feature/your-feature-name`
+5. Open a **Pull Request**.
 
 ---
 
 ## 📄 License
 
-Dự án này được phát hành dưới giấy phép [MIT License](LICENSE).
+Distributed under the [MIT License](LICENSE).
 
 ---
 
 <p align="center">
-  <strong>FlowForge</strong> — Biến ý tưởng thành pipeline AI, chỉ bằng kéo-thả. ⚡
+  <strong>FlowForge</strong> — Turn AI ideas into visual DAG execution pipelines. ⚡
 </p>
