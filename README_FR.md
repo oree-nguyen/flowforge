@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-8.1-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/TailwindCSS-3.4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge" alt="License" />
 </p>
 
 <p align="center">
@@ -90,7 +90,7 @@ npm run build
 
 ## 📄 Licence
 
-Distribué sous la licence [MIT License](LICENSE).
+Distribué sous la licence [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
 
 ---
 
