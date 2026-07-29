@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { Play, Settings, Scissors, Copy, Plus, Trash2 } from 'lucide-react';
+import { Play, Settings, Copy, Plus, Trash2 } from 'lucide-react';
 import { canvasEngine, type NodeData } from '../../engine/canvasEngine';
 import { useCanvasEngine } from '../../engine/useCanvasEngine';
 import { useWorkflowStore } from '../../store/workflowStore';
