@@ -153,7 +153,7 @@ export function AIDubSubNode({ id, data, selected, onDisconnectStart }: NodeProp
       {/* Input Ports (Left) */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
         <div
-          className="w-8 h-8 rounded-full border border-indigo-400/50 bg-panel flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:border-indigo-300 transition-colors cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-indigo-400/50 bg-panel flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:border-indigo-300 cursor-crosshair shadow-md"
           title="Video Input (video_in)"
           data-target={`${id}:video_in`}
           data-portid="video_in"

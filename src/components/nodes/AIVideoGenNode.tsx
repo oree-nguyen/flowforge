@@ -151,7 +151,7 @@ export function AIVideoGenNode({ id, data, selected, onDisconnectStart }: NodePr
 
         {inputs.includes('image') && (
           <div 
-            className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
             title="Image Input"
             data-target={`${id}:image`}
             data-portid="image"
@@ -166,7 +166,7 @@ export function AIVideoGenNode({ id, data, selected, onDisconnectStart }: NodePr
 
         {inputs.includes('text') && (
           <div 
-            className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
             title="Text Input"
             data-target={`${id}:text`}
             data-portid="text"

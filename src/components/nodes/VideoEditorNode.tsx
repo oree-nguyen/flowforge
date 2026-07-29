@@ -323,7 +323,7 @@ export function VideoEditorNode({ id, data, selected, onDisconnectStart }: NodeP
       {/* Input Ports (Left) - Multi Connection Target */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
         <div
-          className="w-8 h-8 rounded-full border border-rose-400/50 bg-panel flex items-center justify-center text-rose-400 hover:text-rose-300 hover:border-rose-300 transition-colors cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-rose-400/50 bg-panel flex items-center justify-center text-rose-400 hover:text-rose-300 hover:border-rose-300 cursor-crosshair shadow-md"
           title="Video Inputs (videos_in - Nhận nhiều kết nối)"
           data-target={`${id}:videos_in`}
           data-portid="videos_in"
@@ -339,7 +339,7 @@ export function VideoEditorNode({ id, data, selected, onDisconnectStart }: NodeP
       {/* Output Port (Right) */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
         <div
-          className="w-8 h-8 rounded-full border border-emerald-400/50 bg-panel flex items-center justify-center text-emerald-400 hover:text-emerald-300 hover:border-emerald-300 transition-colors cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-emerald-400/50 bg-panel flex items-center justify-center text-emerald-400 hover:text-emerald-300 hover:border-emerald-300 cursor-crosshair shadow-md"
           title="Concatenated Video Output (video_out)"
           data-target={`${id}:video_out`}
           data-portid="video_out"

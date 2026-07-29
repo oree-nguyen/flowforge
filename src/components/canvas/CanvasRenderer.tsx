@@ -95,6 +95,7 @@ function NodeWrapper({
     >
       {/* Output port handle with expanded touch target */}
       <div
+        className="port-handle"
         style={{
           position: 'absolute',
           right: -16,
@@ -128,6 +129,7 @@ function NodeWrapper({
       {/* Input port handle - Only render default if not custom */}
       {!['ai.imageGen', 'ai.videoGen', 'ai.textGen', 'input.file'].includes(node.type) && (
         <div
+          className="port-handle"
           style={{
             position: 'absolute',
             left: -8,
@@ -350,9 +352,53 @@ export function CanvasRenderer() {
     }
 
     if (connDragRef.current) {
-      connDragPos.current = { x: e.clientX, y: e.clientY };
-      connDragRef.current = { ...connDragRef.current, x: e.clientX, y: e.clientY };
-      // Throttle re-renders for temp line using rAF
+      const srcId = connDragRef.current.sourceId;
+      const sourceNode = canvasEngine.getNode(srcId);
+      
+      // Query all port elements with data-target
+      const allPortEls = document.querySelectorAll('[data-target]');
+      let closestPort: { targetId: string; targetHandle: string; x: number; y: number; dist: number; el: HTMLElement } | null = null;
+      let minDist = 40; // 40px magnetic snap radius in screen space
+
+      allPortEls.forEach(el => {
+        const targetData = el.getAttribute('data-target');
+        if (!targetData) return;
+        const [targetId, targetHandle] = targetData.split(':');
+        if (!targetId || targetId === srcId) return;
+
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dist = Math.hypot(cx - e.clientX, cy - e.clientY);
+
+        if (dist < minDist) {
+          const tgtHandle = targetHandle || 'in';
+          let isValid = true;
+          if (sourceNode?.type === 'input.text' && tgtHandle === 'image') isValid = false;
+          if (sourceNode?.type === 'input.image' && tgtHandle === 'text') isValid = false;
+          if (sourceNode?.type === 'ai.audioGen' && tgtHandle === 'image') isValid = false;
+          if ((sourceNode?.type === 'input.image' || sourceNode?.type === 'ai.imageGen') && tgtHandle === 'file') isValid = false;
+
+          if (isValid) {
+            minDist = dist;
+            closestPort = { targetId, targetHandle: tgtHandle, x: cx, y: cy, dist, el: el as HTMLElement };
+          }
+        }
+      });
+
+      // Clear previous snap highlights
+      document.querySelectorAll('.port-snapped').forEach(el => el.classList.remove('port-snapped'));
+
+      if (closestPort) {
+        snappedPortRef.current = closestPort;
+        closestPort.el.classList.add('port-snapped');
+        connDragPos.current = { x: closestPort.x, y: closestPort.y };
+        connDragRef.current = { ...connDragRef.current, x: closestPort.x, y: closestPort.y };
+      } else {
+        snappedPortRef.current = null;
+        connDragPos.current = { x: e.clientX, y: e.clientY };
+        connDragRef.current = { ...connDragRef.current, x: e.clientX, y: e.clientY };
+      }
       setConnDragRender(Date.now());
     }
   }, [viewport.zoom]);
@@ -365,8 +411,27 @@ export function CanvasRenderer() {
       dragId.current = null;
     }
 
+    // Clear any port snap class
+    document.querySelectorAll('.port-snapped').forEach(el => el.classList.remove('port-snapped'));
+
     if (connDragRef.current) {
-      // Check if dropped on an input port
+      // 1. If snapped magnetically to a port, connect directly!
+      if (snappedPortRef.current) {
+        const { targetId, targetHandle } = snappedPortRef.current;
+        canvasEngine.addEdge({
+          id: `e_${Date.now()}`,
+          source: connDragRef.current.sourceId,
+          target: targetId,
+          sourceHandle: 'out',
+          targetHandle,
+        });
+        snappedPortRef.current = null;
+        connDragRef.current = null;
+        setConnDrag(null);
+        return;
+      }
+
+      // 2. Fallback: Check element under cursor
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const targetEl = el?.closest('[data-target]') as HTMLElement | null;
       const targetData = targetEl?.getAttribute('data-target');
@@ -626,8 +691,15 @@ export function CanvasRenderer() {
 
       {/* Temp connection line (screen space) */}
       {tempEdgeLine && (
-        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
-          <path d={tempEdgeLine} fill="none" stroke="rgba(198,241,53,0.7)" strokeWidth={2} strokeDasharray="6 3" />
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none', zIndex: 30 }}>
+          <path 
+            d={tempEdgeLine} 
+            fill="none" 
+            stroke={snappedPortRef.current ? "var(--accent-lime)" : "rgba(198,241,53,0.8)"} 
+            strokeWidth={snappedPortRef.current ? 3 : 2} 
+            strokeDasharray={snappedPortRef.current ? "none" : "6 3"}
+            style={{ filter: snappedPortRef.current ? "drop-shadow(0 0 8px rgba(198,241,53,0.9))" : "none" }}
+          />
         </svg>
       )}
 

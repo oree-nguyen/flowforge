@@ -83,7 +83,7 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
         {inputs.includes('text') && (
           <div 
-            className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
             title="Text Input"
             data-target={`${id}:text`}
             data-portid="text"
@@ -98,7 +98,7 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
 
         {inputs.includes('image') && (
           <div 
-            className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
             title="Image Input"
             data-target={`${id}:image`}
             data-portid="image"
