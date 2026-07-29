@@ -1,6 +1,7 @@
 import { type NodeProps } from '../NodeTypes';
 import { getModelMetadata } from '../../store/modelCatalog';
 import { useWorkflowStore } from '../../store/workflowStore';
+import { canvasEngine } from '../../engine/canvasEngine';
 import { Type, Image as ImageIcon, FileText } from 'lucide-react';
 
 export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
