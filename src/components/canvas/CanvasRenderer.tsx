@@ -183,7 +183,11 @@ function NodeFloatingToolbar({ nodeId }: { nodeId: string }) {
       onClick={e => e.stopPropagation()}
       onPointerDown={e => e.stopPropagation()}
     >
-      <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl transition-colors" title="Run node">
+      <button 
+        className="p-2 text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl transition-colors" 
+        title="Run node"
+        onClick={() => useWorkflowStore.getState().executeWorkflow()}
+      >
         <Play size={16} />
       </button>
       <button 
@@ -657,7 +661,7 @@ function ContextMenuOverlay({ x, y, nodeId, edgeId, onClose }: { x: number; y: n
   }, [onClose]);
 
   const nodeItems = nodeId ? [
-    { icon: <Play size={14} />, label: 'Run node', action: () => { alert('Not implemented'); onClose(); } },
+    { icon: <Play size={14} />, label: 'Run node', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
     { icon: <Scissors size={14} />, label: 'Create branch', action: () => { alert('Not implemented'); onClose(); } },
     { icon: <Settings size={14} />, label: 'Settings', action: () => { 
         canvasEngine.select(nodeId); 
@@ -665,7 +669,12 @@ function ContextMenuOverlay({ x, y, nodeId, edgeId, onClose }: { x: number; y: n
         onClose(); 
     } },
     { divider: true },
-    { icon: <Copy size={14} />, label: 'Copy node', shortcut: '⌘C', action: () => { alert('Use duplicate'); onClose(); } },
+    { icon: <Copy size={14} />, label: 'Copy node', shortcut: '⌘C', action: () => { 
+        canvasEngine.select(nodeId);
+        canvasEngine.copySelected();
+        toast.success('Đã sao chép node vào bộ nhớ tạm (Ctrl+V để dán)!');
+        onClose(); 
+    } },
     { icon: <Plus size={14} />, label: 'Duplicate', shortcut: '⌘D', action: () => { canvasEngine.duplicateNode(nodeId); onClose(); } },
     { divider: true },
     { icon: <Trash2 size={14} />, label: 'Delete node', shortcut: '⌫', danger: true, action: () => { canvasEngine.removeNode(nodeId); onClose(); } },

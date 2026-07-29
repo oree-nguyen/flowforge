@@ -95,8 +95,8 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
           
           {isVisible('undoRedo') && (
             <>
-              <ToolButton icon={<Undo2 size={18} />} tooltip="Undo (Ctrl+Z)" onClick={() => {}} active={false} />
-              <ToolButton icon={<Redo2 size={18} />} tooltip="Redo (Ctrl+Shift+Z)" onClick={() => {}} active={false} />
+              <ToolButton icon={<Undo2 size={18} />} tooltip="Undo (Ctrl+Z)" onClick={() => canvasEngine.undo()} active={false} />
+              <ToolButton icon={<Redo2 size={18} />} tooltip="Redo (Ctrl+Shift+Z)" onClick={() => canvasEngine.redo()} active={false} />
             </>
           )}
           {isVisible('reload') && (

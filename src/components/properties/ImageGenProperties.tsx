@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { canvasEngine } from '../../engine/canvasEngine';
-import { Image, Sparkles, DollarSign } from 'lucide-react';
+import { Image, Sparkles, DollarSign, Dice5 } from 'lucide-react';
 import { ModelSelector } from '../ModelSelector';
 import { getModelMetadata } from '../../store/modelCatalog';
 import { useWorkflowStore } from '../../store/workflowStore';
@@ -142,13 +142,22 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
             {/* Seed */}
             <div className="flex flex-col gap-1">
               <label className="text-xs text-text-muted font-medium">Seed (Optional)</label>
-              <input 
-                type="number"
-                className="bg-transparent border border-border-subtle rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-accent-lime"
-                placeholder="Random (-1)"
-                value={data.seed !== undefined ? data.seed : ''}
-                onChange={(e) => handleChange('seed', e.target.value ? parseInt(e.target.value) : undefined)}
-              />
+              <div className="flex items-center gap-1.5">
+                <input 
+                  type="number"
+                  className="flex-1 bg-transparent border border-border-subtle rounded-lg px-3 py-1 text-xs text-white outline-none focus:border-accent-lime font-mono"
+                  placeholder="Random (-1)"
+                  value={data.seed !== undefined ? data.seed : ''}
+                  onChange={(e) => handleChange('seed', e.target.value ? parseInt(e.target.value) : undefined)}
+                />
+                <button 
+                  onClick={() => handleChange('seed', Math.floor(Math.random() * 1000000))}
+                  className="p-1.5 bg-white/10 hover:bg-white/20 text-accent-lime rounded-lg border border-border-subtle transition-colors"
+                  title="Randomize Seed (Xúc xắc)"
+                >
+                  <Dice5 size={14} />
+                </button>
+              </div>
             </div>
           </div>
         )}
