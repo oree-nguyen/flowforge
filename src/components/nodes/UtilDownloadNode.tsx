@@ -1,7 +1,7 @@
 import { type NodeProps } from '../NodeTypes';
 import { Download } from 'lucide-react';
 
-export function UtilDownloadNode({ data, selected }: NodeProps) {
+export function UtilDownloadNode({ id, data, selected, onDisconnectStart }: NodeProps) {
   const output = data.output as any;
 
   const handleDownload = () => {

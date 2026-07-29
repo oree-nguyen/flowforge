@@ -290,34 +290,6 @@ function EdgeFloatingToolbar({ edgeId }: { edgeId: string }) {
   );
 }
 
-// --- Helper for Handle Positions ---
-function getHandlePosition(node: NodeData, size: { width: number, height: number }, type: 'in' | 'out', handleId?: string) {
-  const nodeEl = document.querySelector(`[data-nodeid="${node.id}"]`) as HTMLElement;
-  
-  if (nodeEl) {
-    if (type === 'out') {
-      return { x: node.position.x + size.width, y: node.position.y + size.height / 2 };
-    } else {
-      const targetQuery = handleId ? `[data-target="${node.id}:${handleId}"]` : `[data-target^="${node.id}"]`;
-      const portEl = document.querySelector(targetQuery) as HTMLElement;
-      if (portEl) {
-        const nodeRect = nodeEl.getBoundingClientRect();
-        const portRect = portEl.getBoundingClientRect();
-        const zoom = canvasEngine.getViewport().zoom;
-        const dx = (portRect.left + portRect.width / 2 - nodeRect.left) / zoom;
-        const dy = (portRect.top + portRect.height / 2 - nodeRect.top) / zoom;
-        return { x: node.position.x + dx, y: node.position.y + dy };
-      }
-    }
-  }
-
-  // Fallback
-  if (type === 'out') {
-    return { x: node.position.x + size.width, y: node.position.y + size.height / 2 };
-  }
-  return { x: node.position.x, y: node.position.y + size.height / 2 };
-}
-
 // --- Main CanvasRenderer ---
 export function CanvasRenderer() {
   const { nodes, edges, viewport, selectedIds } = useCanvasEngine();

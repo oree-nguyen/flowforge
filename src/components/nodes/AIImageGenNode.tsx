@@ -1,6 +1,6 @@
 import { type NodeProps } from '../NodeTypes';
 import { useWorkflowStore } from '../../store/workflowStore';
-import { Play, Image as ImageIcon, Type, Settings, FileText } from 'lucide-react';
+import { Play, Image as ImageIcon, Type, Settings, FileText, Camera } from 'lucide-react';
 import { canvasEngine } from '../../engine/canvasEngine';
 import { ModelSelector } from '../ModelSelector';
 import { getModelMetadata } from '../../store/modelCatalog';
