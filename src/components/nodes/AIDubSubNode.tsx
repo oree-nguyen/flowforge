@@ -4,7 +4,7 @@ import { useWorkflowStore } from '../../store/workflowStore';
 import { Languages, Video, FileText, CheckCircle2, Loader2, UserCheck } from 'lucide-react';
 import type { AIDubSubData } from '../../types/nodes';
 
-export function AIDubSubNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const nodeData = data as AIDubSubData;
   const modelId = nodeData.sttModel || 'openai/whisper';
   const fetchedModels = useWorkflowStore((state) => state.fetchedModels);
@@ -169,26 +169,26 @@ export function AIDubSubNode({ id, data, selected, onDisconnectStart }: NodeProp
       {/* Output Ports (Right) */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
         <div
-          className="w-8 h-8 rounded-full border border-emerald-400/50 bg-panel flex items-center justify-center text-emerald-400 hover:text-emerald-300 hover:border-emerald-300 transition-colors cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-emerald-400/50 bg-panel flex items-center justify-center text-emerald-400 hover:text-emerald-300 hover:border-emerald-300 cursor-crosshair shadow-md"
           title="Dubbed Video Output (video_out)"
           data-target={`${id}:video_out`}
           data-portid="video_out"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onDisconnectStart?.(e, id, 'video_out');
+            onConnectStart?.(e, id, 'out');
           }}
         >
           <Video size={14} />
         </div>
 
         <div
-          className="w-8 h-8 rounded-full border border-purple-400/50 bg-panel flex items-center justify-center text-purple-400 hover:text-purple-300 hover:border-purple-300 transition-colors cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-purple-400/50 bg-panel flex items-center justify-center text-purple-400 hover:text-purple-300 hover:border-purple-300 cursor-crosshair shadow-md"
           title="Subtitle File Output (subtitle_out)"
           data-target={`${id}:subtitle_out`}
           data-portid="subtitle_out"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onDisconnectStart?.(e, id, 'subtitle_out');
+            onConnectStart?.(e, id, 'out');
           }}
         >
           <FileText size={14} />

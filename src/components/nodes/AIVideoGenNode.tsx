@@ -5,7 +5,7 @@ import { canvasEngine } from '../../engine/canvasEngine';
 import { ModelSelector } from '../ModelSelector';
 import { getModelMetadata } from '../../store/modelCatalog';
 
-export function AIVideoGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function AIVideoGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const output = data.output as any;
   const isPropertiesPanelOpen = useWorkflowStore(state => (state as any).isPropertiesPanelOpen);
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
@@ -187,6 +187,10 @@ export function AIVideoGenNode({ id, data, selected, onDisconnectStart }: NodePr
           title="Video Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <VideoIcon size={14} />
         </div>

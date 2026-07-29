@@ -2,7 +2,7 @@ import { Type } from 'lucide-react';
 import { canvasEngine } from '../../engine/canvasEngine';
 import { type NodeProps } from '../NodeTypes';
 
-export function InputTextNode({ id, data, selected }: NodeProps) {
+export function InputTextNode({ id, data, selected, onConnectStart }: NodeProps) {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     canvasEngine.updateNodeData(id, { text: e.target.value });
   };
@@ -61,6 +61,10 @@ export function InputTextNode({ id, data, selected }: NodeProps) {
           title="Text Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <Type size={14} />
         </div>

@@ -88,7 +88,7 @@ function SortableClipCard({
   );
 }
 
-export function VideoEditorNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const nodeData = data as VideoEditorData;
   const clips = nodeData.clips || [];
   const customNodeName = data.nodeName as string;
@@ -345,7 +345,7 @@ export function VideoEditorNode({ id, data, selected, onDisconnectStart }: NodeP
           data-portid="video_out"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onDisconnectStart?.(e, id, 'video_out');
+            onConnectStart?.(e, id, 'out');
           }}
         >
           <Video size={14} />

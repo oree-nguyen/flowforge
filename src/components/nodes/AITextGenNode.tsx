@@ -4,7 +4,7 @@ import { useWorkflowStore } from '../../store/workflowStore';
 import { canvasEngine } from '../../engine/canvasEngine';
 import { Type, Image as ImageIcon, FileText, Bot } from 'lucide-react';
 
-export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function AITextGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const modelId = (data.model as string) || 'google/gemini-1.5-flash';
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
   const meta = getModelMetadata(modelId, fetchedModels);
@@ -134,6 +134,10 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
           title="Text Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <Bot size={14} />
         </div>

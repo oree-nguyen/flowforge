@@ -5,7 +5,7 @@ import { canvasEngine } from '../../engine/canvasEngine';
 import { ModelSelector } from '../ModelSelector';
 import { getModelMetadata } from '../../store/modelCatalog';
 
-export function AIImageGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function AIImageGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const output = data.output as any;
   const isPropertiesPanelOpen = useWorkflowStore(state => (state as any).isPropertiesPanelOpen);
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
@@ -191,6 +191,10 @@ export function AIImageGenNode({ id, data, selected, onDisconnectStart }: NodePr
           title="Image Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <Camera size={14} />
         </div>

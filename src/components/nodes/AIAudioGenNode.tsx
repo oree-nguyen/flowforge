@@ -3,7 +3,7 @@ import { getModelMetadata } from '../../store/modelCatalog';
 import { useWorkflowStore } from '../../store/workflowStore';
 import { Headphones, Type, FileText } from 'lucide-react';
 
-export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodeProps) {
+export function AIAudioGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const modelId = (data.model as string) || 'openai/tts-1';
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
   const meta = getModelMetadata(modelId, fetchedModels);
@@ -99,6 +99,10 @@ export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodePr
           title="Audio Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <Headphones size={14} />
         </div>

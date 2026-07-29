@@ -3,7 +3,7 @@ import { canvasEngine } from '../../engine/canvasEngine';
 import { type NodeProps } from '../NodeTypes';
 import { ImagePlus, X } from 'lucide-react';
 
-export function InputImageNode({ id, data, selected }: NodeProps) {
+export function InputImageNode({ id, data, selected, onConnectStart }: NodeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +66,10 @@ export function InputImageNode({ id, data, selected }: NodeProps) {
           title="Image Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <ImagePlus size={14} />
         </div>

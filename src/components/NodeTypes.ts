@@ -6,6 +6,7 @@ export type NodeProps<_T = any> = {
   id: string;
   data: Record<string, any>;
   selected: boolean;
+  onConnectStart?: (e: React.PointerEvent, id: string, handle?: 'out') => void;
   onDisconnectStart?: (e: React.PointerEvent, id: string, handle?: string) => void;
 };
 

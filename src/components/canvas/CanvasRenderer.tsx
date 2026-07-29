@@ -167,6 +167,7 @@ function NodeWrapper({
         id={node.id}
         data={node.data}
         selected={selected}
+        onConnectStart={onConnectStart}
         onDisconnectStart={onDisconnectStart}
       />
     </div>

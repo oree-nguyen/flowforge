@@ -4,7 +4,7 @@ import { type NodeProps } from '../NodeTypes';
 import { FileText, X, Upload, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { extractFileContent, ACCEPTED_FILE_TYPES, formatBytes, type ExtractedFile } from '../../services/fileExtractor';
 
-export function InputFileNode({ id, data, selected }: NodeProps) {
+export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -172,6 +172,10 @@ export function InputFileNode({ id, data, selected }: NodeProps) {
           title="File Output (out)"
           data-target={`${id}:out`}
           data-portid="out"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onConnectStart?.(e, id, 'out');
+          }}
         >
           <FileText size={14} />
         </div>
