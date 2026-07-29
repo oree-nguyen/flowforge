@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Type, Image as ImageIcon, Sparkles, StickyNote, Bot, Camera, Video, AlertCircle, Loader2, FileText, Headphones, Binary, Search, Mic, FileAudio, Languages } from 'lucide-react';
+import { Type, Image as ImageIcon, Sparkles, StickyNote, Bot, Camera, Video, AlertCircle, Loader2, FileText, Headphones, Binary, Search, Mic, FileAudio, Languages, Scissors } from 'lucide-react';
 import { canvasEngine } from '../engine/canvasEngine';
 import { fetchModels, groupModelsByProviderAndModality, type ExpandedModality } from '../services/openRouterApi';
 
@@ -60,6 +60,7 @@ export function AddNodePopover({ isOpen, onClose }: { isOpen: boolean, onClose: 
     { type: 'ai.audioGen', label: 'AI Audio Gen', icon: <Headphones size={18} />, color: 'bg-[#F59E0B]/20 text-[#F59E0B]' },
     { type: 'ai.transcription', label: 'AI Transcription', icon: <Mic size={18} />, color: 'bg-[#10B981]/20 text-[#10B981]' },
     { type: 'ai.dubSub', label: 'Lồng tiếng / Sub', icon: <Languages size={18} />, color: 'bg-indigo-500/20 text-indigo-400' },
+    { type: 'util.videoEditor', label: 'Ghép Video (Editor)', icon: <Scissors size={18} />, color: 'bg-rose-500/20 text-rose-400' },
   ];
 
   const categories: { key: ExpandedModality | 'all'; label: string; icon: React.ReactNode }[] = [

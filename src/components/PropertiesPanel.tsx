@@ -10,6 +10,7 @@ import { FileProperties } from './properties/FileProperties';
 import { AudioGenProperties } from './properties/AudioGenProperties';
 import { TranscriptionProperties } from './properties/TranscriptionProperties';
 import { DubSubProperties } from './properties/DubSubProperties';
+import { VideoEditorProperties } from './properties/VideoEditorProperties';
 import { X, Power, Bug } from 'lucide-react';
 
 export function PropertiesPanel() {
@@ -39,6 +40,8 @@ export function PropertiesPanel() {
         return <TranscriptionProperties nodeId={selectedNode.id} />;
       case 'ai.dubSub':
         return <DubSubProperties id={selectedNode.id} data={selectedNode.data as any} />;
+      case 'util.videoEditor':
+        return <VideoEditorProperties nodeId={selectedNode.id} />;
       case 'util.download':
         return <DownloadProperties nodeId={selectedNode.id} />;
       case 'input.file':

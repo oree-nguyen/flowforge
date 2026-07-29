@@ -9,6 +9,7 @@ export type NodeType =
   | 'ai.audioGen'
   | 'ai.transcription'
   | 'ai.dubSub'
+  | 'util.videoEditor'
   | 'util.download'
   | 'note'
   | 'noteFrame';
@@ -16,6 +17,26 @@ export type NodeType =
 // Data interfaces
 export interface InputTextData {
   text: string;
+  [key: string]: unknown;
+}
+
+export interface VideoClipItem {
+  id: string;
+  sourceNodeId: string;
+  order: number;
+  thumbnailUrl: string;
+  durationSec?: number;
+  videoUrl?: string;
+}
+
+export interface VideoEditorData {
+  clips: VideoClipItem[];
+  aspectRatio?: '16:9' | '9:16' | '1:1';
+  resolution?: '720p' | '1080p';
+  output?: string;
+  isConcatting?: boolean;
+  progressPercent?: number;
+  progressMessage?: string;
   [key: string]: unknown;
 }
 
@@ -128,5 +149,6 @@ export type AITextGenNode = BaseNode & { type: 'ai.textGen'; data: AITextGenData
 export type AIImageGenNode = BaseNode & { type: 'ai.imageGen'; data: AIImageGenData };
 export type AIVideoGenNode = BaseNode & { type: 'ai.videoGen'; data: AIVideoGenData };
 export type AIDubSubNodeType = BaseNode & { type: 'ai.dubSub'; data: AIDubSubData };
+export type VideoEditorNodeType = BaseNode & { type: 'util.videoEditor'; data: VideoEditorData };
 export type NoteNodeType = BaseNode & { type: 'note'; data: NoteData };
 export type NoteFrameNodeType = BaseNode & { type: 'noteFrame'; data: NoteFrameData };
