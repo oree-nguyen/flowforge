@@ -372,11 +372,28 @@ export function CanvasRenderer() {
         const [targetId, targetHandle] = targetData.split(':');
         if (targetId && targetId !== connDragRef.current.sourceId) {
           const sourceNode = canvasEngine.getNode(connDragRef.current.sourceId);
+          const targetNode = canvasEngine.getNode(targetId);
           const tgtHandle = targetHandle || 'in';
           
           let isValid = true;
-          if (sourceNode?.type === 'input.text' && tgtHandle === 'image') isValid = false;
-          if (sourceNode?.type === 'input.image' && tgtHandle === 'text') isValid = false;
+          let invalidReason = '';
+
+          if (sourceNode?.id === targetId) {
+            isValid = false;
+            invalidReason = 'Không thể nối node với chính nó.';
+          } else if (sourceNode?.type === 'input.text' && tgtHandle === 'image') {
+            isValid = false;
+            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Ảnh (Image), không nhận Text.';
+          } else if (sourceNode?.type === 'input.image' && tgtHandle === 'text') {
+            isValid = false;
+            invalidReason = 'Cổng nhập này chỉ nhận Prompt Text, không nhận File Ảnh.';
+          } else if (sourceNode?.type === 'ai.audioGen' && tgtHandle === 'image') {
+            isValid = false;
+            invalidReason = 'Cổng nhập này chỉ nhận Ảnh (Image), không nhận File Audio.';
+          } else if ((sourceNode?.type === 'input.image' || sourceNode?.type === 'ai.imageGen') && tgtHandle === 'file') {
+            isValid = false;
+            invalidReason = 'Cổng nhập này chỉ nhận File Văn bản/PDF, không nhận File Ảnh.';
+          }
           
           if (isValid) {
             canvasEngine.addEdge({
@@ -386,6 +403,8 @@ export function CanvasRenderer() {
               sourceHandle: 'out',
               targetHandle: tgtHandle,
             });
+          } else {
+            toast.warning(invalidReason || 'Đường nối không hợp lệ do không tương thích loại dữ liệu!');
           }
         }
       }

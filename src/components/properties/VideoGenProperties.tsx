@@ -104,7 +104,7 @@ export function VideoGenProperties({ nodeId }: { nodeId: string }) {
         </div>
 
         {data.showAdvanced && (
-          <div className="p-3 border-t border-border-subtle flex flex-col gap-3.5 bg-canvas/40">
+          <div className="p-3 border-t border-border-subtle flex flex-col gap-4 bg-canvas/40">
             {/* Duration */}
             <div className="flex flex-col gap-1">
               <div className="flex justify-between items-center text-xs">
@@ -127,7 +127,7 @@ export function VideoGenProperties({ nodeId }: { nodeId: string }) {
               <label className="text-xs text-text-muted font-medium">Seed (Optional)</label>
               <input 
                 type="number"
-                className="bg-transparent border border-border-subtle rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-accent-lime"
+                className="bg-transparent border border-border-subtle rounded-lg px-3 py-1 text-xs text-white outline-none focus:border-accent-lime font-mono"
                 placeholder="Random (-1)"
                 value={data.seed !== undefined ? data.seed : ''}
                 onChange={(e) => handleChange('seed', e.target.value ? parseInt(e.target.value) : undefined)}
