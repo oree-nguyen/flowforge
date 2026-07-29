@@ -184,6 +184,68 @@ export async function fetchVideoContent(apiKey: string, generationId: string): P
   return response.blob();
 }
 
+export async function transcribeAudio(
+  apiKey: string,
+  model: string,
+  audioFile: Blob | File,
+  language?: string
+) {
+  const formData = new FormData();
+  formData.append('file', audioFile, 'audio.wav');
+  formData.append('model', model);
+  formData.append('response_format', 'verbose_json');
+  formData.append('timestamp_granularities[]', 'segment');
+  if (language && language !== 'auto') {
+    formData.append('language', language);
+  }
+
+  const response = await fetch(`${OPENROUTER_API_URL}/audio/transcriptions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': window.location.href,
+      'X-Title': 'FlowForge',
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || err.message || `Transcription failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function generateSpeech(
+  apiKey: string,
+  model: string,
+  input: string,
+  voice: string = 'alloy'
+): Promise<Blob> {
+  const response = await fetch(`${OPENROUTER_API_URL}/audio/speech`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.href,
+      'X-Title': 'FlowForge',
+    },
+    body: JSON.stringify({
+      model,
+      input,
+      voice,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || err.message || `Speech generation failed: ${response.statusText}`);
+  }
+
+  return response.blob();
+}
+
 export function base64ToBlob(base64: string, mimeType: string): Blob {
   const byteCharacters = atob(base64);
   const byteArrays = [];

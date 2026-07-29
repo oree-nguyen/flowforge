@@ -6,6 +6,9 @@ export type NodeType =
   | 'ai.textGen'
   | 'ai.imageGen'
   | 'ai.videoGen'
+  | 'ai.audioGen'
+  | 'ai.transcription'
+  | 'ai.dubSub'
   | 'util.download'
   | 'note'
   | 'noteFrame';
@@ -13,6 +16,43 @@ export type NodeType =
 // Data interfaces
 export interface InputTextData {
   text: string;
+  [key: string]: unknown;
+}
+
+export interface SpeakerCasting {
+  speakerId: string;
+  label: string;
+  sampleAudioUrl: string;
+  voiceIdPerLanguage: Record<string, string>;
+}
+
+export interface TranscriptSegment {
+  start: number;
+  end: number;
+  text: string;
+  speakerId: string;
+  translations: Record<string, string>;
+}
+
+export interface AIDubSubData {
+  mode: 'subtitle' | 'dub' | 'both';
+  sourceLanguage: string;
+  targetLanguages: string[];
+  sttModel: string;
+  translateModel: string;
+  ttsModel: string;
+  speakers: SpeakerCasting[];
+  segments?: TranscriptSegment[];
+  burnSubtitle: boolean;
+  mixOriginalAudio: boolean;
+  includeSpeakerName?: boolean;
+  statusStep?: number; // 0: Idle, 1: Audio Extract, 2: Diarization, 3: Casting Wait, 4: Translate, 5: Dubbing, 6: Align, 7: Muxing/Done
+  statusMessage?: string;
+  outputVideo?: string;
+  outputSubtitles?: Record<string, string>; // lang -> srt content
+  isGenerating?: boolean;
+  costEstimate?: number;
+  actualCost?: number;
   [key: string]: unknown;
 }
 
@@ -87,5 +127,6 @@ export type InputImageNode = BaseNode & { type: 'input.image'; data: InputImageD
 export type AITextGenNode = BaseNode & { type: 'ai.textGen'; data: AITextGenData };
 export type AIImageGenNode = BaseNode & { type: 'ai.imageGen'; data: AIImageGenData };
 export type AIVideoGenNode = BaseNode & { type: 'ai.videoGen'; data: AIVideoGenData };
+export type AIDubSubNodeType = BaseNode & { type: 'ai.dubSub'; data: AIDubSubData };
 export type NoteNodeType = BaseNode & { type: 'note'; data: NoteData };
 export type NoteFrameNodeType = BaseNode & { type: 'noteFrame'; data: NoteFrameData };
