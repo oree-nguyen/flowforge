@@ -35,9 +35,16 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
           
           <div className="p-4 flex flex-col gap-3">
             {data.isGenerating && (
-              <div className="flex items-center gap-2 text-xs text-accent-lime">
-                <div className="w-3 h-3 border-2 border-accent-lime border-t-transparent rounded-full animate-spin"></div>
-                Generating...
+              <div className="flex flex-col gap-1.5 p-2 bg-[#9C27B0]/10 border border-[#9C27B0]/30 rounded-xl">
+                <div className="flex items-center justify-between text-xs text-[#9C27B0]">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <div className="w-3 h-3 border-2 border-[#9C27B0] border-t-transparent rounded-full animate-spin"></div>
+                    Đang gọi AI Text API...
+                  </span>
+                </div>
+                <div className="w-full h-1 bg-canvas rounded-full overflow-hidden border border-border-subtle">
+                  <div className="h-full bg-gradient-to-r from-[#9C27B0] to-accent-lime animate-pulse w-full" />
+                </div>
               </div>
             )}
             

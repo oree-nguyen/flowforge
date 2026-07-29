@@ -23,7 +23,8 @@ function App() {
     return 'landing'; // Default page is Landing Page
   });
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isSettingsOpen = useWorkflowStore(state => state.isSettingsOpen);
+  const setIsSettingsOpen = useWorkflowStore(state => state.setIsSettingsOpen);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
@@ -49,20 +50,16 @@ function App() {
   const navigateTo = (page: 'landing' | 'workflow') => {
     setRoute(page);
     window.location.hash = page === 'workflow' ? '#/workflow' : '#/landing';
-    // Toggle body scroll lock: only lock for workflow editor
     document.body.dataset.page = page;
   };
 
-  // Set initial body data-page on mount
   useEffect(() => {
     document.body.dataset.page = route;
   }, [route]);
 
-  // Hooks
   useAutoSave();
   useKeyboardShortcuts(() => setIsGuideOpen(prev => !prev));
 
-  // Wait for zustand/persist hydration to complete before rendering canvas
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

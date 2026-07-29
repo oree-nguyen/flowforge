@@ -32,7 +32,14 @@ export function useKeyboardShortcuts(onToggleGuide: () => void) {
         case 'delete':
         case 'backspace':
           e.preventDefault();
-          canvasEngine.deleteSelected();
+          {
+            const selectedIds = canvasEngine.getSelectedIds();
+            const nodes = canvasEngine.getNodes().filter(n => selectedIds.includes(n.id));
+            const hasValuableOutput = nodes.some(n => !!n.data?.output || !!n.data?.file || !!n.data?.outputVideo);
+            if (!hasValuableOutput || window.confirm('Một hoặc nhiều node đang chọn có chứa dữ liệu/kết quả đã tạo. Bạn có chắc muốn xóa không?')) {
+              canvasEngine.deleteSelected();
+            }
+          }
           break;
 
         case 'a':

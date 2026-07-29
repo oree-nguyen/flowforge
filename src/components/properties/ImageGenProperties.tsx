@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { canvasEngine } from '../../engine/canvasEngine';
-import { Image, Sparkles } from 'lucide-react';
+import { Image, Sparkles, DollarSign } from 'lucide-react';
 import { ModelSelector } from '../ModelSelector';
 import { getModelMetadata } from '../../store/modelCatalog';
 import { useWorkflowStore } from '../../store/workflowStore';
@@ -162,6 +162,16 @@ export function ImageGenProperties({ nodeId }: { nodeId: string }) {
         >
           <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${data.autoDownload ? 'translate-x-4' : 'translate-x-0'}`} />
         </div>
+      </div>
+
+      {/* Pre-Execution Cost Estimate */}
+      <div className="flex items-center justify-between px-3 py-2 bg-canvas/60 border border-border-subtle rounded-xl text-xs mt-2">
+        <span className="flex items-center gap-1 text-text-muted text-[11px]">
+          <DollarSign size={13} className="text-emerald-400" /> Ước tính chi phí trước khi chạy:
+        </span>
+        <span className="font-mono text-emerald-400 font-semibold text-[11px]">
+          ~${((data.n || 1) * 0.03).toFixed(3)} USD
+        </span>
       </div>
     </div>
   );

@@ -35,9 +35,16 @@ export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodePr
           
           <div className="p-4 flex flex-col gap-3">
             {data.isGenerating && (
-              <div className="flex items-center gap-2 text-xs text-accent-lime">
-                <div className="w-3 h-3 border-2 border-accent-lime border-t-transparent rounded-full animate-spin"></div>
-                Generating Audio...
+              <div className="flex flex-col gap-1.5 p-2 bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl">
+                <div className="flex items-center justify-between text-xs text-[#F59E0B]">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <div className="w-3 h-3 border-2 border-[#F59E0B] border-t-transparent rounded-full animate-spin"></div>
+                    Đang tạo Audio/TTS...
+                  </span>
+                </div>
+                <div className="w-full h-1 bg-canvas rounded-full overflow-hidden border border-border-subtle">
+                  <div className="h-full bg-gradient-to-r from-[#F59E0B] to-accent-lime animate-pulse w-full" />
+                </div>
               </div>
             )}
             

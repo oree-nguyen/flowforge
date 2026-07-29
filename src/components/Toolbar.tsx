@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
-import { Settings, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText } from 'lucide-react';
+import { Settings, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText, Square } from 'lucide-react';
 import { AddNodePopover } from './AddNodePopover';
 import { canvasEngine } from '../engine/canvasEngine';
 
 export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings?: () => void, onOpenImageLibrary?: () => void }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const isExecuting = useWorkflowStore(state => state.isExecuting);
+  const cancelExecution = useWorkflowStore(state => state.cancelExecution);
   const toolMode = useWorkflowStore(state => state.toolMode);
   const setToolMode = useWorkflowStore(state => state.setToolMode);
   const toolbarVisibility = useWorkflowStore(state => state.toolbarVisibility || {});
@@ -70,16 +71,23 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
           {isVisible('run') && (
             <>
               <div className="w-8 h-[1px] bg-border-subtle my-1"></div>
-              <button 
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform my-1 shadow-[0_0_15px_rgba(198,241,53,0.3)]
-                  ${isExecuting ? 'bg-text-muted cursor-not-allowed' : 'bg-accent-lime hover:scale-105 text-canvas'}
-                `}
-                onClick={() => useWorkflowStore.getState().executeWorkflow()}
-                disabled={isExecuting}
-                title="Run Workflow"
-              >
-                <Play size={20} fill="currentColor" className="ml-0.5" />
-              </button>
+              {isExecuting ? (
+                <button 
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-transform my-1 bg-red-600 text-white hover:bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse"
+                  onClick={cancelExecution}
+                  title="Dừng chạy Workflow (Cancel)"
+                >
+                  <Square size={16} fill="currentColor" />
+                </button>
+              ) : (
+                <button 
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-transform my-1 shadow-[0_0_15px_rgba(198,241,53,0.3)] bg-accent-lime hover:scale-105 text-canvas"
+                  onClick={() => useWorkflowStore.getState().executeWorkflow()}
+                  title="Run Workflow"
+                >
+                  <Play size={20} fill="currentColor" className="ml-0.5" />
+                </button>
+              )}
             </>
           )}
           

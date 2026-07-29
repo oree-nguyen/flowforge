@@ -69,6 +69,17 @@ export function AIImageGenNode({ id, data, selected, onDisconnectStart }: NodePr
            </div>
         )}
 
+        {/* Loading Overlay */}
+        {data.isGenerating && (
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-accent-lime z-20">
+            <div className="w-6 h-6 border-2 border-accent-lime border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs font-semibold">Đang sinh ảnh AI...</span>
+            <div className="w-1/2 h-1 bg-white/10 rounded-full overflow-hidden border border-white/20">
+              <div className="h-full bg-accent-lime animate-pulse w-full" />
+            </div>
+          </div>
+        )}
+
         {/* Top Controls */}
         <div className="absolute top-3 left-3 flex items-center justify-center w-6 h-6 bg-white rounded-full text-black cursor-pointer shadow-lg hover:scale-105 transition-transform">
           <Play size={12} className="ml-0.5" />

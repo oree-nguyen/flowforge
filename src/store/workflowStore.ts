@@ -72,6 +72,11 @@ interface WorkflowState {
   deleteWorkflow: (id: string) => void;
   importWorkflow: (workflow: SavedWorkflow) => void;
 
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (val: boolean) => void;
+  activeAbortController: AbortController | null;
+  cancelExecution: () => void;
+
   isExecuting: boolean;
   executeWorkflow: () => Promise<void>;
 }
@@ -149,8 +154,27 @@ export const useWorkflowStore = create<WorkflowState>()(
       toolMode: 'select',
       autoOpenProperties: false,
       isPropertiesPanelOpen: false,
+      isSettingsOpen: false,
+      activeAbortController: null,
       isExecuting: false,
       fetchedModels: [],
+
+      setIsSettingsOpen: (val) => set({ isSettingsOpen: val }),
+      cancelExecution: () => {
+        const { activeAbortController } = get();
+        if (activeAbortController) {
+          activeAbortController.abort();
+        }
+        // Reset generating state on all nodes
+        const nodes = canvasEngine.getNodes();
+        nodes.forEach(n => {
+          if (n.data?.isGenerating || n.data?.isConcatting) {
+            canvasEngine.updateNodeData(n.id, { isGenerating: false, isConcatting: false, statusMessage: 'Đã hủy tác vụ' });
+          }
+        });
+        set({ isExecuting: false, activeAbortController: null });
+        toast.info('Đã dừng chạy workflow.');
+      },
 
       savedWorkflows: [
         {
@@ -377,11 +401,13 @@ export const useWorkflowStore = create<WorkflowState>()(
       executeWorkflow: async () => {
         const { apiKey } = get();
         if (!apiKey) {
-          toast.warning('Please set your OpenRouter API key in Settings first.');
+          set({ isSettingsOpen: true });
+          toast.warning('Chưa có OpenRouter API Key! Vui lòng nhập Key trong Settings trước khi chạy.');
           return;
         }
 
-        set({ isExecuting: true });
+        const controller = new AbortController();
+        set({ isExecuting: true, activeAbortController: controller });
 
         try {
           const allNodes = canvasEngine.getNodes();
