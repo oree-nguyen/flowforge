@@ -3,6 +3,7 @@ import { Play, Settings, Scissors, Copy, Plus, Trash2 } from 'lucide-react';
 import { canvasEngine, type NodeData } from '../../engine/canvasEngine';
 import { useCanvasEngine } from '../../engine/useCanvasEngine';
 import { useWorkflowStore } from '../../store/workflowStore';
+import { toast } from '../../store/toastStore';
 import { useTouchGestures } from '../../hooks/useTouchGestures';
 
 // Node type → component mapping
@@ -372,7 +373,6 @@ export function CanvasRenderer() {
         const [targetId, targetHandle] = targetData.split(':');
         if (targetId && targetId !== connDragRef.current.sourceId) {
           const sourceNode = canvasEngine.getNode(connDragRef.current.sourceId);
-          const targetNode = canvasEngine.getNode(targetId);
           const tgtHandle = targetHandle || 'in';
           
           let isValid = true;
