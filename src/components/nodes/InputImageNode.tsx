@@ -58,6 +58,18 @@ export function InputImageNode({ id, data, selected }: NodeProps) {
           onChange={handleImageChange}
         />
       </div>
+
+      {/* Single Output Port Icon (Right) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-purple-400/60 bg-panel flex items-center justify-center text-purple-400 cursor-crosshair shadow-md"
+          title="Image Output (out)"
+          data-target={`${id}:out`}
+          data-portid="out"
+        >
+          <ImagePlus size={14} />
+        </div>
+      </div>
     </div>
   );
 }

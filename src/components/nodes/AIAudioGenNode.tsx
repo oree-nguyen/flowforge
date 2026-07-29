@@ -63,7 +63,7 @@ export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodePr
       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
         {inputs.includes('text') && (
           <div 
-            className="w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
             title="Text Input"
             data-target={`${id}:text`}
             data-portid="text"
@@ -78,7 +78,7 @@ export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodePr
 
         {inputs.includes('file') && (
           <div 
-            className="w-8 h-8 rounded-full border border-orange-400/50 bg-panel flex items-center justify-center text-orange-400 hover:text-orange-300 hover:border-orange-300 transition-colors cursor-crosshair shadow-md"
+            className="port-handle w-8 h-8 rounded-full border border-orange-400/50 bg-panel flex items-center justify-center text-orange-400 hover:text-orange-300 hover:border-orange-300 cursor-crosshair shadow-md"
             title="File Input"
             data-target={`${id}:file`}
             data-portid="file"
@@ -90,6 +90,18 @@ export function AIAudioGenNode({ id, data, selected, onDisconnectStart }: NodePr
             <FileText size={14} />
           </div>
         )}
+      </div>
+
+      {/* Output Port (Right) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-[#F59E0B]/60 bg-panel flex items-center justify-center text-[#F59E0B] cursor-crosshair shadow-md"
+          title="Audio Output (out)"
+          data-target={`${id}:out`}
+          data-portid="out"
+        >
+          <Headphones size={14} />
+        </div>
       </div>
 
       {/* Node Slug / @mention Label below frame */}

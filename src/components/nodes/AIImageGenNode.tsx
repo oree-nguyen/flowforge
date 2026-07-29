@@ -184,6 +184,18 @@ export function AIImageGenNode({ id, data, selected, onDisconnectStart }: NodePr
         )}
       </div>
 
+      {/* Output Port (Right) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-[#FF9800]/60 bg-panel flex items-center justify-center text-[#FF9800] cursor-crosshair shadow-md"
+          title="Image Output (out)"
+          data-target={`${id}:out`}
+          data-portid="out"
+        >
+          <Camera size={14} />
+        </div>
+      </div>
+
       {/* Node Slug / @mention Label below frame */}
       {customNodeName && (
         <div className="absolute -bottom-6 left-0 text-[10px] font-medium text-text-muted flex items-center gap-1">

@@ -33,6 +33,22 @@ export function UtilDownloadNode({ data, selected }: NodeProps) {
           </span>
         )}
       </div>
+
+      {/* Input Port (Left) */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-emerald-400/60 bg-panel flex items-center justify-center text-emerald-400 cursor-crosshair shadow-md"
+          title="Input (in)"
+          data-target={`${id}:in`}
+          data-portid="in"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onDisconnectStart?.(e, id, 'in');
+          }}
+        >
+          <Download size={14} />
+        </div>
+      </div>
     </div>
   );
 }

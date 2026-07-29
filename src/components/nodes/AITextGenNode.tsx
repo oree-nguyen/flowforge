@@ -127,6 +127,18 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
         )}
       </div>
 
+      {/* Output Port (Right) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-[#9C27B0]/60 bg-panel flex items-center justify-center text-[#9C27B0] cursor-crosshair shadow-md"
+          title="Text Output (out)"
+          data-target={`${id}:out`}
+          data-portid="out"
+        >
+          <Bot size={14} />
+        </div>
+      </div>
+
       {/* Node Slug / @mention Label below frame */}
       {customNodeName && (
         <div className="absolute -bottom-6 left-0 text-[10px] font-medium text-text-muted flex items-center gap-1">

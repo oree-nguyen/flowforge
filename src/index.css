@@ -58,20 +58,26 @@
   }
   
   .port-handle {
-    transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1), border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+    border-radius: 9999px !important;
+    outline: none !important;
+    transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease;
   }
-  .port-handle:hover {
-    transform: scale(1.6);
+  .port-handle:hover, .port-handle:focus, .port-handle:focus-visible {
+    transform: scale(1.5);
+    border-radius: 9999px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 4px rgba(198, 241, 53, 0.15), 0 0 12px 6px rgba(198, 241, 53, 0.25) !important;
     border-color: var(--accent-lime) !important;
     color: var(--accent-lime) !important;
-    box-shadow: 0 0 12px rgba(198, 241, 53, 0.8) !important;
   }
   
   .port-snapped {
-    transform: scale(1.8) !important;
+    transform: scale(1.6) !important;
+    border-radius: 9999px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 6px rgba(198, 241, 53, 0.2), 0 0 16px 8px rgba(198, 241, 53, 0.35) !important;
     border-color: var(--accent-lime) !important;
-    box-shadow: 0 0 16px rgba(198, 241, 53, 0.9), 0 0 4px #fff !important;
-    background-color: rgba(198, 241, 53, 0.3) !important;
+    background-color: rgba(198, 241, 53, 0.2) !important;
     color: #fff !important;
     z-index: 30 !important;
   }

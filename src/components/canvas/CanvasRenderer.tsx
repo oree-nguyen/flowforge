@@ -93,62 +93,75 @@ function NodeWrapper({
         }
       }}
     >
-      {/* Output port handle with expanded touch target */}
-      <div
-        className="port-handle"
-        style={{
-          position: 'absolute',
-          right: -16,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: 36,
-          height: 36,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'crosshair',
-          zIndex: 10,
-          touchAction: 'none',
-        }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onConnectStart(e, node.id, 'out');
-        }}
-      >
-        <div
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: '50%',
-            background: 'var(--accent-lime)',
-            border: '2px solid var(--canvas)',
-            boxShadow: '0 0 8px rgba(198,241,53,0.6)',
-          }}
-        />
-      </div>
-      {/* Input port handle - Only render default if not custom */}
-      {!['ai.imageGen', 'ai.videoGen', 'ai.textGen', 'input.file'].includes(node.type) && (
-        <div
-          className="port-handle"
-          style={{
-            position: 'absolute',
-            left: -8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 16,
-            height: 16,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.15)',
-            border: '2px solid rgba(255,255,255,0.3)',
-            cursor: 'crosshair',
-            zIndex: 10,
-          }}
-          data-target={node.id}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onDisconnectStart(e, node.id, undefined);
-          }}
-        />
+          {/* Render default handle dots ONLY for generic non-custom nodes */}
+      {!['ai.textGen', 'ai.imageGen', 'ai.videoGen', 'ai.audioGen', 'util.videoEditor', 'ai.dubSub', 'input.text', 'input.image', 'input.file', 'util.download'].includes(node.type) && (
+        <>
+          {/* Default Output port handle */}
+          <div
+            className="port-handle"
+            style={{
+              position: 'absolute',
+              right: -16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'crosshair',
+              zIndex: 10,
+              touchAction: 'none',
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onConnectStart(e, node.id, 'out');
+            }}
+          >
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: 'var(--accent-lime)',
+                border: '2px solid var(--canvas)',
+                boxShadow: '0 0 8px rgba(198,241,53,0.6)',
+              }}
+            />
+          </div>
+          {/* Default Input port handle */}
+          <div
+            className="port-handle"
+            style={{
+              position: 'absolute',
+              left: -16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'crosshair',
+              zIndex: 10,
+            }}
+            data-target={node.id}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onDisconnectStart(e, node.id, undefined);
+            }}
+          >
+            <div
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.15)',
+                border: '2px solid rgba(255,255,255,0.3)',
+              }}
+            />
+          </div>
+        </>
       )}
       <NodeComp
         id={node.id}
@@ -158,6 +171,38 @@ function NodeWrapper({
       />
     </div>
   );
+}
+
+// --- Helper for Handle Positions ---
+function getHandlePosition(node: NodeData, size: { width: number, height: number }, type: 'in' | 'out', handleId?: string) {
+  const nodeEl = document.querySelector(`[data-nodeid="${node.id}"]`) as HTMLElement;
+  
+  if (nodeEl) {
+    const targetQuery = type === 'out'
+      ? (handleId ? `[data-target="${node.id}:${handleId}"]` : `[data-target="${node.id}:out"]`)
+      : (handleId ? `[data-target="${node.id}:${handleId}"]` : `[data-target^="${node.id}"]`);
+    
+    const portEl = (nodeEl.querySelector(targetQuery) || document.querySelector(targetQuery)) as HTMLElement;
+    if (portEl) {
+      let dx = 0;
+      let dy = 0;
+      let curr: HTMLElement | null = portEl;
+      while (curr && curr !== nodeEl) {
+        dx += curr.offsetLeft;
+        dy += curr.offsetTop;
+        curr = curr.offsetParent as HTMLElement | null;
+      }
+      dx += portEl.offsetWidth / 2;
+      dy += portEl.offsetHeight / 2;
+      return { x: node.position.x + dx, y: node.position.y + dy };
+    }
+  }
+
+  // Fallback
+  if (type === 'out') {
+    return { x: node.position.x + size.width, y: node.position.y + size.height / 2 };
+  }
+  return { x: node.position.x, y: node.position.y + size.height / 2 };
 }
 
 // --- Node Floating Toolbar ---

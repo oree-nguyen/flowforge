@@ -1,3 +1,4 @@
+import { Type } from 'lucide-react';
 import { canvasEngine } from '../../engine/canvasEngine';
 import { type NodeProps } from '../NodeTypes';
 
@@ -51,6 +52,18 @@ export function InputTextNode({ id, data, selected }: NodeProps) {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Single Output Port Icon (Right) */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-accent-lime/60 bg-panel flex items-center justify-center text-accent-lime cursor-crosshair shadow-md"
+          title="Text Output (out)"
+          data-target={`${id}:out`}
+          data-portid="out"
+        >
+          <Type size={14} />
+        </div>
       </div>
     </div>
   );
