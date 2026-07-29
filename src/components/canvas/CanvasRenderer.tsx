@@ -467,6 +467,46 @@ export function CanvasRenderer() {
       onContextMenu={handleContextMenu}
       onClick={() => setMenu(null)}
     >
+      {/* Empty State Banner */}
+      {nodes.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="bg-panel/90 backdrop-blur-xl border border-border-subtle p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-11/12 text-center pointer-events-auto flex flex-col items-center gap-4 border-dashed border-accent-lime/30 animate-fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-accent-lime/10 border border-accent-lime/30 flex items-center justify-center text-accent-lime shadow-[0_0_20px_rgba(198,241,53,0.15)]">
+              <Plus size={28} />
+            </div>
+            <div className="flex flex-col gap-1">
+              <h3 className="text-base sm:text-lg font-bold text-white">Workflow của bạn đang trống</h3>
+              <p className="text-xs text-text-muted">Bấm nút <span className="text-accent-lime font-semibold">+</span> trên thanh công cụ bên trái hoặc chọn mẫu dưới đây để bắt đầu tạo flow:</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 w-full mt-2">
+              <button 
+                onClick={() => canvasEngine.addNode({ id: `node_${Date.now()}`, type: 'ai.textGen', position: { x: 300, y: 200 }, data: {} })}
+                className="px-3 py-2 bg-canvas hover:bg-white/10 border border-border-subtle rounded-xl text-xs text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                + AI Text Node
+              </button>
+              <button 
+                onClick={() => canvasEngine.addNode({ id: `node_${Date.now()}`, type: 'ai.imageGen', position: { x: 300, y: 200 }, data: {} })}
+                className="px-3 py-2 bg-canvas hover:bg-white/10 border border-border-subtle rounded-xl text-xs text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                + AI Image Node
+              </button>
+              <button 
+                onClick={() => canvasEngine.addNode({ id: `node_${Date.now()}`, type: 'ai.videoGen', position: { x: 300, y: 200 }, data: {} })}
+                className="px-3 py-2 bg-canvas hover:bg-white/10 border border-border-subtle rounded-xl text-xs text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                + AI Video Node
+              </button>
+              <button 
+                onClick={() => canvasEngine.addNode({ id: `node_${Date.now()}`, type: 'ai.dubSub', position: { x: 300, y: 200 }, data: {} })}
+                className="px-3 py-2 bg-canvas hover:bg-white/10 border border-border-subtle rounded-xl text-xs text-white font-medium flex items-center justify-center gap-1.5 transition-colors"
+              >
+                + Lồng tiếng / Sub
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Viewport transform layer */}
       <div
         style={{

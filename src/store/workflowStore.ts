@@ -709,7 +709,7 @@ export const useWorkflowStore = create<WorkflowState>()(
               }
             } catch (err: any) {
               console.error(`[FlowForge Execution Error] Node "${data.label || node.id}":`, err);
-              canvasEngine.updateNodeData(node.id, { output: { error: err.message }, isGenerating: false });
+              canvasEngine.updateNodeData(node.id, { errorDetails: err.message || 'Lỗi không xác định khi gọi API', isGenerating: false });
               throw err;
             }
           }

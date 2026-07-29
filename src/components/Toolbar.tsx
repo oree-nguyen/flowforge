@@ -116,7 +116,7 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
 function ToolButton({ icon, active = false, tooltip = "", onClick }: { icon: React.ReactNode; active?: boolean; tooltip?: string; onClick?: () => void }) {
   return (
     <button 
-      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors group relative
+      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors group relative focus-visible:ring-2 focus-visible:ring-accent-lime focus-visible:outline-none
         ${active ? 'bg-border-subtle text-text-primary' : 'text-text-muted hover:text-text-primary hover:bg-white/5'}
       `}
       title={tooltip}

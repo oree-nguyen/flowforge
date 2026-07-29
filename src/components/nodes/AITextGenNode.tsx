@@ -48,12 +48,30 @@ export function AITextGenNode({ id, data, selected, onDisconnectStart }: NodePro
               </div>
             )}
             
-            {data.output && !data.isGenerating ? (
+            {data.errorDetails && !data.isGenerating && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 flex flex-col gap-2">
+                <span className="font-semibold flex items-center gap-1">
+                  ⚠️ API Error:
+                </span>
+                <p className="text-[11px] break-words opacity-90">{data.errorDetails as string}</p>
+                <button 
+                  onClick={() => {
+                    canvasEngine.updateNodeData(id, { errorDetails: null });
+                    useWorkflowStore.getState().executeWorkflow();
+                  }}
+                  className="mt-1 self-end px-2.5 py-1 bg-red-500/20 hover:bg-red-500 hover:text-white border border-red-500/40 rounded-lg text-[10px] font-medium transition-colors flex items-center gap-1"
+                >
+                  🔄 Thử lại (Retry)
+                </button>
+              </div>
+            )}
+            
+            {data.output && !data.isGenerating && !data.errorDetails ? (
                <div className="bg-canvas border border-border-subtle rounded-xl p-3 text-xs text-text-muted max-h-24 overflow-hidden relative select-text">
                   <p className="line-clamp-3">{data.output as string}</p>
                   <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-canvas to-transparent"></div>
                </div>
-            ) : !data.isGenerating && (
+            ) : !data.isGenerating && !data.errorDetails && (
                <div className="text-xs text-text-muted italic">Ready</div>
             )}
           </div>
