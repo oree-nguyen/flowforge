@@ -75,7 +75,7 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
                 <button 
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-transform my-1 bg-red-600 text-white hover:bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse"
                   onClick={cancelExecution}
-                  title="Dừng chạy Workflow (Cancel)"
+                  title="Dừng theo dõi — Tác vụ Video/AI đã gửi lên OpenRouter server có thể vẫn tiếp tục và tính phí"
                 >
                   <Square size={16} fill="currentColor" />
                 </button>

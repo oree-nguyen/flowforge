@@ -169,11 +169,11 @@ export const useWorkflowStore = create<WorkflowState>()(
         const nodes = canvasEngine.getNodes();
         nodes.forEach(n => {
           if (n.data?.isGenerating || n.data?.isConcatting) {
-            canvasEngine.updateNodeData(n.id, { isGenerating: false, isConcatting: false, statusMessage: 'Đã hủy tác vụ' });
+            canvasEngine.updateNodeData(n.id, { isGenerating: false, isConcatting: false, statusMessage: 'Đã dừng theo dõi' });
           }
         });
         set({ isExecuting: false, activeAbortController: null });
-        toast.info('Đã dừng chạy workflow.');
+        toast.warning('Đã dừng theo dõi client. Lưu ý: Tác vụ Video/AI đã gửi lên OpenRouter server có thể vẫn tiếp tục hoàn tất và tính phí.');
       },
 
       savedWorkflows: [
