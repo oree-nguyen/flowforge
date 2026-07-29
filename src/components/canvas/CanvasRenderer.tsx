@@ -295,6 +295,7 @@ export function CanvasRenderer() {
   const connDragRef = useRef<ConnDrag>(null);
   const connDragPos = useRef({ x: 0, y: 0 });
   const [, setConnDragRender] = useState(0); // force re-render for temp line
+  const snappedPortRef = useRef<{ targetId: string; targetHandle: string; x: number; y: number; el: HTMLElement } | null>(null);
 
   // Context menu
   const [menu, setMenu] = useState<{ x: number; y: number; nodeId: string | null; edgeId: string | null } | null>(null);
