@@ -197,9 +197,6 @@ function NodeFloatingToolbar({ nodeId }: { nodeId: string }) {
       >
         <Settings size={16} />
       </button>
-      <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl transition-colors" title="Create Branch">
-        <Scissors size={16} />
-      </button>
       <button className="p-2 text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl transition-colors" title="Duplicate" onClick={() => canvasEngine.duplicateNode(nodeId)}>
         <Copy size={16} />
       </button>
@@ -662,7 +659,6 @@ function ContextMenuOverlay({ x, y, nodeId, edgeId, onClose }: { x: number; y: n
 
   const nodeItems = nodeId ? [
     { icon: <Play size={14} />, label: 'Run node', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
-    { icon: <Scissors size={14} />, label: 'Create branch', action: () => { alert('Not implemented'); onClose(); } },
     { icon: <Settings size={14} />, label: 'Settings', action: () => { 
         canvasEngine.select(nodeId); 
         useWorkflowStore.getState().setPropertiesPanelOpen(true); 
