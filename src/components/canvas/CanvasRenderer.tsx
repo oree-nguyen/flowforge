@@ -391,10 +391,11 @@ export function CanvasRenderer() {
       document.querySelectorAll('.port-snapped').forEach(el => el.classList.remove('port-snapped'));
 
       if (closestPort) {
-        snappedPortRef.current = closestPort;
-        closestPort.el.classList.add('port-snapped');
-        connDragPos.current = { x: closestPort.x, y: closestPort.y };
-        connDragRef.current = { ...connDragRef.current, x: closestPort.x, y: closestPort.y };
+        const found = closestPort as { targetId: string; targetHandle: string; x: number; y: number; dist: number; el: HTMLElement };
+        snappedPortRef.current = found;
+        found.el.classList.add('port-snapped');
+        connDragPos.current = { x: found.x, y: found.y };
+        connDragRef.current = { ...connDragRef.current, x: found.x, y: found.y };
       } else {
         snappedPortRef.current = null;
         connDragPos.current = { x: e.clientX, y: e.clientY };
