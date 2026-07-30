@@ -71,10 +71,10 @@ function SortableClipCard({
       onClick={() => onSelect(clip.id)}
       className={`relative group cursor-grab active:cursor-grabbing rounded-[10px] overflow-hidden border transition-all shrink-0 w-24 h-11 bg-black/80 flex flex-col justify-between p-1.5 ${
         isSelected
-          ? 'border-rose-400 ring-2 ring-rose-500/50 shadow-xl'
+          ? 'border-[#C6F135] ring-2 ring-[#C6F135]/50 shadow-xl'
           : isDragging
-          ? 'border-rose-400 ring-2 ring-rose-500/50 shadow-xl'
-          : 'border-white/10 hover:border-rose-400/60'
+          ? 'border-[#C6F135] ring-2 ring-[#C6F135]/50 shadow-xl'
+          : 'border-[#C6F135]/30 hover:border-[#C6F135]/60'
       }`}
     >
       {/* Background Thumbnail */}
@@ -82,7 +82,7 @@ function SortableClipCard({
         <img
           src={clip.thumbnailUrl}
           alt={`Clip ${index + 1}`}
-          className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover opacity-90 pointer-events-none"
         />
       ) : (
         <div className="absolute inset-0 bg-canvas/80 flex items-center justify-center text-text-muted">
@@ -92,7 +92,7 @@ function SortableClipCard({
 
       {/* Order Badge & Grip */}
       <div className="relative z-10 flex items-center justify-between">
-        <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-rose-600/90 text-white shadow-sm">
+        <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-[#C6F135] text-black shadow-sm">
           #{index + 1}
         </span>
         <GripVertical size={11} className="text-white/80 drop-shadow" />
@@ -704,48 +704,16 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                 <div className="w-[2px] flex-1 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
               </div>
 
-              {/* 3. TRACKS CONTAINER (3 Track xếp chồng cùng 1 trục thời gian) */}
+              {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
               <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
-                {/* --- TRACK 1: SUBTITLE (Phụ đề - Màu Cam #F97316) --- */}
+                {/* --- TRACK 1: VIDEO CLIPS (Accent Lime #C6F135 + Thumbnail Background) --- */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
                     <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" /> TRACK 1 — SUBTITLES
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#C6F135]" /> TRACK 1 — VIDEO CLIPS
                     </span>
                   </div>
-                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
-                    {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
-                      nodeData.subtitleTrack.map((sub, idx) => {
-                        const leftPct = (sub.start / totalDuration) * 100;
-                        const widthPct = Math.max(3, ((sub.end - sub.start) / totalDuration) * 100);
-                        return (
-                          <div
-                            key={idx}
-                            className="absolute top-1 bottom-1 bg-[#F97316] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-bold truncate group/sub hover:brightness-110 cursor-pointer"
-                            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-                            title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
-                          >
-                            <span className="font-serif font-black text-[11px] shrink-0">T</span>
-                            <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-2 text-[9px] text-text-muted/60 italic">
-                        Chưa có phụ đề (Nối từ node Dubbing/Sub)
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* --- TRACK 2: VIDEO CLIPS (Thumbnail background) --- */}
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> TRACK 2 — VIDEO CLIPS
-                    </span>
-                  </div>
-                  <div className="relative h-13 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center p-1">
+                  <div className="relative h-13 w-full bg-[#C6F135]/5 rounded-lg border border-[#C6F135]/20 flex items-center p-1">
                     {clips.length > 0 ? (
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
@@ -773,11 +741,11 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                   </div>
                 </div>
 
-                {/* --- TRACK 3: AUDIO / LỒNG TIẾNG (Màu Xanh Ngọc #14B8A6 + Formant Pattern) --- */}
+                {/* --- TRACK 2: AUDIO / DUBBING (Sky Blue #38BDF8) --- */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
                     <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6]" /> TRACK 3 — AUDIO / DUBBING
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> TRACK 2 — AUDIO / DUBBING
                     </span>
                   </div>
                   <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
@@ -788,23 +756,53 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                         return (
                           <div
                             key={idx}
-                            className="absolute top-1 bottom-1 bg-[#14B8A6] text-white rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] font-medium truncate group/dub hover:brightness-110 cursor-pointer overflow-hidden"
+                            className="absolute top-1 bottom-1 bg-[#38BDF8] text-black font-semibold rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/dub hover:brightness-110 cursor-pointer"
                             style={{
                               left: `${leftPct}%`,
                               width: `${widthPct}%`,
-                              backgroundImage:
-                                'repeating-linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.2) 2px, transparent 2px, transparent 6px)',
                             }}
-                            title={`Dubbed Audio #${idx + 1}`}
+                            title={`Audio ${idx + 1}`}
                           >
-                            <Music size={11} className="shrink-0 text-white/90" />
-                            <span className="truncate text-[9px] font-semibold">Lồng tiếng #{idx + 1}</span>
+                            <Music size={11} className="shrink-0 text-black/80" />
+                            <span className="truncate text-[9px]">Audio {idx + 1}</span>
                           </div>
                         );
                       })
                     ) : (
                       <div className="px-2 text-[9px] text-text-muted/60 italic">
                         Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* --- TRACK 3: SUBTITLE / TEXT (Purple #A855F7) --- */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> TRACK 3 — SUBTITLE / TEXT
+                    </span>
+                  </div>
+                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                    {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
+                      nodeData.subtitleTrack.map((sub, idx) => {
+                        const leftPct = (sub.start / totalDuration) * 100;
+                        const widthPct = Math.max(6, ((sub.end - sub.start) / totalDuration) * 100);
+                        return (
+                          <div
+                            key={idx}
+                            className="absolute top-1 bottom-1 bg-[#A855F7] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-medium truncate group/sub hover:brightness-110 cursor-pointer"
+                            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                            title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
+                          >
+                            <span className="font-serif font-black text-[10px] shrink-0 opacity-90">Sub {idx + 1}</span>
+                            <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-2 text-[9px] text-text-muted/60 italic">
+                        Chưa có phụ đề (Nối từ node Dubbing/Sub)
                       </div>
                     )}
                   </div>
