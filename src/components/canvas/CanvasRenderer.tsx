@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import React, { useRef, useCallback, useEffect, useState, useLayoutEffect } from 'react';
 import { Play, Settings, Copy, Plus, Trash2 } from 'lucide-react';
 import { canvasEngine, type NodeData } from '../../engine/canvasEngine';
 import { useCanvasEngine } from '../../engine/useCanvasEngine';
@@ -210,12 +210,13 @@ function getHandlePosition(node: NodeData, size: { width: number, height: number
       const x = (screenCenterX - canvasRect.left - viewport.x) / viewport.zoom;
       const y = (screenCenterY - canvasRect.top - viewport.y) / viewport.zoom;
 
-      // Debug verification console log
-      console.log(`[PortCoordsDebug] Node: ${node.id} (${type}/${handleId || 'default'}) | DOM Icon Screen: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)}) | Canvas Container Screen: (${canvasRect.left.toFixed(1)}, ${canvasRect.top.toFixed(1)}) | Viewport: pan=(${viewport.x.toFixed(1)}, ${viewport.y.toFixed(1)}) zoom=${viewport.zoom.toFixed(2)} | Engine Canvas Output: (${x.toFixed(1)}, ${y.toFixed(1)})`);
+      console.log(`[PortCoordsDebug SUCCESS] Found DOM port for ${node.id}:${handleId || type} | screenCenter=(${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)}) | CanvasPos=(${x.toFixed(1)}, ${y.toFixed(1)})`);
 
       return { x, y };
     }
   }
+
+  console.warn(`[PortCoordsDebug FALLBACK] DOM port element NOT YET MOUNTED for node ${node.id} (${type}/${handleId || 'default'})`);
 
   // Fallback
   if (type === 'out') {
@@ -352,6 +353,43 @@ export function CanvasRenderer() {
     el.addEventListener('wheel', handleWheel, { passive: false });
     return () => el.removeEventListener('wheel', handleWheel);
   }, [handleWheel]);
+
+  // Force re-render tick when DOM layout or port positions change (initial mount, zoom, drag, node mount)
+  const [, setPortLayoutTick] = useState(0);
+
+  useLayoutEffect(() => {
+    // 1. Initial layout check right after DOM mount & browser paint
+    const rafId = requestAnimationFrame(() => {
+      setPortLayoutTick(t => t + 1);
+    });
+
+    // 2. Observe DOM mutations (node cards and port icons mounting/moving)
+    const container = canvasRef.current;
+    if (!container) return () => cancelAnimationFrame(rafId);
+
+    const observer = new MutationObserver(() => {
+      setPortLayoutTick(t => t + 1);
+    });
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'data-target', 'data-nodeid'],
+    });
+
+    // 3. Observe resize of canvas container
+    const resizeObserver = new ResizeObserver(() => {
+      setPortLayoutTick(t => t + 1);
+    });
+    resizeObserver.observe(container);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      resizeObserver.disconnect();
+    };
+  }, [nodes.length, edges.length]);
 
   // --- Pointer events for pan + drag + connection ---
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
