@@ -329,22 +329,38 @@ export async function generateDubbedAudio(
   return audioBufferToWavBlob(renderedBuffer);
 }
 
+import { separateVocalsAndInstrumental } from './vocalSeparator';
+
 /**
- * Step 7: Mux video stream with dubbed audio
+ * Step 7: Mux video stream with dubbed audio and isolated background instrumental
  */
 export async function muxAudioWithVideo(
   videoUrlOrBlob: string | Blob,
   dubbedAudioBlob: Blob,
   mixOriginal: boolean
 ): Promise<string> {
-  // Return ObjectURL for video element with audio mixing or direct audio track overlay
   const videoEl = document.createElement('video');
   videoEl.src = typeof videoUrlOrBlob === 'string' ? videoUrlOrBlob : URL.createObjectURL(videoUrlOrBlob);
   videoEl.crossOrigin = 'anonymous';
-  videoEl.muted = !mixOriginal;
+  videoEl.muted = true; // Video element itself is muted
 
-  const audioEl = document.createElement('audio');
-  audioEl.src = URL.createObjectURL(dubbedAudioBlob);
+  const dubAudioEl = document.createElement('audio');
+  dubAudioEl.src = URL.createObjectURL(dubbedAudioBlob);
+
+  let instrumentalAudioEl: HTMLAudioElement | null = null;
+
+  // If user wants background music/effects preserved (mixOriginal = true):
+  // Extract audio from video, separate vocals/instrumental, and use instrumental track
+  if (mixOriginal) {
+    try {
+      const { audioBlob } = await extractAudioFromVideo(videoUrlOrBlob);
+      const { instrumentalUrl } = await separateVocalsAndInstrumental(audioBlob);
+      instrumentalAudioEl = document.createElement('audio');
+      instrumentalAudioEl.src = instrumentalUrl;
+    } catch (err) {
+      console.warn('[DubSubEngine] Vocal separation for background track failed, continuing with direct TTS mix:', err);
+    }
+  }
 
   await new Promise((resolve) => {
     videoEl.onloadedmetadata = () => resolve(true);
@@ -354,15 +370,21 @@ export async function muxAudioWithVideo(
   const audioCtx = new AudioContext();
   const dest = audioCtx.createMediaStreamDestination();
 
-  if (mixOriginal) {
-    const origSource = audioCtx.createMediaElementSource(videoEl);
-    const origGain = audioCtx.createGain();
-    origGain.gain.value = 0.15; // -20dB original background audio
-    origSource.connect(origGain);
-    origGain.connect(dest);
+  // Connect isolated background instrumental audio track
+  if (mixOriginal && instrumentalAudioEl) {
+    await new Promise((res) => {
+      instrumentalAudioEl!.onloadeddata = () => res(true);
+      setTimeout(res, 500); // fallback timeout
+    });
+    const instSource = audioCtx.createMediaElementSource(instrumentalAudioEl);
+    const instGain = audioCtx.createGain();
+    instGain.gain.value = 0.8; // High quality background instrumental volume
+    instSource.connect(instGain);
+    instGain.connect(dest);
   }
 
-  const dubSource = audioCtx.createMediaElementSource(audioEl);
+  // Connect new TTS Dubbed Voice Track
+  const dubSource = audioCtx.createMediaElementSource(dubAudioEl);
   const dubGain = audioCtx.createGain();
   dubGain.gain.value = 1.0;
   dubSource.connect(dubGain);
@@ -387,11 +409,13 @@ export async function muxAudioWithVideo(
     recorder.onerror = (e) => reject(e);
 
     videoEl.currentTime = 0;
-    audioEl.currentTime = 0;
+    dubAudioEl.currentTime = 0;
+    if (instrumentalAudioEl) instrumentalAudioEl.currentTime = 0;
 
     recorder.start();
     videoEl.play();
-    audioEl.play();
+    dubAudioEl.play();
+    if (instrumentalAudioEl) instrumentalAudioEl.play();
 
     videoEl.onended = () => {
       recorder.stop();

@@ -20,6 +20,32 @@ export interface InputTextData {
   [key: string]: unknown;
 }
 
+export interface CanvasSettings {
+  aspectRatio: "1:1" | "16:9" | "9:16" | "4:5" | "custom";
+  customRatio?: { w: number; h: number };
+  backgroundFill: "black" | "blur" | string;
+}
+
+export interface ClipTransform {
+  clipId: string;
+  scale: number;      // 1 = original size relative to frame
+  offsetX: number;    // offset X relative to frame center (%)
+  offsetY: number;    // offset Y relative to frame center (%)
+  rotationDeg: number;// rotation in degrees
+}
+
+export interface SubtitleTrackItem {
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface DubAudioTrackItem {
+  start: number;
+  end: number;
+  audioUrl: string;
+}
+
 export interface VideoClipItem {
   id: string;
   sourceNodeId: string;
@@ -27,11 +53,23 @@ export interface VideoClipItem {
   thumbnailUrl: string;
   durationSec?: number;
   videoUrl?: string;
+  volume?: number; // 0-200%
 }
 
 export interface VideoEditorData {
   clips: VideoClipItem[];
-  aspectRatio?: '16:9' | '9:16' | '1:1';
+  canvas?: CanvasSettings;
+  clipTransforms?: ClipTransform[];
+  subtitleTrack?: SubtitleTrackItem[];
+  dubAudioTrack?: DubAudioTrackItem[];
+  selectedClipId?: string;
+  activeLanguage?: string;
+  burnSubtitle?: boolean;
+  vocalSeparationEngine?: 'htdemucs_onnx' | 'dsp_fallback';
+  separatedVocalsUrl?: string;
+  separatedInstrumentalUrl?: string;
+  isSeparatingAudio?: boolean;
+  aspectRatio?: '16:9' | '9:16' | '1:1' | '4:5' | 'custom';
   resolution?: '720p' | '1080p';
   output?: string;
   isConcatting?: boolean;

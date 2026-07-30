@@ -87,6 +87,55 @@ export function VideoEditorProperties({ nodeId }: { nodeId: string }) {
         />
       </div>
 
+      {/* Aspect Ratio Selection */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs text-text-muted font-medium">Tỉ lệ khung hình Canvas (Aspect Ratio)</label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { id: '16:9', label: '16:9' },
+            { id: '9:16', label: '9:16' },
+            { id: '1:1', label: '1:1' },
+            { id: '4:5', label: '4:5' },
+          ].map((r) => (
+            <button
+              key={r.id}
+              onClick={() => handleChange('canvas', { ...(data.canvas || {}), aspectRatio: r.id })}
+              className={`py-1.5 rounded-lg border text-xs font-mono font-medium transition-all ${
+                (data.canvas?.aspectRatio || '16:9') === r.id
+                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-sm'
+                  : 'bg-canvas border-border-subtle text-text-muted hover:border-white/20'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Background Fill Selection */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs text-text-muted font-medium">Màu nền khung Canvas (Background Fill)</label>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { id: 'black', label: 'Đen (Mặc định)' },
+            { id: 'blur', label: 'Mờ (Blur)' },
+            { id: '#18181b', label: 'Xám Đen' },
+          ].map((bg) => (
+            <button
+              key={bg.id}
+              onClick={() => handleChange('canvas', { ...(data.canvas || { aspectRatio: '16:9' }), backgroundFill: bg.id })}
+              className={`py-1.5 px-2 rounded-lg border text-xs font-medium transition-all ${
+                (data.canvas?.backgroundFill || 'black') === bg.id
+                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-sm'
+                  : 'bg-canvas border-border-subtle text-text-muted hover:border-white/20'
+              }`}
+            >
+              {bg.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Resolution Selection */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs text-text-muted font-medium">Độ phân giải đầu ra (Resolution)</label>

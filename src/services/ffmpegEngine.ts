@@ -72,12 +72,16 @@ export async function extractVideoThumbnail(videoBlobOrUrl: Blob | string): Prom
   return canvas.toDataURL('image/jpeg', 0.85);
 }
 
+import type { ClipTransform } from '../types/nodes';
+
 /**
- * Concatenate multiple video clips using FFmpeg WASM concat filter
+ * Concatenate multiple video clips using FFmpeg WASM concat filter with Canvas Ratio & Transform
  */
 export async function concatVideosWithFFmpeg(
-  clips: { url: string; id: string }[],
+  clips: { url: string; id: string; transform?: ClipTransform; volume?: number }[],
   resolution: '720p' | '1080p' = '720p',
+  aspectRatio: '16:9' | '9:16' | '1:1' | '4:5' | 'custom' = '16:9',
+  backgroundFill: string = 'black',
   onProgress?: (percent: number, message: string) => void
 ): Promise<string> {
   if (clips.length === 0) {
@@ -86,8 +90,22 @@ export async function concatVideosWithFFmpeg(
 
   const ffmpeg = await getFFmpeg(onProgress);
 
-  const targetWidth = resolution === '1080p' ? 1920 : 1280;
-  const targetHeight = resolution === '1080p' ? 1080 : 720;
+  // Compute Target Width & Height based on Aspect Ratio and Resolution
+  let targetWidth = resolution === '1080p' ? 1920 : 1280;
+  let targetHeight = resolution === '1080p' ? 1080 : 720;
+
+  if (aspectRatio === '9:16') {
+    targetWidth = resolution === '1080p' ? 1080 : 720;
+    targetHeight = resolution === '1080p' ? 1920 : 1280;
+  } else if (aspectRatio === '1:1') {
+    targetWidth = resolution === '1080p' ? 1080 : 720;
+    targetHeight = resolution === '1080p' ? 1080 : 720;
+  } else if (aspectRatio === '4:5') {
+    targetWidth = resolution === '1080p' ? 1080 : 720;
+    targetHeight = resolution === '1080p' ? 1350 : 900;
+  }
+
+  const padColor = backgroundFill === 'blur' || backgroundFill === 'black' ? 'black' : backgroundFill.replace('#', '0x');
 
   // Step 1: Write all clip files to FFmpeg Virtual Filesystem
   onProgress?.(15, `Đang nạp ${clips.length} file video vào bộ nhớ...`);
@@ -101,17 +119,31 @@ export async function concatVideosWithFFmpeg(
     await ffmpeg.writeFile(inputName, fileData);
   }
 
-  // Step 2: Build FFmpeg filter_complex concat graph
-  onProgress?.(30, 'Đang chuẩn hóa định dạng & ghép các phân cảnh...');
+  // Step 2: Build FFmpeg filter_complex graph
+  onProgress?.(30, 'Đang chuẩn hóa Canvas Frame & Transform các phân cảnh...');
 
-  // Build filter graph:
-  // [0:v]scale=1280:720,fps=30,setsar=1[v0]; [1:v]scale=1280:720,fps=30,setsar=1[v1]; ...
-  // [v0][0:a][v1][1:a]...concat=n=N:v=1:a=1[outv][outa]
   const scaleFilters = inputNames
-    .map((_, i) => `[${i}:v]scale=${targetWidth}:${targetHeight}:force_original_aspect_ratio=decrease,pad=${targetWidth}:${targetHeight}:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1[v${i}]`)
+    .map((_, i) => {
+      const transform = clips[i].transform;
+      const scaleMult = transform?.scale || 1.0;
+      const rot = transform?.rotationDeg || 0;
+      const vol = typeof clips[i].volume === 'number' ? clips[i].volume! / 100 : 1.0;
+
+      const scaledW = Math.round(targetWidth * scaleMult);
+      const scaledH = Math.round(targetHeight * scaleMult);
+
+      let videoFilter = `[${i}:v]scale=${scaledW}:${scaledH}:force_original_aspect_ratio=decrease`;
+      if (rot !== 0) {
+        videoFilter += `,rotate=${rot}*PI/180`;
+      }
+      videoFilter += `,pad=${targetWidth}:${targetHeight}:(ow-iw)/2:(oh-ih)/2:color=${padColor},fps=30,setsar=1[v${i}]`;
+
+      const audioFilter = `[${i}:a]volume=${vol}[a${i}]`;
+      return `${videoFilter}; ${audioFilter}`;
+    })
     .join('; ');
 
-  const concatInputs = inputNames.map((_, i) => `[v${i}][${i}:a]`).join('');
+  const concatInputs = inputNames.map((_, i) => `[v${i}][a${i}]`).join('');
   const filterGraph = `${scaleFilters}; ${concatInputs}concat=n=${inputNames.length}:v=1:a=1[outv][outa]`;
 
   const args: string[] = [];
