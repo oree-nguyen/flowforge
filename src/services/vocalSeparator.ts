@@ -27,7 +27,8 @@ export async function separateVocalsAndInstrumental(
     onProgress?.(15, 'Tải lười mô hình AI HTDemucs (ONNX)...');
     
     // Simulate/attempt dynamic ONNX loader with progress updates
-    const ort = await import('onnxruntime-web').catch(() => null);
+    // @ts-ignore
+    const ort = await import(/* @vite-ignore */ 'onnxruntime-web').catch(() => null);
     
     if (ort && (window as any).WebGPU) {
       onProgress?.(35, 'Đang tăng tốc WebGPU & nạp tensor...');
@@ -37,10 +38,10 @@ export async function separateVocalsAndInstrumental(
     }
 
     // Fallback to WebAudio DSP Center-Channel Vocal Cancellation & Extraction Filter
-    return await runWebAudioDSPVocalSeparation(audioCtx, decodedBuffer, onProgress);
+    return await runWebAudioDSPVocalSeparation(decodedBuffer, onProgress);
   } catch (err) {
     console.warn('[VocalSeparator] ONNX engine unavailable, switching to WebAudio DSP Fallback:', err);
-    return await runWebAudioDSPVocalSeparation(audioCtx, decodedBuffer, onProgress);
+    return await runWebAudioDSPVocalSeparation(decodedBuffer, onProgress);
   } finally {
     await audioCtx.close();
   }
@@ -51,7 +52,6 @@ export async function separateVocalsAndInstrumental(
  * Uses M/S (Mid-Side) matrix processing + Vocal Frequency Bandpass Filters (300Hz - 3.4kHz).
  */
 async function runWebAudioDSPVocalSeparation(
-  audioCtx: AudioContext,
   buffer: AudioBuffer,
   onProgress?: (pct: number, msg: string) => void
 ): Promise<VocalSeparationResult> {

@@ -670,7 +670,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               </span>
               {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
-                  {nodeData.dubAudioTrack.map((dub, idx) => (
+                  {nodeData.dubAudioTrack.map((_, idx) => (
                     <div
                       key={idx}
                       className="px-2 py-1 bg-amber-500/20 border border-amber-500/40 rounded text-[9px] font-mono text-amber-300 shrink-0"

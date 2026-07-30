@@ -46,7 +46,9 @@ export function VideoEditorProperties({ nodeId }: { nodeId: string }) {
       const outputUrl = await concatVideosWithFFmpeg(
         validVideoClips,
         resolution,
-        (pct, msg) => {
+        data.canvas?.aspectRatio || '16:9',
+        data.canvas?.backgroundFill || 'black',
+        (pct: number, msg: string) => {
           canvasEngine.updateNodeData(nodeId, { progressPercent: pct, progressMessage: msg });
         }
       );
