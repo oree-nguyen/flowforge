@@ -21,7 +21,8 @@ import {
   FileText,
   Sliders,
   RotateCw,
-  Maximize2
+  Maximize2,
+  Music
 } from 'lucide-react';
 
 import {
@@ -70,12 +71,12 @@ function SortableClipCard({
       {...attributes}
       {...listeners}
       onClick={() => onSelect(clip.id)}
-      className={`relative group cursor-grab active:cursor-grabbing rounded-xl overflow-hidden border transition-all shrink-0 w-24 h-16 bg-black/80 flex flex-col justify-between p-1.5 ${
+      className={`relative group cursor-grab active:cursor-grabbing rounded-[10px] overflow-hidden border transition-all shrink-0 w-24 h-11 bg-black/80 flex flex-col justify-between p-1.5 ${
         isSelected
           ? 'border-rose-400 ring-2 ring-rose-500/50 shadow-xl'
           : isDragging
           ? 'border-rose-400 ring-2 ring-rose-500/50 shadow-xl'
-          : 'border-border-subtle hover:border-rose-400/60'
+          : 'border-white/10 hover:border-rose-400/60'
       }`}
     >
       {/* Background Thumbnail */}
@@ -83,20 +84,20 @@ function SortableClipCard({
         <img
           src={clip.thumbnailUrl}
           alt={`Clip ${index + 1}`}
-          className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover opacity-80 pointer-events-none"
         />
       ) : (
-        <div className="absolute inset-0 bg-canvas/60 flex items-center justify-center text-text-muted">
-          <Film size={18} />
+        <div className="absolute inset-0 bg-canvas/80 flex items-center justify-center text-text-muted">
+          <Film size={16} />
         </div>
       )}
 
       {/* Order Badge & Grip */}
       <div className="relative z-10 flex items-center justify-between">
-        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-rose-500 text-white shadow-sm">
+        <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-rose-600/90 text-white shadow-sm">
           #{index + 1}
         </span>
-        <GripVertical size={12} className="text-white/70" />
+        <GripVertical size={11} className="text-white/80 drop-shadow" />
       </div>
 
       {/* Hover Remove Button */}
@@ -106,10 +107,10 @@ function SortableClipCard({
             e.stopPropagation();
             onRemove(clip.id);
           }}
-          className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-rose-600/80 hover:bg-rose-600 text-white transition-opacity"
+          className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-rose-600/90 hover:bg-rose-600 text-white transition-opacity"
           title="Xóa clip này"
         >
-          <Trash2 size={10} />
+          <Trash2 size={9} />
         </button>
       </div>
     </div>
@@ -150,6 +151,54 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     })
   );
 
+  // --- CapCut Timeline Ruler & Playhead Logic ---
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
+
+  const totalDuration = Math.max(duration || 0, 30); // 30s minimum axis
+  const playheadPercent = Math.max(0, Math.min(100, (currentTime / totalDuration) * 100));
+
+  // Time Ticks (00:00, 00:05, 00:10, 00:15...)
+  const timeTicks = Array.from({ length: Math.floor(totalDuration / 5) + 1 }, (_, i) => {
+    const sec = i * 5;
+    const mins = Math.floor(sec / 60);
+    const secs = Math.floor(sec % 60);
+    const label = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return { sec, label };
+  });
+
+  const handleRulerScrub = (clientX: number) => {
+    if (!timelineRef.current) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const offsetX = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, offsetX / rect.width));
+    const targetTime = pct * totalDuration;
+    setCurrentTime(targetTime);
+    if (videoRef.current) {
+      videoRef.current.currentTime = targetTime;
+    }
+  };
+
+  useEffect(() => {
+    if (!isDraggingPlayhead) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      handleRulerScrub(e.clientX);
+    };
+
+    const handlePointerUp = () => {
+      setIsDraggingPlayhead(false);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [isDraggingPlayhead, totalDuration]);
+
   // Sync connected video inputs into clips list automatically & populate Dubbing/Sub tracks
   useEffect(() => {
     const edges = canvasEngine.getEdges();
@@ -187,7 +236,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
         if (sourceNode.data?.outputVideo) {
           dubAudioTrack.push({
             start: 0,
-            end: 10,
+            end: Math.max(10, (segments?.[segments.length - 1]?.end || 10)),
             audioUrl: sourceNode.data.outputVideo,
           });
         }
@@ -498,7 +547,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                       setIsPlaying(!isPlaying);
                     }
                   }}
-                  className="p-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors"
+                  className="p-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors shrink-0"
                 >
                   {isPlaying ? <Pause size={12} /> : <Play size={12} />}
                 </button>
@@ -514,7 +563,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                   }}
                   className="flex-1 accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
                 />
-                <span className="font-mono text-[9px] text-text-muted">
+                <span className="font-mono text-[9px] text-text-muted shrink-0">
                   {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
                 </span>
               </div>
@@ -601,96 +650,175 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             </div>
           </div>
 
-          {/* BOTTOM SECTION: Frame 2 (Multi-track Timeline - Below) */}
-          <div className="p-3 bg-canvas/40 flex flex-col gap-2">
+          {/* BOTTOM SECTION: Frame 2 (Exact CapCut Multi-track Timeline - Below) */}
+          <div className="p-3 bg-canvas/60 flex flex-col gap-3 relative select-none">
+            {/* Timeline Title Bar */}
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-text-muted font-medium flex items-center gap-1">
-                <Layers size={12} className="text-rose-400" /> Multi-track Timeline:
+              <span className="text-text-primary font-bold flex items-center gap-1.5">
+                <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
               </span>
-              <span className="text-[10px] text-text-muted font-mono">{clips.length} phân cảnh</span>
+              <span className="text-[10px] font-mono text-text-muted">
+                {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
+              </span>
             </div>
 
-            {/* Track 1: Video Clips */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[9px] font-mono text-text-muted">TRACK 1 — VIDEO CLIPS</span>
-              {clips.length > 0 ? (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
-                    <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-1 min-h-[72px]">
-                      {clips
-                        .sort((a, b) => a.order - b.order)
-                        .map((clip, idx) => (
-                          <SortableClipCard
-                            key={clip.id}
-                            clip={clip}
-                            index={idx}
-                            isSelected={clip.id === selectedClipId}
-                            onSelect={setSelectedClipId}
-                            onRemove={handleRemoveClip}
-                          />
-                        ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                <div className="p-2 border border-dashed border-border-subtle rounded-xl text-[10px] text-text-muted text-center italic">
-                  Nối video input vào port videos_in bên trái
-                </div>
-              )}
-            </div>
+            {/* Time Axis Container with Ruler & Playhead */}
+            <div
+              ref={timelineRef}
+              className="relative overflow-x-auto custom-scrollbar pb-2 pt-1 flex flex-col gap-2 min-w-full cursor-pointer"
+              onPointerDown={(e) => handleRulerScrub(e.clientX)}
+            >
+              {/* 1. TOP RULER (Thước thời gian) */}
+              <div className="relative h-6 w-full min-w-[420px] border-b border-border-subtle/60 flex items-end pb-1 bg-white/[0.02] rounded-t-lg">
+                {timeTicks.map((tick) => (
+                  <div
+                    key={tick.sec}
+                    className="absolute bottom-0 flex flex-col items-center transform -translate-x-1/2"
+                    style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
+                  >
+                    <span className="text-[8px] font-mono text-text-muted/80">{tick.label}</span>
+                    <div className="w-[1px] h-1.5 bg-white/20 mt-0.5" />
+                  </div>
+                ))}
+              </div>
 
-            {/* Track 2: Subtitles */}
-            <div className="flex flex-col gap-1 mt-1">
-              <span className="text-[9px] font-mono text-text-muted flex items-center gap-1">
-                <FileText size={10} className="text-purple-400" /> TRACK 2 — SUBTITLES
-              </span>
-              {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
-                <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
-                  {nodeData.subtitleTrack.map((sub, idx) => (
-                    <div
-                      key={idx}
-                      className="px-2 py-1 bg-purple-500/20 border border-purple-500/40 rounded text-[9px] font-mono text-purple-300 truncate max-w-[120px] shrink-0"
-                      title={sub.text}
-                    >
-                      {sub.text}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-2 py-1 bg-white/5 rounded text-[9px] text-text-muted italic">
-                  Chưa có dữ liệu sub (Nối từ node Dubbing/Sub)
-                </div>
-              )}
-            </div>
+              {/* 2. PLAYHEAD (Kim thời gian + Tay cầm Giọt nước lộn ngược) */}
+              <div
+                className="absolute top-0 bottom-0 z-30 pointer-events-auto cursor-ew-resize flex flex-col items-center group/playhead"
+                style={{ left: `${playheadPercent}%` }}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  setIsDraggingPlayhead(true);
+                }}
+              >
+                {/* Inverted Teardrop SVG Handle (Con trỏ giọt nước lộn ngược) */}
+                <svg
+                  width="14"
+                  height="16"
+                  viewBox="0 0 14 16"
+                  fill="currentColor"
+                  className="text-white drop-shadow-md -mb-1 group-hover/playhead:scale-115 transition-transform"
+                >
+                  <path d="M 1,4.5 C 1,2 3.7,0 7,0 C 10.3,0 13,2 13,4.5 C 13,8 7,16 7,16 C 7,16 1,8 1,4.5 Z" />
+                  <circle cx="7" cy="4.5" r="2" fill="#000000" />
+                </svg>
+                {/* Vertical Playhead Line spanning all 3 tracks */}
+                <div className="w-[2px] flex-1 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+              </div>
 
-            {/* Track 3: Dubbed Audio */}
-            <div className="flex flex-col gap-1 mt-1">
-              <span className="text-[9px] font-mono text-text-muted flex items-center gap-1">
-                <Sparkles size={10} className="text-amber-400" /> TRACK 3 — LỒNG TIẾNG (TTS)
-              </span>
-              {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
-                <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1">
-                  {nodeData.dubAudioTrack.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="px-2 py-1 bg-amber-500/20 border border-amber-500/40 rounded text-[9px] font-mono text-amber-300 shrink-0"
-                    >
-                      🔊 Dubbed Audio #{idx + 1}
-                    </div>
-                  ))}
+              {/* 3. TRACKS CONTAINER (3 Track xếp chồng cùng 1 trục thời gian) */}
+              <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
+                {/* --- TRACK 1: SUBTITLE (Phụ đề - Màu Cam #F97316) --- */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F97316]" /> TRACK 1 — SUBTITLES
+                    </span>
+                  </div>
+                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                    {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
+                      nodeData.subtitleTrack.map((sub, idx) => {
+                        const leftPct = (sub.start / totalDuration) * 100;
+                        const widthPct = Math.max(3, ((sub.end - sub.start) / totalDuration) * 100);
+                        return (
+                          <div
+                            key={idx}
+                            className="absolute top-1 bottom-1 bg-[#F97316] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-bold truncate group/sub hover:brightness-110 cursor-pointer"
+                            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                            title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
+                          >
+                            <span className="font-serif font-black text-[11px] shrink-0">T</span>
+                            <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-2 text-[9px] text-text-muted/60 italic">
+                        Chưa có phụ đề (Nối từ node Dubbing/Sub)
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="px-2 py-1 bg-white/5 rounded text-[9px] text-text-muted italic">
-                  Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
+
+                {/* --- TRACK 2: VIDEO CLIPS (Thumbnail background) --- */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> TRACK 2 — VIDEO CLIPS
+                    </span>
+                  </div>
+                  <div className="relative h-13 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center p-1">
+                    {clips.length > 0 ? (
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
+                          <div className="flex items-center gap-1 w-full h-full">
+                            {clips
+                              .sort((a, b) => a.order - b.order)
+                              .map((clip, idx) => (
+                                <SortableClipCard
+                                  key={clip.id}
+                                  clip={clip}
+                                  index={idx}
+                                  isSelected={clip.id === selectedClipId}
+                                  onSelect={setSelectedClipId}
+                                  onRemove={handleRemoveClip}
+                                />
+                              ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    ) : (
+                      <div className="p-2 text-[9px] text-text-muted/60 italic">
+                        Nối video input vào port videos_in bên trái
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                {/* --- TRACK 3: AUDIO / LỒNG TIẾNG (Màu Xanh Ngọc #14B8A6 + Formant Pattern) --- */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6]" /> TRACK 3 — AUDIO / DUBBING
+                    </span>
+                  </div>
+                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                    {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
+                      nodeData.dubAudioTrack.map((dub, idx) => {
+                        const leftPct = (dub.start / totalDuration) * 100;
+                        const widthPct = Math.max(8, ((dub.end - dub.start) / totalDuration) * 100);
+                        return (
+                          <div
+                            key={idx}
+                            className="absolute top-1 bottom-1 bg-[#14B8A6] text-white rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] font-medium truncate group/dub hover:brightness-110 cursor-pointer overflow-hidden"
+                            style={{
+                              left: `${leftPct}%`,
+                              width: `${widthPct}%`,
+                              backgroundImage:
+                                'repeating-linear-gradient(90deg, rgba(255,255,255,0.2), rgba(255,255,255,0.2) 2px, transparent 2px, transparent 6px)',
+                            }}
+                            title={`Dubbed Audio #${idx + 1}`}
+                          >
+                            <Music size={11} className="shrink-0 text-white/90" />
+                            <span className="truncate text-[9px] font-semibold">Lồng tiếng #{idx + 1}</span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-2 text-[9px] text-text-muted/60 italic">
+                        Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Action Trigger Button */}
             <button
               onClick={handleRunConcat}
               disabled={nodeData.isConcatting || clips.length === 0}
-              className="w-full mt-2 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-medium flex items-center justify-center gap-2 shadow-md transition-all text-xs"
+              className="w-full mt-1 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-medium flex items-center justify-center gap-2 shadow-md transition-all text-xs"
             >
               {nodeData.isConcatting ? (
                 <Loader2 size={14} className="animate-spin" />
