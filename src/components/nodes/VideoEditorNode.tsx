@@ -425,16 +425,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
         <Scissors size={14} className="text-rose-400" /> CapCut Workstation (3 Khung & Tách Giọng)
       </div>
 
-      {/* Main Node Workstation Frame */}
-      <div
-        className={`w-[480px] bg-node rounded-2xl shadow-2xl border relative flex flex-col overflow-hidden transition-all ${
-          selected
-            ? 'border-rose-500 shadow-[0_0_24px_rgba(244,63,94,0.25)]'
-            : 'border-border-subtle hover:border-rose-500/50'
-        }`}
-      >
-        {/* Workstation Header */}
-        <div className="px-4 py-2.5 bg-white/5 border-b border-border-subtle flex items-center justify-between">
+      {/* Main Node Workstation Wrapper (Transparent flex container with gap-3 between 3 separate boxes) */}
+      <div className="w-[490px] flex flex-col gap-3 relative select-none">
+        {/* Floating Header Bar */}
+        <div className="px-3.5 py-2 bg-node rounded-xl border border-border-subtle flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="text-xs font-semibold text-text-primary truncate">
               {customNodeName || 'Video Editor Pro'}
@@ -464,368 +458,377 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
           </div>
         </div>
 
-        {/* 3-Frame Workstation Grid Layout */}
-        <div className="flex flex-col">
-          {/* TOP SECTION: Frame 1 (Canvas Preview - Left) + Frame 3 (Toolbox Panel - Right) */}
-          <div className="grid grid-cols-12 border-b border-border-subtle">
-            {/* Frame 1: Canvas Preview (Col 8) */}
-            <div className="col-span-8 p-3 border-r border-border-subtle flex flex-col gap-2 bg-canvas/60">
-              {/* Aspect Ratio Pills */}
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-text-muted font-medium flex items-center gap-1">
-                  <Maximize2 size={11} className="text-rose-400" /> Tỉ lệ Frame:
-                </span>
-                <div className="flex items-center gap-1">
-                  {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
-                    <button
-                      key={ratio}
-                      onClick={() =>
-                        canvasEngine.updateNodeData(id, {
-                          canvas: { ...canvasSettings, aspectRatio: ratio },
-                        })
-                      }
-                      className={`px-1.5 py-0.5 rounded font-mono transition-all ${
-                        canvasSettings.aspectRatio === ratio
-                          ? 'bg-rose-500 text-white font-bold'
-                          : 'bg-white/5 text-text-muted hover:text-white'
-                      }`}
-                    >
-                      {ratio}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Video Preview Box with Canvas Ratio & Interactive Transform */}
-              <div className="w-full aspect-video bg-black rounded-xl relative flex items-center justify-center overflow-hidden border border-border-subtle group/canvas">
-                {activeVideoUrl ? (
-                  <div
-                    className="w-full h-full flex items-center justify-center transition-transform"
-                    style={{
-                      transform: `scale(${activeTransform.scale}) translate(${activeTransform.offsetX}%, ${activeTransform.offsetY}%) rotate(${activeTransform.rotationDeg}deg)`,
-                    }}
-                  >
-                    <video
-                      ref={videoRef}
-                      src={activeVideoUrl}
-                      className="max-w-full max-h-full object-contain"
-                      onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
-                      onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1.5 text-text-muted text-[11px] p-4 text-center">
-                    <Film size={24} className="text-rose-400/60" />
-                    <span>Xem trước Canvas CapCut</span>
-                  </div>
-                )}
-
-                {/* Progress Overlay */}
-                {(nodeData.isConcatting || nodeData.isSeparatingAudio) && (
-                  <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-white p-4 z-30">
-                    <Loader2 size={22} className="animate-spin text-rose-400" />
-                    <span className="text-xs font-medium text-center">{nodeData.progressMessage || 'Processing...'}</span>
-                    <div className="w-3/4 h-1.5 bg-white/10 rounded-full overflow-hidden border border-white/20">
-                      <div
-                        className="h-full bg-gradient-to-r from-rose-500 to-amber-500 transition-all duration-300"
-                        style={{ width: `${nodeData.progressPercent || 10}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Play Controls & Scrubber */}
-              <div className="flex items-center gap-2 pt-1 text-[11px]">
-                <button
-                  onClick={() => {
-                    if (videoRef.current) {
-                      if (isPlaying) videoRef.current.pause();
-                      else videoRef.current.play();
-                      setIsPlaying(!isPlaying);
+        {/* TOP ROW: BOX 1 (Canvas Preview) + BOX 2 (Toolbox Panel) as 2 separate, independent boxes */}
+        <div className="grid grid-cols-12 gap-3">
+          {/* BOX 1: Canvas Preview (Separate Box, rounded-2xl, independent border) */}
+          <div
+            className={`col-span-7 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-2 transition-all ${
+              selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+            }`}
+          >
+            {/* Aspect Ratio Pills */}
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-text-muted font-medium flex items-center gap-1">
+                <Maximize2 size={11} className="text-rose-400" /> Frame Ratio:
+              </span>
+              <div className="flex items-center gap-1">
+                {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
+                  <button
+                    key={ratio}
+                    onClick={() =>
+                      canvasEngine.updateNodeData(id, {
+                        canvas: { ...canvasSettings, aspectRatio: ratio },
+                      })
                     }
-                  }}
-                  className="p-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors shrink-0"
-                >
-                  {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-                </button>
-                <input
-                  type="range"
-                  min={0}
-                  max={duration || 100}
-                  value={currentTime}
-                  onChange={(e) => {
-                    const t = parseFloat(e.target.value);
-                    if (videoRef.current) videoRef.current.currentTime = t;
-                    setCurrentTime(t);
-                  }}
-                  className="flex-1 accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-                />
-                <span className="font-mono text-[9px] text-text-muted shrink-0">
-                  {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
-                </span>
-              </div>
-            </div>
-
-            {/* Frame 3: Toolbox Panel (Col 4 - Right) */}
-            <div className="col-span-4 p-3 flex flex-col gap-3 bg-panel/60">
-              <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1 border-b border-border-subtle pb-1">
-                <Sliders size={12} className="text-rose-400" /> Toolbox CapCut
-              </span>
-
-              {/* Split Clip Button */}
-              <button
-                onClick={handleSplitClip}
-                disabled={!selectedClipId}
-                className="w-full py-1.5 px-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-border-subtle rounded-lg text-[10px] text-white font-medium flex items-center gap-1.5 transition-colors"
-              >
-                <Scissors size={12} className="text-rose-400" /> Cắt Clip (Split)
-              </button>
-
-              {/* Extract Audio Button */}
-              <button
-                onClick={handleExtractAudio}
-                disabled={nodeData.isSeparatingAudio}
-                className="w-full py-1.5 px-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-medium flex items-center gap-1.5 transition-colors"
-              >
-                <AudioWaveform size={12} className="text-amber-400" /> Tách Giọng Nói (Stem)
-              </button>
-
-              {/* Volume Slider */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[10px] text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <Volume2 size={11} /> Volume Clip
-                  </span>
-                  <span className="font-mono">{activeClip?.volume || 100}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={200}
-                  value={activeClip?.volume || 100}
-                  onChange={(e) => {
-                    const vol = parseInt(e.target.value, 10);
-                    const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
-                    canvasEngine.updateNodeData(id, { clips: updated });
-                  }}
-                  className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-                />
-              </div>
-
-              {/* Transform Adjustment (Scale & Rotation) */}
-              <div className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle">
-                <div className="flex items-center justify-between text-[10px] text-text-muted">
-                  <span>Zoom Layer</span>
-                  <span className="font-mono">{activeTransform.scale.toFixed(2)}x</span>
-                </div>
-                <input
-                  type="range"
-                  min={0.5}
-                  max={3.0}
-                  step={0.05}
-                  value={activeTransform.scale}
-                  onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
-                  className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-                />
-
-                <div className="flex items-center justify-between text-[10px] text-text-muted mt-1">
-                  <span className="flex items-center gap-1">
-                    <RotateCw size={10} /> Xoay Góc
-                  </span>
-                  <span className="font-mono">{activeTransform.rotationDeg}°</span>
-                </div>
-                <input
-                  type="range"
-                  min={-180}
-                  max={180}
-                  step={5}
-                  value={activeTransform.rotationDeg}
-                  onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
-                  className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* BOTTOM SECTION: Frame 2 (Exact CapCut Multi-track Timeline - Below) */}
-          <div className="p-3 bg-canvas/60 flex flex-col gap-3 relative select-none">
-            {/* Timeline Title Bar */}
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="text-text-primary font-bold flex items-center gap-1.5">
-                <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
-              </span>
-              <span className="text-[10px] font-mono text-text-muted">
-                {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
-              </span>
-            </div>
-
-            {/* Time Axis Container with Ruler & Playhead */}
-            <div
-              ref={timelineRef}
-              className="relative overflow-x-auto custom-scrollbar pb-2 pt-1 flex flex-col gap-2 min-w-full cursor-pointer"
-              onPointerDown={(e) => handleRulerScrub(e.clientX)}
-            >
-              {/* 1. TOP RULER (Thước thời gian) */}
-              <div className="relative h-6 w-full min-w-[420px] border-b border-border-subtle/60 flex items-end pb-1 bg-white/[0.02] rounded-t-lg">
-                {timeTicks.map((tick) => (
-                  <div
-                    key={tick.sec}
-                    className="absolute bottom-0 flex flex-col items-center transform -translate-x-1/2"
-                    style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
+                    className={`px-1.5 py-0.5 rounded font-mono transition-all ${
+                      canvasSettings.aspectRatio === ratio
+                        ? 'bg-rose-500 text-white font-bold'
+                        : 'bg-white/5 text-text-muted hover:text-white'
+                    }`}
                   >
-                    <span className="text-[8px] font-mono text-text-muted/80">{tick.label}</span>
-                    <div className="w-[1px] h-1.5 bg-white/20 mt-0.5" />
-                  </div>
+                    {ratio}
+                  </button>
                 ))}
               </div>
+            </div>
 
-              {/* 2. PLAYHEAD (Kim thời gian + Tay cầm Giọt nước lộn ngược) */}
-              <div
-                className="absolute top-0 bottom-0 z-30 pointer-events-auto cursor-ew-resize flex flex-col items-center group/playhead"
-                style={{ left: `${playheadPercent}%` }}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  setIsDraggingPlayhead(true);
-                }}
-              >
-                {/* Inverted Teardrop SVG Handle (Con trỏ giọt nước lộn ngược) */}
-                <svg
-                  width="14"
-                  height="16"
-                  viewBox="0 0 14 16"
-                  fill="currentColor"
-                  className="text-white drop-shadow-md -mb-1 group-hover/playhead:scale-115 transition-transform"
+            {/* Video Preview Box with Canvas Ratio & Interactive Transform */}
+            <div className="w-full aspect-video bg-black rounded-xl relative flex items-center justify-center overflow-hidden border border-border-subtle group/canvas">
+              {activeVideoUrl ? (
+                <div
+                  className="w-full h-full flex items-center justify-center transition-transform"
+                  style={{
+                    transform: `scale(${activeTransform.scale}) translate(${activeTransform.offsetX}%, ${activeTransform.offsetY}%) rotate(${activeTransform.rotationDeg}deg)`,
+                  }}
                 >
-                  <path d="M 1,4.5 C 1,2 3.7,0 7,0 C 10.3,0 13,2 13,4.5 C 13,8 7,16 7,16 C 7,16 1,8 1,4.5 Z" />
-                  <circle cx="7" cy="4.5" r="2" fill="#000000" />
-                </svg>
-                {/* Vertical Playhead Line spanning all 3 tracks */}
-                <div className="w-[2px] flex-1 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+                  <video
+                    ref={videoRef}
+                    src={activeVideoUrl}
+                    className="max-w-full max-h-full object-contain"
+                    onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
+                    onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1.5 text-text-muted text-[11px] p-4 text-center">
+                  <Film size={24} className="text-rose-400/60" />
+                  <span>Xem trước Canvas CapCut</span>
+                </div>
+              )}
+
+              {/* Progress Overlay */}
+              {(nodeData.isConcatting || nodeData.isSeparatingAudio) && (
+                <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-white p-4 z-30">
+                  <Loader2 size={22} className="animate-spin text-rose-400" />
+                  <span className="text-xs font-medium text-center">{nodeData.progressMessage || 'Processing...'}</span>
+                  <div className="w-3/4 h-1.5 bg-white/10 rounded-full overflow-hidden border border-white/20">
+                    <div
+                      className="h-full bg-gradient-to-r from-rose-500 to-amber-500 transition-all duration-300"
+                      style={{ width: `${nodeData.progressPercent || 10}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Play Controls & Scrubber */}
+            <div className="flex items-center gap-2 pt-1 text-[11px]">
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    if (isPlaying) videoRef.current.pause();
+                    else videoRef.current.play();
+                    setIsPlaying(!isPlaying);
+                  }
+                }}
+                className="p-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors shrink-0"
+              >
+                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+              </button>
+              <input
+                type="range"
+                min={0}
+                max={duration || 100}
+                value={currentTime}
+                onChange={(e) => {
+                  const t = parseFloat(e.target.value);
+                  if (videoRef.current) videoRef.current.currentTime = t;
+                  setCurrentTime(t);
+                }}
+                className="flex-1 accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              />
+              <span className="font-mono text-[9px] text-text-muted shrink-0">
+                {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
+              </span>
+            </div>
+          </div>
+
+          {/* BOX 2: Toolbox Panel (Separate Box, rounded-2xl, independent border) */}
+          <div
+            className={`col-span-5 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
+              selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+            }`}
+          >
+            <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1 border-b border-border-subtle pb-1">
+              <Sliders size={12} className="text-rose-400" /> Toolbox CapCut
+            </span>
+
+            {/* Split Clip Button */}
+            <button
+              onClick={handleSplitClip}
+              disabled={!selectedClipId}
+              className="w-full py-1.5 px-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-border-subtle rounded-lg text-[10px] text-white font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <Scissors size={12} className="text-rose-400" /> Cắt Clip (Split)
+            </button>
+
+            {/* Extract Audio Button */}
+            <button
+              onClick={handleExtractAudio}
+              disabled={nodeData.isSeparatingAudio}
+              className="w-full py-1.5 px-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <AudioWaveform size={12} className="text-amber-400" /> Tách Giọng Nói (Stem)
+            </button>
+
+            {/* Volume Slider */}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between text-[10px] text-text-muted">
+                <span className="flex items-center gap-1">
+                  <Volume2 size={11} /> Volume Clip
+                </span>
+                <span className="font-mono">{activeClip?.volume || 100}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={200}
+                value={activeClip?.volume || 100}
+                onChange={(e) => {
+                  const vol = parseInt(e.target.value, 10);
+                  const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
+                  canvasEngine.updateNodeData(id, { clips: updated });
+                }}
+                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              />
+            </div>
+
+            {/* Transform Adjustment (Scale & Rotation) */}
+            <div className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle">
+              <div className="flex items-center justify-between text-[10px] text-text-muted">
+                <span>Zoom Layer</span>
+                <span className="font-mono">{activeTransform.scale.toFixed(2)}x</span>
+              </div>
+              <input
+                type="range"
+                min={0.5}
+                max={3.0}
+                step={0.05}
+                value={activeTransform.scale}
+                onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
+                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              />
+
+              <div className="flex items-center justify-between text-[10px] text-text-muted mt-1">
+                <span className="flex items-center gap-1">
+                  <RotateCw size={10} /> Xoay Góc
+                </span>
+                <span className="font-mono">{activeTransform.rotationDeg}°</span>
+              </div>
+              <input
+                type="range"
+                min={-180}
+                max={180}
+                step={5}
+                value={activeTransform.rotationDeg}
+                onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
+                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM ROW: BOX 3: Multi-track Timeline (Separate Box, rounded-2xl, independent border) */}
+        <div
+          className={`w-full bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
+            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+          }`}
+        >
+          {/* Timeline Title Bar */}
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-text-primary font-bold flex items-center gap-1.5">
+              <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
+            </span>
+            <span className="text-[10px] font-mono text-text-muted">
+              {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
+            </span>
+          </div>
+
+          {/* Time Axis Container with Ruler & Playhead */}
+          <div
+            ref={timelineRef}
+            className="relative overflow-x-auto custom-scrollbar pb-2 pt-1 flex flex-col gap-2 min-w-full cursor-pointer"
+            onPointerDown={(e) => handleRulerScrub(e.clientX)}
+          >
+            {/* 1. TOP RULER (Thước thời gian) */}
+            <div className="relative h-6 w-full min-w-[420px] border-b border-border-subtle/60 flex items-end pb-1 bg-white/[0.02] rounded-t-lg">
+              {timeTicks.map((tick) => (
+                <div
+                  key={tick.sec}
+                  className="absolute bottom-0 flex flex-col items-center transform -translate-x-1/2"
+                  style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
+                >
+                  <span className="text-[8px] font-mono text-text-muted/80">{tick.label}</span>
+                  <div className="w-[1px] h-1.5 bg-white/20 mt-0.5" />
+                </div>
+              ))}
+            </div>
+
+            {/* 2. PLAYHEAD (Kim thời gian + Tay cầm Giọt nước lộn ngược) */}
+            <div
+              className="absolute top-0 bottom-0 z-30 pointer-events-auto cursor-ew-resize flex flex-col items-center group/playhead"
+              style={{ left: `${playheadPercent}%` }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                setIsDraggingPlayhead(true);
+              }}
+            >
+              {/* Inverted Teardrop SVG Handle (Con trỏ giọt nước lộn ngược) */}
+              <svg
+                width="14"
+                height="16"
+                viewBox="0 0 14 16"
+                fill="currentColor"
+                className="text-white drop-shadow-md -mb-1 group-hover/playhead:scale-115 transition-transform"
+              >
+                <path d="M 1,4.5 C 1,2 3.7,0 7,0 C 10.3,0 13,2 13,4.5 C 13,8 7,16 7,16 C 7,16 1,8 1,4.5 Z" />
+                <circle cx="7" cy="4.5" r="2" fill="#000000" />
+              </svg>
+              {/* Vertical Playhead Line spanning all 3 tracks */}
+              <div className="w-[2px] flex-1 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+            </div>
+
+            {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
+            <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
+              {/* --- TRACK 1: VIDEO CLIPS (Accent Lime #C6F135 + Thumbnail Background) --- */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C6F135]" /> TRACK 1 — VIDEO CLIPS
+                  </span>
+                </div>
+                <div className="relative h-13 w-full bg-[#C6F135]/5 rounded-lg border border-[#C6F135]/20 flex items-center p-1">
+                  {clips.length > 0 ? (
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
+                        <div className="flex items-center gap-1 w-full h-full">
+                          {clips
+                            .sort((a, b) => a.order - b.order)
+                            .map((clip, idx) => (
+                              <SortableClipCard
+                                key={clip.id}
+                                clip={clip}
+                                index={idx}
+                                isSelected={clip.id === selectedClipId}
+                                onSelect={setSelectedClipId}
+                                onRemove={handleRemoveClip}
+                              />
+                            ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  ) : (
+                    <div className="p-2 text-[9px] text-text-muted/60 italic">
+                      Nối video input vào port videos_in bên trái
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
-              <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
-                {/* --- TRACK 1: VIDEO CLIPS (Accent Lime #C6F135 + Thumbnail Background) --- */}
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C6F135]" /> TRACK 1 — VIDEO CLIPS
-                    </span>
-                  </div>
-                  <div className="relative h-13 w-full bg-[#C6F135]/5 rounded-lg border border-[#C6F135]/20 flex items-center p-1">
-                    {clips.length > 0 ? (
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
-                          <div className="flex items-center gap-1 w-full h-full">
-                            {clips
-                              .sort((a, b) => a.order - b.order)
-                              .map((clip, idx) => (
-                                <SortableClipCard
-                                  key={clip.id}
-                                  clip={clip}
-                                  index={idx}
-                                  isSelected={clip.id === selectedClipId}
-                                  onSelect={setSelectedClipId}
-                                  onRemove={handleRemoveClip}
-                                />
-                              ))}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
-                    ) : (
-                      <div className="p-2 text-[9px] text-text-muted/60 italic">
-                        Nối video input vào port videos_in bên trái
-                      </div>
-                    )}
-                  </div>
+              {/* --- TRACK 2: AUDIO / DUBBING (Sky Blue #38BDF8) --- */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> TRACK 2 — AUDIO / DUBBING
+                  </span>
                 </div>
-
-                {/* --- TRACK 2: AUDIO / DUBBING (Sky Blue #38BDF8) --- */}
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> TRACK 2 — AUDIO / DUBBING
-                    </span>
-                  </div>
-                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
-                    {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
-                      nodeData.dubAudioTrack.map((dub, idx) => {
-                        const leftPct = (dub.start / totalDuration) * 100;
-                        const widthPct = Math.max(8, ((dub.end - dub.start) / totalDuration) * 100);
-                        return (
-                          <div
-                            key={idx}
-                            className="absolute top-1 bottom-1 bg-[#38BDF8] text-black font-semibold rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/dub hover:brightness-110 cursor-pointer"
-                            style={{
-                              left: `${leftPct}%`,
-                              width: `${widthPct}%`,
-                            }}
-                            title={`Audio ${idx + 1}`}
-                          >
-                            <Music size={11} className="shrink-0 text-black/80" />
-                            <span className="truncate text-[9px]">Audio {idx + 1}</span>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-2 text-[9px] text-text-muted/60 italic">
-                        Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
-                      </div>
-                    )}
-                  </div>
+                <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                  {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
+                    nodeData.dubAudioTrack.map((dub, idx) => {
+                      const leftPct = (dub.start / totalDuration) * 100;
+                      const widthPct = Math.max(8, ((dub.end - dub.start) / totalDuration) * 100);
+                      return (
+                        <div
+                          key={idx}
+                          className="absolute top-1 bottom-1 bg-[#38BDF8] text-black font-semibold rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/dub hover:brightness-110 cursor-pointer"
+                          style={{
+                            left: `${leftPct}%`,
+                            width: `${widthPct}%`,
+                          }}
+                          title={`Audio ${idx + 1}`}
+                        >
+                          <Music size={11} className="shrink-0 text-black/80" />
+                          <span className="truncate text-[9px]">Audio {idx + 1}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-2 text-[9px] text-text-muted/60 italic">
+                      Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
+                    </div>
+                  )}
                 </div>
+              </div>
 
-                {/* --- TRACK 3: SUBTITLE / TEXT (Purple #A855F7) --- */}
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> TRACK 3 — SUBTITLE / TEXT
-                    </span>
-                  </div>
-                  <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
-                    {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
-                      nodeData.subtitleTrack.map((sub, idx) => {
-                        const leftPct = (sub.start / totalDuration) * 100;
-                        const widthPct = Math.max(6, ((sub.end - sub.start) / totalDuration) * 100);
-                        return (
-                          <div
-                            key={idx}
-                            className="absolute top-1 bottom-1 bg-[#A855F7] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-medium truncate group/sub hover:brightness-110 cursor-pointer"
-                            style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-                            title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
-                          >
-                            <span className="font-serif font-black text-[10px] shrink-0 opacity-90">Sub {idx + 1}</span>
-                            <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-2 text-[9px] text-text-muted/60 italic">
-                        Chưa có phụ đề (Nối từ node Dubbing/Sub)
-                      </div>
-                    )}
-                  </div>
+              {/* --- TRACK 3: SUBTITLE / TEXT (Purple #A855F7) --- */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> TRACK 3 — SUBTITLE / TEXT
+                  </span>
+                </div>
+                <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                  {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
+                    nodeData.subtitleTrack.map((sub, idx) => {
+                      const leftPct = (sub.start / totalDuration) * 100;
+                      const widthPct = Math.max(6, ((sub.end - sub.start) / totalDuration) * 100);
+                      return (
+                        <div
+                          key={idx}
+                          className="absolute top-1 bottom-1 bg-[#A855F7] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-medium truncate group/sub hover:brightness-110 cursor-pointer"
+                          style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                          title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
+                        >
+                          <span className="font-serif font-black text-[10px] shrink-0 opacity-90">Sub {idx + 1}</span>
+                          <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-2 text-[9px] text-text-muted/60 italic">
+                      Chưa có phụ đề (Nối từ node Dubbing/Sub)
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Action Trigger Button */}
-            <button
-              onClick={handleRunConcat}
-              disabled={nodeData.isConcatting || clips.length === 0}
-              className="w-full mt-1 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-medium flex items-center justify-center gap-2 shadow-md transition-all text-xs"
-            >
-              {nodeData.isConcatting ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : nodeData.output ? (
-                <CheckCircle2 size={14} />
-              ) : (
-                <Play size={14} />
-              )}
-              <span>{nodeData.output ? 'Ghép lại Video (FFmpeg CapCut)' : 'Ghép Video (Run Workstation)'}</span>
-            </button>
           </div>
+
+          {/* Action Trigger Button */}
+          <button
+            onClick={handleRunConcat}
+            disabled={nodeData.isConcatting || clips.length === 0}
+            className="w-full mt-1 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-medium flex items-center justify-center gap-2 shadow-md transition-all text-xs"
+          >
+            {nodeData.isConcatting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : nodeData.output ? (
+              <CheckCircle2 size={14} />
+            ) : (
+              <Play size={14} />
+            )}
+            <span>{nodeData.output ? 'Ghép lại Video (FFmpeg CapCut)' : 'Ghép Video (Run Workstation)'}</span>
+          </button>
         </div>
       </div>
 
