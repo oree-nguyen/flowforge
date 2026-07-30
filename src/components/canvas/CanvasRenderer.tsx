@@ -176,26 +176,36 @@ function NodeWrapper({
 
 // --- Helper for Handle Positions ---
 function getHandlePosition(node: NodeData, size: { width: number, height: number }, type: 'in' | 'out', handleId?: string) {
+  const viewport = canvasEngine.getViewport();
   const nodeEl = document.querySelector(`[data-nodeid="${node.id}"]`) as HTMLElement;
   
   if (nodeEl) {
-    const targetQuery = type === 'out'
-      ? (handleId ? `[data-target="${node.id}:${handleId}"]` : `[data-target="${node.id}:out"]`)
-      : (handleId ? `[data-target="${node.id}:${handleId}"]` : `[data-target^="${node.id}"]`);
+    let portEl: HTMLElement | null = null;
     
-    const portEl = (nodeEl.querySelector(targetQuery) || document.querySelector(targetQuery)) as HTMLElement;
-    if (portEl) {
-      let dx = 0;
-      let dy = 0;
-      let curr: HTMLElement | null = portEl;
-      while (curr && curr !== nodeEl) {
-        dx += curr.offsetLeft;
-        dy += curr.offsetTop;
-        curr = curr.offsetParent as HTMLElement | null;
+    if (handleId) {
+      portEl = (nodeEl.querySelector(`[data-target="${node.id}:${handleId}"]`) || document.querySelector(`[data-target="${node.id}:${handleId}"]`)) as HTMLElement | null;
+    }
+    
+    if (!portEl) {
+      if (type === 'out') {
+        portEl = (nodeEl.querySelector(`[data-target="${node.id}:out"], [data-target="${node.id}:video_out"], [data-target="${node.id}:subtitle_out"]`) || document.querySelector(`[data-target="${node.id}:out"]`)) as HTMLElement | null;
+      } else {
+        portEl = (nodeEl.querySelector(`[data-target="${node.id}:in"], [data-target="${node.id}:text"], [data-target="${node.id}:image"], [data-target="${node.id}:file"], [data-target="${node.id}:video_in"], [data-target="${node.id}:videos_in"]`) || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
       }
-      dx += portEl.offsetWidth / 2;
-      dy += portEl.offsetHeight / 2;
-      return { x: node.position.x + dx, y: node.position.y + dy };
+    }
+
+    if (!portEl) {
+      portEl = (nodeEl.querySelector('[data-target]') || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
+    }
+
+    if (portEl) {
+      const rect = portEl.getBoundingClientRect();
+      const screenCenterX = rect.left + rect.width / 2;
+      const screenCenterY = rect.top + rect.height / 2;
+      
+      const x = (screenCenterX - viewport.x) / viewport.zoom;
+      const y = (screenCenterY - viewport.y) / viewport.zoom;
+      return { x, y };
     }
   }
 
@@ -642,7 +652,7 @@ export function CanvasRenderer() {
             const srcSize = canvasEngine.getNodeSize(edge.source);
             const tgtSize = canvasEngine.getNodeSize(edge.target);
             
-            const srcPos = getHandlePosition(src, srcSize, 'out');
+            const srcPos = getHandlePosition(src, srcSize, 'out', edge.sourceHandle);
             const tgtPos = getHandlePosition(tgt, tgtSize, 'in', edge.targetHandle);
             
             const x1 = srcPos.x;
