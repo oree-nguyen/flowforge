@@ -61,6 +61,10 @@ function NodeWrapper({
     const tag = (e.target as HTMLElement).tagName.toLowerCase();
     if (['input', 'textarea', 'select', 'button', 'label'].includes(tag)) return;
     if ((e.target as HTMLElement).closest('button, input, textarea, select')) return;
+    
+    // Architectual fix: actively ignore drags starting from ports
+    if ((e.target as HTMLElement).closest('.port-handle')) return;
+
     onDragStart(e, node.id);
   };
 
@@ -176,53 +180,32 @@ function NodeWrapper({
 
 // --- Helper for Handle Positions ---
 function getHandlePosition(node: NodeData, size: { width: number, height: number }, type: 'in' | 'out', handleId?: string) {
-  const viewport = canvasEngine.getViewport();
-  const nodeEl = document.querySelector(`[data-nodeid="${node.id}"]`) as HTMLElement;
-  
-  if (nodeEl) {
-    let portEl: HTMLElement | null = null;
-    
-    if (handleId) {
-      portEl = (nodeEl.querySelector(`[data-target="${node.id}:${handleId}"]`) || document.querySelector(`[data-target="${node.id}:${handleId}"]`)) as HTMLElement | null;
+  // Use Math-based calculation relative to Node position, bypassing DOM layout race conditions during render!
+  let localX = type === 'out' ? size.width : 0;
+  let localY = size.height / 2;
+
+  // Custom adjustments for special nodes with complex port layouts
+  if (node.type === 'util.videoEditor') {
+    if (handleId === 'videos_in' || type === 'in') {
+      localY = size.height - 44; // Bottom timeline track approx offset
     }
-    
-    if (!portEl) {
-      if (type === 'out') {
-        portEl = (nodeEl.querySelector(`[data-target="${node.id}:out"], [data-target="${node.id}:video_out"], [data-target="${node.id}:subtitle_out"]`) || document.querySelector(`[data-target="${node.id}:out"]`)) as HTMLElement | null;
-      } else {
-        portEl = (nodeEl.querySelector(`[data-target="${node.id}:in"], [data-target="${node.id}:text"], [data-target="${node.id}:image"], [data-target="${node.id}:file"], [data-target="${node.id}:video_in"], [data-target="${node.id}:videos_in"]`) || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
-      }
+    if (handleId === 'video_out' || type === 'out') {
+      localY = size.height - 44;
     }
-
-    if (!portEl) {
-      portEl = (nodeEl.querySelector('[data-target]') || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
+    if (handleId === 'subtitle_out') {
+      localY = size.height - 18;
     }
-
-    if (portEl) {
-      const portRect = portEl.getBoundingClientRect();
-      const screenCenterX = portRect.left + portRect.width / 2;
-      const screenCenterY = portRect.top + portRect.height / 2;
-      
-      const canvasContainer = nodeEl.closest('.flowforge-canvas-container') || nodeEl.parentElement?.parentElement;
-      const canvasRect = canvasContainer ? canvasContainer.getBoundingClientRect() : { left: 0, top: 0 };
-
-      // Convert screen center to unscaled canvas space relative to canvas container
-      const x = (screenCenterX - canvasRect.left - viewport.x) / viewport.zoom;
-      const y = (screenCenterY - canvasRect.top - viewport.y) / viewport.zoom;
-
-      console.log(`[PortCoordsDebug SUCCESS] Found DOM port for ${node.id}:${handleId || type} | screenCenter=(${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)}) | CanvasPos=(${x.toFixed(1)}, ${y.toFixed(1)})`);
-
-      return { x, y };
-    }
+  } else if (['ai.textGen', 'ai.imageGen', 'ai.videoGen', 'ai.audioGen'].includes(node.type)) {
+    // For AI nodes, if it's an input, and we want to center vertically over the multiple ports
+    // Since ports are flex stacked vertically and centered absolute, Y=height/2 is accurate.
+    // X is always 0 or width.
+    localY = size.height / 2;
   }
 
-  console.warn(`[PortCoordsDebug FALLBACK] DOM port element NOT YET MOUNTED for node ${node.id} (${type}/${handleId || 'default'})`);
-
-  // Fallback
-  if (type === 'out') {
-    return { x: node.position.x + size.width, y: node.position.y + size.height / 2 };
-  }
-  return { x: node.position.x, y: node.position.y + size.height / 2 };
+  return { 
+    x: node.position.x + localX, 
+    y: node.position.y + localY 
+  };
 }
 
 // --- Node Floating Toolbar ---

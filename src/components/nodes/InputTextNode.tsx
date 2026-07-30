@@ -17,7 +17,7 @@ export function InputTextNode({ id, data, selected, onConnectStart }: NodeProps)
         : isFilledByAI 
           ? 'border-accent-lime/60 shadow-[0_0_12px_rgba(198,241,53,0.15)]' 
           : 'border-border-subtle'
-    } overflow-hidden`}>
+    }`}>
       <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2">
         <div className={`w-2 h-2 rounded-full transition-colors ${isFilledByAI ? 'bg-accent-lime' : 'bg-blue-400'}`}></div>
         <span className="text-sm font-medium text-text-primary">Input Text</span>

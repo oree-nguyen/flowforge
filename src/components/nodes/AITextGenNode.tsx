@@ -21,7 +21,7 @@ export function AITextGenNode({ id, data, selected, onConnectStart, onDisconnect
       </div>
 
       {/* Main Node Card */}
-      <div className={`w-[300px] bg-node rounded-2xl shadow-lg border relative flex overflow-hidden transition-all ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'}`}>
+      <div className={`w-[300px] bg-node rounded-2xl shadow-lg border relative flex transition-all ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'}`}>
         <div className="w-[3px] bg-[#9C27B0] shrink-0" />
         
         <div className="flex-1 flex flex-col">

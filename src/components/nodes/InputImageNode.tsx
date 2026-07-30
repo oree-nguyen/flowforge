@@ -22,7 +22,7 @@ export function InputImageNode({ id, data, selected, onConnectStart }: NodeProps
   };
 
   return (
-    <div className={`w-[260px] bg-node rounded-2xl shadow-lg border ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'} overflow-hidden transition-all`}>
+    <div className={`w-[260px] bg-node rounded-2xl shadow-lg border ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'} transition-all`}>
       <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-purple-400"></div>
         <span className="text-sm font-medium text-text-primary">Input Image</span>
