@@ -199,12 +199,20 @@ function getHandlePosition(node: NodeData, size: { width: number, height: number
     }
 
     if (portEl) {
-      const rect = portEl.getBoundingClientRect();
-      const screenCenterX = rect.left + rect.width / 2;
-      const screenCenterY = rect.top + rect.height / 2;
+      const portRect = portEl.getBoundingClientRect();
+      const screenCenterX = portRect.left + portRect.width / 2;
+      const screenCenterY = portRect.top + portRect.height / 2;
       
-      const x = (screenCenterX - viewport.x) / viewport.zoom;
-      const y = (screenCenterY - viewport.y) / viewport.zoom;
+      const canvasContainer = nodeEl.closest('.flowforge-canvas-container') || nodeEl.parentElement?.parentElement;
+      const canvasRect = canvasContainer ? canvasContainer.getBoundingClientRect() : { left: 0, top: 0 };
+
+      // Convert screen center to unscaled canvas space relative to canvas container
+      const x = (screenCenterX - canvasRect.left - viewport.x) / viewport.zoom;
+      const y = (screenCenterY - canvasRect.top - viewport.y) / viewport.zoom;
+
+      // Debug verification console log
+      console.log(`[PortCoordsDebug] Node: ${node.id} (${type}/${handleId || 'default'}) | DOM Icon Screen: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)}) | Canvas Container Screen: (${canvasRect.left.toFixed(1)}, ${canvasRect.top.toFixed(1)}) | Viewport: pan=(${viewport.x.toFixed(1)}, ${viewport.y.toFixed(1)}) zoom=${viewport.zoom.toFixed(2)} | Engine Canvas Output: (${x.toFixed(1)}, ${y.toFixed(1)})`);
+
       return { x, y };
     }
   }
@@ -553,7 +561,7 @@ export function CanvasRenderer() {
     if (!srcNode) return null;
     const srcSize = canvasEngine.getNodeSize(connDragRef.current!.sourceId);
     const rect = canvasRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-    const srcPos = getHandlePosition(srcNode, srcSize, 'out');
+    const srcPos = getHandlePosition(srcNode, srcSize, 'out', connDragRef.current!.sourceHandle);
     const x1 = srcPos.x * viewport.zoom + viewport.x;
     const y1 = srcPos.y * viewport.zoom + viewport.y;
     const x2 = connDragRef.current!.x - rect.left;
@@ -565,6 +573,7 @@ export function CanvasRenderer() {
   return (
     <div
       ref={canvasRef}
+      className="flowforge-canvas-container"
       style={{
         width: '100%',
         height: '100%',
