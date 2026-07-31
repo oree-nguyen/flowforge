@@ -23,7 +23,8 @@ import {
   Camera,
   Type,
   VolumeX,
-  Settings
+  Settings,
+  Copy
 } from 'lucide-react';
 
 import {
@@ -45,15 +46,19 @@ import { CSS } from '@dnd-kit/utilities';
 function SortableClipCard({
   clip,
   index,
+  label,
   isSelected,
   onSelect,
   onRemove,
+  onDuplicate,
 }: {
   clip: VideoClipItem;
   index: number;
+  label: string;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onRemove: (id: string) => void;
+  onDuplicate: (clip: VideoClipItem) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: clip.id,
@@ -101,12 +106,22 @@ function SortableClipCard({
       {/* Order Badge */}
       <div className="relative z-10 flex items-center justify-between">
         <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-black/60 backdrop-blur-md text-white shadow-sm border border-white/20">
-          #{index + 1}
+          {label}
         </span>
       </div>
 
-      {/* Hover Remove Button */}
-      <div className="relative z-10 flex items-center justify-end">
+      {/* Hover Control Buttons */}
+      <div className="relative z-10 flex items-center justify-end gap-1">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate(clip);
+          }}
+          className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-blue-500/90 hover:bg-blue-500 text-white transition-opacity shadow-md"
+          title="Nhân bản clip (Lặp)"
+        >
+          <Copy size={9} />
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -138,8 +153,23 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
   const [selectedClipId, setSelectedClipId] = useState<string>(clips[0]?.id || '');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Calculate global start/end times for clips
+  let currentAccumulated = 0;
+  const clipsWithTime = [...clips].sort((a,b) => a.order - b.order).map(c => {
+     // use 5s default if durationSec is missing to make previewing easier
+     const dur = c.durationSec || 5; 
+     const start = currentAccumulated;
+     const end = start + dur;
+     currentAccumulated = end;
+     return { ...c, start, end };
+  });
+  
+  // Update total duration
+  const totalDuration = Math.max(currentAccumulated, 30);
 
   // Active clip transform (Scale, OffsetX, OffsetY, Rotation)
   const transforms = nodeData.clipTransforms || [];
@@ -168,7 +198,6 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
   const timelineRef = useRef<HTMLDivElement>(null);
   const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
 
-  const totalDuration = Math.max(duration || 0, 30); // 30s minimum axis
   const playheadPercent = Math.max(0, Math.min(100, (currentTime / totalDuration) * 100));
 
   // Time Ticks (00:00, 00:05, 00:10, 00:15...)
@@ -187,10 +216,43 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     const pct = Math.max(0, Math.min(1, offsetX / rect.width));
     const targetTime = pct * totalDuration;
     setCurrentTime(targetTime);
-    if (videoRef.current) {
-      videoRef.current.currentTime = targetTime;
-    }
   };
+
+  // Playhead Sync Loop
+  useEffect(() => {
+    let rafId: number;
+    let lastTime = performance.now();
+    
+    const loop = (time: number) => {
+      if (isPlaying) {
+        const delta = (time - lastTime) / 1000;
+        setCurrentTime(prev => {
+          let next = prev + delta;
+          if (next >= totalDuration) {
+             next = 0; // Loop around
+          }
+          return next;
+        });
+      }
+      lastTime = time;
+      rafId = requestAnimationFrame(loop);
+    };
+
+    if (isPlaying) {
+       rafId = requestAnimationFrame(loop);
+    }
+    return () => cancelAnimationFrame(rafId);
+  }, [isPlaying, totalDuration]);
+
+  // Sync selected clip with playhead
+  useEffect(() => {
+     if (!nodeData.output && isPlaying) {
+        const c = clipsWithTime.find(x => currentTime >= x.start && currentTime < x.end);
+        if (c && c.id !== selectedClipId) {
+           setSelectedClipId(c.id);
+        }
+     }
+  }, [currentTime, isPlaying, clipsWithTime, selectedClipId, nodeData.output]);
 
   useEffect(() => {
     if (!isDraggingPlayhead) return;
@@ -221,9 +283,9 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     let hasChanged = false;
     const currentClips = [...clips];
 
-    // Filter out removed edges for VIDEO track
+    // Filter out removed edges for VIDEO track, but keep duplicated clips (same sourceNodeId)
     const videoEdges = inputEdges.filter(e => e.targetHandle === 'videos_in' || e.targetHandle === 'video_in');
-    const validClips = currentClips.filter((c) => videoEdges.some((e: EdgeData) => e.id === c.id));
+    const validClips = currentClips.filter((c) => videoEdges.some((e: EdgeData) => e.source === c.sourceNodeId));
     if (validClips.length !== currentClips.length) {
       hasChanged = true;
     }
@@ -236,8 +298,8 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       const sourceNode = nodes.find((n: NodeData) => n.id === edge.source);
       const sourceOutput = sourceNode?.data?.output || sourceNode?.data?.outputVideo || sourceNode?.data?.file || sourceNode?.data?.url;
 
-      // Compatibility: Extract Dubbing/Sub tracks if connected from a Dubbing/Sub node (works for any port)
-      if (sourceNode?.type === 'ai.dubSub') {
+      // Process AI DubSub specifically to extract rich segments
+      if (sourceNode?.type === 'ai.dubSub' && edge.targetHandle === 'subtitle_in') {
         const segments = sourceNode.data?.segments as any[];
         if (segments && Array.isArray(segments)) {
           subtitleTrack = segments.map((s) => ({
@@ -246,17 +308,20 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             text: s.text,
           }));
         }
+      }
+      if (sourceNode?.type === 'ai.dubSub' && edge.targetHandle === 'audio_in') {
         if (sourceNode.data?.outputVideo) {
+          const segments = sourceNode.data?.segments as any[];
           dubAudioTrack.push({
             start: 0,
             end: Math.max(10, (segments?.[segments.length - 1]?.end || 10)),
             audioUrl: sourceNode.data.outputVideo,
           });
         }
-      } else if (edge.targetHandle === 'audio_in' && sourceOutput) {
+      } else if (edge.targetHandle === 'audio_in' && sourceOutput && sourceNode?.type !== 'ai.dubSub') {
          dubAudioTrack.push({ start: 0, end: 10, audioUrl: String(sourceOutput) });
          hasChanged = true; // Force trigger changes if new generic audio is added
-      } else if (edge.targetHandle === 'subtitle_in' && sourceOutput) {
+      } else if (edge.targetHandle === 'subtitle_in' && sourceOutput && sourceNode?.type !== 'ai.dubSub') {
          subtitleTrack.push({ start: 0, end: 10, text: String(sourceOutput) });
          hasChanged = true; // Force trigger changes if new generic text is added
       }
@@ -337,24 +402,82 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     }
   };
 
-  // Split Clip at current playhead
-  const handleSplitClip = () => {
-    if (!selectedClipId) return;
-    const targetClip = clips.find((c) => c.id === selectedClipId);
-    if (!targetClip) return;
-
-    const newClipId = `clip_split_${Date.now()}`;
+  const handleDuplicateClip = (clip: VideoClipItem) => {
+    const newClipId = `clip_copy_${Date.now()}`;
     const newClip: VideoClipItem = {
-      ...targetClip,
+      ...clip,
       id: newClipId,
-      order: targetClip.order + 1,
+      order: clip.order + 1,
     };
-
     const newClips = [...clips];
-    newClips.splice(targetClip.order + 1, 0, newClip);
+    newClips.splice(clip.order + 1, 0, newClip);
     const reordered = newClips.map((c, idx) => ({ ...c, order: idx }));
     canvasEngine.updateNodeData(id, { clips: reordered });
     setSelectedClipId(newClipId);
+  };
+
+  // Split Clip at current playhead
+  const handleSplitClip = () => {
+    let newClips = [...clips].sort((a,b) => a.order - b.order);
+    let hasChanges = false;
+    
+    // Split Video
+    const targetClipIndex = clipsWithTime.findIndex(c => currentTime > c.start + 0.1 && currentTime < c.end - 0.1); 
+    if (targetClipIndex !== -1) {
+       const targetClip = clipsWithTime[targetClipIndex];
+       const localSplitTime = currentTime - targetClip.start;
+       
+       const newClipId = `clip_split_${Date.now()}`;
+       const secondHalf: VideoClipItem = {
+         ...targetClip,
+         id: newClipId,
+         trimStart: (targetClip.trimStart || 0) + localSplitTime,
+       };
+       
+       newClips[targetClipIndex] = {
+         ...newClips[targetClipIndex],
+         trimEnd: (targetClip.trimStart || 0) + localSplitTime,
+         durationSec: localSplitTime,
+       };
+       
+       secondHalf.durationSec = (targetClip.durationSec || 5) - localSplitTime;
+       newClips.splice(targetClipIndex + 1, 0, secondHalf);
+       hasChanges = true;
+    }
+    
+    // Split Audio
+    let newAudio = [...(nodeData.dubAudioTrack || [])];
+    let audioChanges = false;
+    for (let i = newAudio.length - 1; i >= 0; i--) {
+       const a = newAudio[i];
+       if (currentTime > a.start + 0.1 && currentTime < a.end - 0.1) {
+          const secondHalf = { ...a, start: currentTime };
+          newAudio[i] = { ...a, end: currentTime };
+          newAudio.splice(i + 1, 0, secondHalf);
+          audioChanges = true;
+       }
+    }
+    
+    // Split Subtitle
+    let newSub = [...(nodeData.subtitleTrack || [])];
+    let subChanges = false;
+    for (let i = newSub.length - 1; i >= 0; i--) {
+       const s = newSub[i];
+       if (currentTime > s.start + 0.1 && currentTime < s.end - 0.1) {
+          const secondHalf = { ...s, start: currentTime };
+          newSub[i] = { ...s, end: currentTime };
+          newSub.splice(i + 1, 0, secondHalf);
+          subChanges = true;
+       }
+    }
+    
+    if (hasChanges || audioChanges || subChanges) {
+       canvasEngine.updateNodeData(id, {
+          clips: newClips.map((c, idx) => ({...c, order: idx})),
+          dubAudioTrack: newAudio,
+          subtitleTrack: newSub
+       });
+    }
   };
 
   // Extract Vocal & Instrumental Audio
@@ -441,11 +564,115 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     }
   };
 
+  const currentGlobalClip = clipsWithTime.find(c => currentTime >= c.start && currentTime < c.end) || clipsWithTime[0];
+  const activeVideoUrl = nodeData.output || currentGlobalClip?.videoUrl;
+  
+  const getClipLabel = (index: number) => {
+     const c = clips[index];
+     if (!c) return `#${index + 1}`;
+     let count = 0;
+     for (let i = 0; i <= index; i++) {
+        if (clips[i].sourceNodeId === c.sourceNodeId) count++;
+     }
+     const uniqueSources = Array.from(new Set(clips.map(x => x.sourceNodeId)));
+     const baseIndex = uniqueSources.indexOf(c.sourceNodeId) + 1;
+     return count === 1 ? `#${baseIndex}` : `#${baseIndex}.${count - 1}`;
+  };
+
   const activeClip = clips.find((c) => c.id === selectedClipId) || clips[0];
-  const activeVideoUrl = nodeData.output || activeClip?.videoUrl;
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+     if (!isEditMode) return;
+     
+     // Stop propagation so CanvasEngine doesn't trigger global shortcuts
+     e.stopPropagation();
+     
+     switch(e.key.toLowerCase()) {
+        case 'escape': 
+           setIsEditMode(false); 
+           containerRef.current?.blur();
+           break;
+        case ' ': // Space
+           e.preventDefault(); // prevent scrolling
+           if (videoRef.current) {
+              if (isPlaying) videoRef.current.pause();
+              else videoRef.current.play();
+              setIsPlaying(!isPlaying);
+           }
+           break;
+        case 's': // Split
+           e.preventDefault();
+           handleSplitClip();
+           break;
+        case 'c': // Duplicate
+           e.preventDefault();
+           if (selectedClipId) {
+              const activeC = clips.find(c => c.id === selectedClipId);
+              if (activeC) handleDuplicateClip(activeC);
+           }
+           break;
+        case 'delete':
+        case 'backspace':
+           e.preventDefault();
+           if (selectedClipId) handleRemoveClip(selectedClipId);
+           break;
+        case 'arrowleft':
+           e.preventDefault();
+           setCurrentTime(prev => {
+              const t = Math.max(0, prev - 1);
+              if (videoRef.current) {
+                 let localTime = t;
+                 if (!nodeData.output && currentGlobalClip) {
+                    localTime = Math.max(0, t - currentGlobalClip.start);
+                 }
+                 videoRef.current.currentTime = localTime;
+              }
+              return t;
+           });
+           break;
+        case 'arrowright':
+           e.preventDefault();
+           setCurrentTime(prev => {
+              const t = Math.min(totalDuration, prev + 1);
+              if (videoRef.current) {
+                 let localTime = t;
+                 if (!nodeData.output && currentGlobalClip) {
+                    localTime = Math.max(0, t - currentGlobalClip.start);
+                 }
+                 videoRef.current.currentTime = localTime;
+              }
+              return t;
+           });
+           break;
+     }
+  };
 
   return (
-    <div className="relative group select-none">
+    <div 
+      ref={containerRef}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onPointerDown={(e) => {
+         if (!isEditMode) {
+            setIsEditMode(true);
+            containerRef.current?.focus();
+         } else {
+            // Stop propagation to prevent node dragging or canvas panning when in edit mode
+            e.stopPropagation();
+         }
+      }}
+      className={`relative group select-none outline-none transition-all ${
+         isEditMode ? 'ring-4 ring-rose-500/50 shadow-[0_0_40px_rgba(244,63,94,0.3)] rounded-[24px]' : ''
+      }`}
+    >
+      {/* Visual Indicator for Edit Mode */}
+      {isEditMode && (
+         <div className="absolute -top-12 right-0 bg-rose-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-rose-400 animate-pulse flex items-center gap-1.5 z-50">
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+            EDIT MODE (Nhấn ESC để thoát)
+         </div>
+      )}
+
       {/* Node Label above node */}
       <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
         <Scissors size={14} className="text-rose-400" /> CapCut Workstation (3 Khung & Tách Giọng)
@@ -533,8 +760,16 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                     ref={videoRef}
                     src={activeVideoUrl}
                     className="max-w-full max-h-full object-contain"
-                    onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
-                    onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
+                    autoPlay={isPlaying}
+                    onEnded={() => {
+                       if (!nodeData.output) {
+                          // Allow the RAF loop to naturally push currentTime forward, 
+                          // which will switch activeVideoUrl and autoPlay the next clip
+                       } else {
+                          setIsPlaying(false);
+                          setCurrentTime(0);
+                       }
+                    }}
                   />
                 </div>
               ) : (
@@ -576,20 +811,29 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               <input
                 type="range"
                 min={0}
-                max={duration || 100}
+                max={totalDuration || 100}
                 value={currentTime}
+                step={0.1}
                 onChange={(e) => {
                   const t = parseFloat(e.target.value);
-                  if (videoRef.current) videoRef.current.currentTime = t;
                   setCurrentTime(t);
+                  
+                  // Optional: sync local video time if scrubbing
+                  if (videoRef.current && currentGlobalClip) {
+                     let localTime = t;
+                     if (!nodeData.output) {
+                        localTime = Math.max(0, t - currentGlobalClip.start);
+                     }
+                     videoRef.current.currentTime = localTime;
+                  }
                 }}
                 className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
                 style={{
-                  background: `linear-gradient(to right, #f43f5e ${(currentTime / (duration || 100)) * 100}%, rgba(255,255,255,0.1) ${(currentTime / (duration || 100)) * 100}%)`
+                  background: `linear-gradient(to right, #f43f5e ${(currentTime / (totalDuration || 100)) * 100}%, rgba(255,255,255,0.1) ${(currentTime / (totalDuration || 100)) * 100}%)`
                 }}
               />
               <span className="font-mono text-[10px] text-text-muted shrink-0 w-16 text-right">
-                {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
+                {currentTime.toFixed(1)}s / {(totalDuration || 0).toFixed(1)}s
               </span>
             </div>
           </div>
@@ -682,9 +926,11 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                                 key={clip.id}
                                 clip={clip}
                                 index={idx}
+                                label={getClipLabel(idx)}
                                 isSelected={clip.id === selectedClipId}
                                 onSelect={setSelectedClipId}
                                 onRemove={handleRemoveClip}
+                                onDuplicate={handleDuplicateClip}
                               />
                             ))}
                         </div>
