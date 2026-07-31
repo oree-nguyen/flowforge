@@ -19,6 +19,7 @@ import { VideoEditorNode } from '../nodes/VideoEditorNode';
 import { NoteNode } from '../nodes/NoteNode';
 import { UtilDownloadNode } from '../nodes/UtilDownloadNode';
 import { InputFileNode } from '../nodes/InputFileNode';
+import { InputVideoNode } from '../nodes/InputVideoNode';
 
 const NODE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'input.text': InputTextNode,
@@ -33,6 +34,7 @@ const NODE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'note': NoteNode,
   'util.download': UtilDownloadNode,
   'input.file': InputFileNode,
+  'input.video': InputVideoNode,
 };
 
 // --- Connection drag state ---

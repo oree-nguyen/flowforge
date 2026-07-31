@@ -52,6 +52,7 @@ export function AddNodePopover({ isOpen, onClose }: { isOpen: boolean, onClose: 
   const nodeTypes = [
     { type: 'input.text', label: 'Input Text', icon: <Type size={18} />, color: 'bg-border-subtle' },
     { type: 'input.image', label: 'Input Image', icon: <ImageIcon size={18} />, color: 'bg-border-subtle' },
+    { type: 'input.video', label: 'Input Video', icon: <Video size={18} />, color: 'bg-emerald-500/20 text-emerald-400' },
     { type: 'input.file', label: 'Other Input', icon: <FileText size={18} />, color: 'bg-orange-500/20 text-orange-400' },
     { type: 'note', label: 'Note', icon: <StickyNote size={18} />, color: 'bg-amber-500/20 text-amber-500' },
     { type: 'ai.textGen', label: 'AI Text Gen', icon: <Bot size={18} />, color: 'bg-[#9C27B0]/20 text-[#9C27B0]' },

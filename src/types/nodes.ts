@@ -3,6 +3,8 @@
 export type NodeType = 
   | 'input.text'
   | 'input.image'
+  | 'input.video'
+  | 'input.file'
   | 'ai.textGen'
   | 'ai.imageGen'
   | 'ai.videoGen'
@@ -17,6 +19,19 @@ export type NodeType =
 // Data interfaces
 export interface InputTextData {
   text: string;
+  [key: string]: unknown;
+}
+
+export interface InputImageData {
+  file?: string | null;
+  output?: string | null;
+  [key: string]: unknown;
+}
+
+export interface InputVideoData {
+  file?: string | null;
+  output?: string | null;
+  fileName?: string | null;
   [key: string]: unknown;
 }
 
@@ -118,10 +133,6 @@ export interface AIDubSubData {
   [key: string]: unknown;
 }
 
-export interface InputImageData {
-  file: string | null;
-  [key: string]: unknown;
-}
 
 export interface AITextGenData {
   model: string;
