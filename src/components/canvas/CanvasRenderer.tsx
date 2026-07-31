@@ -192,7 +192,7 @@ function getHandlePosition(node: NodeData, size: { width: number, height: number
       if (type === 'out') {
         portEl = (nodeEl.querySelector(`[data-target="${node.id}:out"], [data-target="${node.id}:video_out"], [data-target="${node.id}:subtitle_out"]`) || document.querySelector(`[data-target="${node.id}:out"]`)) as HTMLElement | null;
       } else {
-        portEl = (nodeEl.querySelector(`[data-target="${node.id}:in"], [data-target="${node.id}:text"], [data-target="${node.id}:image"], [data-target="${node.id}:file"], [data-target="${node.id}:video_in"], [data-target="${node.id}:videos_in"]`) || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
+        portEl = (nodeEl.querySelector(`[data-target="${node.id}:in"], [data-target="${node.id}:text"], [data-target="${node.id}:image"], [data-target="${node.id}:file"], [data-target="${node.id}:video_in"], [data-target="${node.id}:videos_in"], [data-target="${node.id}:audio_in"], [data-target="${node.id}:subtitle_in"]`) || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
       }
     }
     if (!portEl) {
@@ -458,6 +458,17 @@ export function CanvasRenderer() {
           if (sourceNode?.type === 'input.image' && tgtHandle === 'text') isValid = false;
           if (sourceNode?.type === 'ai.audioGen' && tgtHandle === 'image') isValid = false;
           if ((sourceNode?.type === 'input.image' || sourceNode?.type === 'ai.imageGen') && tgtHandle === 'file') isValid = false;
+
+          // Video Editor Node Port Strict Validation
+          if (tgtHandle === 'video_in' || tgtHandle === 'videos_in') {
+             if (['input.text', 'input.image', 'ai.audioGen', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
+          }
+          if (tgtHandle === 'audio_in') {
+             if (['input.text', 'input.image', 'ai.textGen', 'ai.imageGen', 'ai.videoGen', 'util.videoEditor'].includes(sourceNode?.type || '')) isValid = false;
+          }
+          if (tgtHandle === 'subtitle_in') {
+             if (!['input.text', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
+          }
 
           if (isValid) {
             minDist = dist;

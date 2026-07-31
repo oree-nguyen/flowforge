@@ -20,7 +20,9 @@ import {
   Sliders,
   RotateCw,
   Maximize2,
-  Music
+  Music,
+  Camera,
+  Type
 } from 'lucide-react';
 
 import {
@@ -202,12 +204,13 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     const edges = canvasEngine.getEdges();
     const nodes = canvasEngine.getNodes();
 
-    const inputEdges = edges.filter((e: EdgeData) => e.target === id && e.targetHandle === 'videos_in');
+    const inputEdges = edges.filter((e: EdgeData) => e.target === id && ['videos_in', 'video_in', 'audio_in', 'subtitle_in'].includes(e.targetHandle || ''));
     let hasChanged = false;
     const currentClips = [...clips];
 
-    // Filter out removed edges
-    const validClips = currentClips.filter((c) => inputEdges.some((e: EdgeData) => e.id === c.id));
+    // Filter out removed edges for VIDEO track
+    const videoEdges = inputEdges.filter(e => e.targetHandle === 'videos_in' || e.targetHandle === 'video_in');
+    const validClips = currentClips.filter((c) => videoEdges.some((e: EdgeData) => e.id === c.id));
     if (validClips.length !== currentClips.length) {
       hasChanged = true;
     }
@@ -217,11 +220,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     let dubAudioTrack: any[] = [];
 
     inputEdges.forEach((edge: EdgeData) => {
-      const existing = validClips.find((c) => c.id === edge.id);
       const sourceNode = nodes.find((n: NodeData) => n.id === edge.source);
       const sourceOutput = sourceNode?.data?.output || sourceNode?.data?.outputVideo || sourceNode?.data?.file || sourceNode?.data?.url;
 
-      // Extract Dubbing/Sub tracks if connected from a Dubbing/Sub node
+      // Compatibility: Extract Dubbing/Sub tracks if connected from a Dubbing/Sub node (works for any port)
       if (sourceNode?.type === 'ai.dubSub') {
         const segments = sourceNode.data?.segments as any[];
         if (segments && Array.isArray(segments)) {
@@ -238,33 +240,44 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             audioUrl: sourceNode.data.outputVideo,
           });
         }
+      } else if (edge.targetHandle === 'audio_in' && sourceOutput) {
+         dubAudioTrack.push({ start: 0, end: 10, audioUrl: String(sourceOutput) });
+         hasChanged = true; // Force trigger changes if new generic audio is added
+      } else if (edge.targetHandle === 'subtitle_in' && sourceOutput) {
+         subtitleTrack.push({ start: 0, end: 10, text: String(sourceOutput) });
+         hasChanged = true; // Force trigger changes if new generic text is added
       }
 
-      if (!existing && sourceOutput) {
-        hasChanged = true;
-        validClips.push({
-          id: edge.id,
-          sourceNodeId: edge.source,
-          order: validClips.length,
-          thumbnailUrl: '',
-          videoUrl: String(sourceOutput),
-          volume: 100,
-        });
+      // Process Video Track additions
+      const isVideoPort = edge.targetHandle === 'videos_in' || edge.targetHandle === 'video_in';
+      if (isVideoPort) {
+        const existing = validClips.find((c) => c.id === edge.id);
+        if (!existing && sourceOutput) {
+          hasChanged = true;
+          validClips.push({
+            id: edge.id,
+            sourceNodeId: edge.source,
+            order: validClips.length,
+            thumbnailUrl: '',
+            videoUrl: String(sourceOutput),
+            volume: 100,
+          });
 
-        // Extract thumbnail async
-        extractVideoThumbnail(String(sourceOutput)).then((thumbUrl) => {
-          const updatedClips = canvasEngine.getNode(id)?.data?.clips as VideoClipItem[];
-          if (updatedClips) {
-            const targetClip = updatedClips.find((c) => c.id === edge.id);
-            if (targetClip) {
-              targetClip.thumbnailUrl = thumbUrl;
-              canvasEngine.updateNodeData(id, { clips: [...updatedClips] });
+          // Extract thumbnail async
+          extractVideoThumbnail(String(sourceOutput)).then((thumbUrl) => {
+            const updatedClips = canvasEngine.getNode(id)?.data?.clips as VideoClipItem[];
+            if (updatedClips) {
+              const targetClip = updatedClips.find((c) => c.id === edge.id);
+              if (targetClip) {
+                targetClip.thumbnailUrl = thumbUrl;
+                canvasEngine.updateNodeData(id, { clips: [...updatedClips] });
+              }
             }
-          }
-        });
-      } else if (existing && sourceOutput && existing.videoUrl !== sourceOutput) {
-        existing.videoUrl = String(sourceOutput);
-        hasChanged = true;
+          });
+        } else if (existing && sourceOutput && existing.videoUrl !== sourceOutput) {
+          existing.videoUrl = String(sourceOutput);
+          hasChanged = true;
+        }
       }
     });
 
@@ -419,53 +432,52 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
   const activeVideoUrl = nodeData.output || activeClip?.videoUrl;
 
   return (
-    <div className="relative group">
+    <div className="relative group select-none">
       {/* Node Label above node */}
       <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
         <Scissors size={14} className="text-rose-400" /> CapCut Workstation (3 Khung & Tách Giọng)
       </div>
 
-      {/* Main Node Workstation Wrapper (Transparent flex container with gap-3 between 3 separate boxes) */}
-      <div className="w-[490px] flex flex-col gap-3 relative select-none">
-        {/* Floating Header Bar */}
-        <div className="px-3.5 py-2 bg-node rounded-xl border border-border-subtle flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <span className="text-xs font-semibold text-text-primary truncate">
-              {customNodeName || 'Video Editor Pro'}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {/* AI vs DSP Quality Badge */}
-            {nodeData.vocalSeparationEngine && (
-              <span
-                className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border ${
-                  nodeData.vocalSeparationEngine === 'htdemucs_onnx'
-                    ? 'bg-accent-lime/20 border-accent-lime/40 text-accent-lime'
-                    : 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-                }`}
-                title={
-                  nodeData.vocalSeparationEngine === 'htdemucs_onnx'
-                    ? 'Tách âm thanh bằng Mô hình AI HTDemucs (Chất lượng cao)'
-                    : 'Tách âm thanh bằng Bộ lọc DSP Filter (Chất lượng Cơ bản)'
-                }
-              >
-                {nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? '✨ AI HTDemucs' : '⚡ DSP Filter'}
-              </span>
-            )}
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/20 rounded text-rose-400">
-              {clips.length} Clips
-            </span>
-          </div>
+      {/* Floating Header Bar */}
+      <div className="mb-3 px-3.5 py-2 bg-node rounded-xl border border-border-subtle flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="text-xs font-semibold text-text-primary truncate">
+            {customNodeName || 'Video Editor Pro'}
+          </span>
         </div>
+        <div className="flex items-center gap-1.5">
+          {/* AI vs DSP Quality Badge */}
+          {nodeData.vocalSeparationEngine && (
+            <span
+              className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full border ${
+                nodeData.vocalSeparationEngine === 'htdemucs_onnx'
+                  ? 'bg-accent-lime/20 border-accent-lime/40 text-accent-lime'
+                  : 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+              }`}
+              title={
+                nodeData.vocalSeparationEngine === 'htdemucs_onnx'
+                  ? 'Tách âm thanh bằng Mô hình AI HTDemucs (Chất lượng cao)'
+                  : 'Tách âm thanh bằng Bộ lọc DSP Filter (Chất lượng Cơ bản)'
+              }
+            >
+              {nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? '✨ AI HTDemucs' : '⚡ DSP Filter'}
+            </span>
+          )}
+          <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/20 rounded text-rose-400">
+            {clips.length} Clips
+          </span>
+        </div>
+      </div>
 
-        {/* TOP ROW: BOX 1 (Canvas Preview) + BOX 2 (Toolbox Panel) as 2 separate, independent boxes */}
-        <div className="grid grid-cols-12 gap-3">
-          {/* BOX 1: Canvas Preview (Separate Box, rounded-2xl, independent border) */}
-          <div
-            className={`col-span-7 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-2 transition-all ${
-              selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
-            }`}
-          >
+      <div className="flex gap-4 items-stretch relative">
+        {/* LEFT COLUMN: BOX 1 (Preview + Timeline combined) */}
+        <div
+          className={`w-[450px] bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
+            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+          }`}
+        >
+          {/* --- Nửa trên: Preview --- */}
+          <div className="flex flex-col gap-2 border-b border-border-subtle pb-3">
             {/* Aspect Ratio Pills */}
             <div className="flex items-center justify-between text-[10px]">
               <span className="text-text-muted font-medium flex items-center gap-1">
@@ -560,116 +572,27 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               <span className="font-mono text-[9px] text-text-muted shrink-0">
                 {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
               </span>
-            </div>
+          </div>
           </div>
 
-          {/* BOX 2: Toolbox Panel (Separate Box, rounded-2xl, independent border) */}
-          <div
-            className={`col-span-5 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
-              selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
-            }`}
-          >
-            <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1 border-b border-border-subtle pb-1">
-              <Sliders size={12} className="text-rose-400" /> Toolbox CapCut
-            </span>
+          {/* --- Nửa dưới: Timeline --- */}
+          <div className="flex flex-col gap-3 pt-1">
+            {/* Timeline Title Bar */}
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-text-primary font-bold flex items-center gap-1.5">
+                <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
+              </span>
+              <span className="text-[10px] font-mono text-text-muted">
+                {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
+              </span>
+            </div>
 
-            {/* Split Clip Button */}
-            <button
-              onClick={handleSplitClip}
-              disabled={!selectedClipId}
-              className="w-full py-1.5 px-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-border-subtle rounded-lg text-[10px] text-white font-medium flex items-center gap-1.5 transition-colors"
+            {/* Time Axis Container with Ruler & Playhead */}
+            <div
+              ref={timelineRef}
+              className="relative overflow-x-auto custom-scrollbar pb-2 flex flex-col gap-2 min-w-full cursor-pointer"
+              onPointerDown={(e) => handleRulerScrub(e.clientX)}
             >
-              <Scissors size={12} className="text-rose-400" /> Cắt Clip (Split)
-            </button>
-
-            {/* Extract Audio Button */}
-            <button
-              onClick={handleExtractAudio}
-              disabled={nodeData.isSeparatingAudio}
-              className="w-full py-1.5 px-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-[10px] font-medium flex items-center gap-1.5 transition-colors"
-            >
-              <AudioWaveform size={12} className="text-amber-400" /> Tách Giọng Nói (Stem)
-            </button>
-
-            {/* Volume Slider */}
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-[10px] text-text-muted">
-                <span className="flex items-center gap-1">
-                  <Volume2 size={11} /> Volume Clip
-                </span>
-                <span className="font-mono">{activeClip?.volume || 100}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={200}
-                value={activeClip?.volume || 100}
-                onChange={(e) => {
-                  const vol = parseInt(e.target.value, 10);
-                  const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
-                  canvasEngine.updateNodeData(id, { clips: updated });
-                }}
-                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-              />
-            </div>
-
-            {/* Transform Adjustment (Scale & Rotation) */}
-            <div className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle">
-              <div className="flex items-center justify-between text-[10px] text-text-muted">
-                <span>Zoom Layer</span>
-                <span className="font-mono">{activeTransform.scale.toFixed(2)}x</span>
-              </div>
-              <input
-                type="range"
-                min={0.5}
-                max={3.0}
-                step={0.05}
-                value={activeTransform.scale}
-                onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
-                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-              />
-
-              <div className="flex items-center justify-between text-[10px] text-text-muted mt-1">
-                <span className="flex items-center gap-1">
-                  <RotateCw size={10} /> Xoay Góc
-                </span>
-                <span className="font-mono">{activeTransform.rotationDeg}°</span>
-              </div>
-              <input
-                type="range"
-                min={-180}
-                max={180}
-                step={5}
-                value={activeTransform.rotationDeg}
-                onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
-                className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* BOTTOM ROW: BOX 3: Multi-track Timeline (Separate Box, rounded-2xl, independent border) */}
-        <div
-          className={`w-full bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
-            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
-          }`}
-        >
-          {/* Timeline Title Bar */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-text-primary font-bold flex items-center gap-1.5">
-              <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
-            </span>
-            <span className="text-[10px] font-mono text-text-muted">
-              {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
-            </span>
-          </div>
-
-          {/* Time Axis Container with Ruler & Playhead */}
-          <div
-            ref={timelineRef}
-            className="relative overflow-x-auto custom-scrollbar pb-2 pt-1 flex flex-col gap-2 min-w-full cursor-pointer"
-            onPointerDown={(e) => handleRulerScrub(e.clientX)}
-          >
             {/* 1. TOP RULER (Thước thời gian) */}
             <div className="relative h-6 w-full min-w-[420px] border-b border-border-subtle/60 flex items-end pb-1 bg-white/[0.02] rounded-t-lg">
               {timeTicks.map((tick) => (
@@ -710,14 +633,14 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
 
             {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
             <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
-              {/* --- TRACK 1: VIDEO CLIPS (Accent Lime #C6F135 + Thumbnail Background) --- */}
+              {/* --- TRACK 1: VIDEO CLIPS (Black Box) --- */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C6F135]" /> TRACK 1 — VIDEO CLIPS
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" /> TRACK 1 — VIDEO CLIPS
                   </span>
                 </div>
-                <div className="relative h-13 w-full bg-[#C6F135]/5 rounded-lg border border-[#C6F135]/20 flex items-center p-1">
+                <div className="relative h-13 w-full bg-black rounded-lg border border-white/10 flex items-center p-1">
                   {clips.length > 0 ? (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
@@ -810,8 +733,93 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                     </div>
                   )}
                 </div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: BOX 2 (Toolbox) */}
+        <div
+          className={`w-[220px] shrink-0 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
+            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+          }`}
+        >
+          <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1 border-b border-border-subtle pb-1">
+            <Sliders size={12} className="text-rose-400" /> Toolbox CapCut
+          </span>
+
+          {/* Split Clip Button */}
+          <button
+            onClick={handleSplitClip}
+            disabled={!selectedClipId}
+            className="w-full py-1.5 px-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-border-subtle rounded-lg text-[10px] text-white font-medium flex items-center gap-1.5 transition-colors"
+          >
+            <Scissors size={12} className="text-rose-400" /> Cắt Clip (Split)
+          </button>
+
+          {/* Extract Audio Button */}
+          <button
+            onClick={handleExtractAudio}
+            disabled={nodeData.isSeparatingAudio}
+            className="w-full py-1.5 px-2 bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 rounded-lg text-[10px] font-medium flex items-center gap-1.5 transition-colors"
+          >
+            <AudioWaveform size={12} className="text-[#38BDF8]" /> Tách Giọng Nói (Stem)
+          </button>
+
+          {/* Volume Slider */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between text-[10px] text-text-muted">
+              <span className="flex items-center gap-1">
+                <Volume2 size={11} /> Volume Clip
+              </span>
+              <span className="font-mono">{activeClip?.volume || 100}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={200}
+              value={activeClip?.volume || 100}
+              onChange={(e) => {
+                const vol = parseInt(e.target.value, 10);
+                const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
+                canvasEngine.updateNodeData(id, { clips: updated });
+              }}
+              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+            />
+          </div>
+
+          {/* Transform Adjustment (Scale & Rotation) */}
+          <div className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle">
+            <div className="flex items-center justify-between text-[10px] text-text-muted">
+              <span>Zoom Layer</span>
+              <span className="font-mono">{activeTransform.scale.toFixed(2)}x</span>
+            </div>
+            <input
+              type="range"
+              min={0.5}
+              max={3.0}
+              step={0.05}
+              value={activeTransform.scale}
+              onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
+              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+            />
+
+            <div className="flex items-center justify-between text-[10px] text-text-muted mt-1">
+              <span className="flex items-center gap-1">
+                <RotateCw size={10} /> Xoay Góc
+              </span>
+              <span className="font-mono">{activeTransform.rotationDeg}°</span>
+            </div>
+            <input
+              type="range"
+              min={-180}
+              max={180}
+              step={5}
+              value={activeTransform.rotationDeg}
+              onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
+              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+            />
           </div>
 
           {/* Action Trigger Button */}
@@ -832,19 +840,48 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
         </div>
       </div>
 
-      {/* Input Ports (Left) - Multi Connection Target */}
+      {/* Input Ports (Left) - 3 Separate Type-specific Ports */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full flex flex-col gap-2 pr-2.5 z-20">
+        {/* Port 1: Video */}
         <div
-          className="port-handle w-8 h-8 rounded-full border border-rose-400/50 bg-panel flex items-center justify-center text-rose-400 hover:text-rose-300 hover:border-rose-300 cursor-crosshair shadow-md"
-          title="Video Inputs (videos_in - Nhận nhiều kết nối)"
-          data-target={`${id}:videos_in`}
-          data-portid="videos_in"
+          className="port-handle w-8 h-8 rounded-full border border-[#C6F135]/50 bg-panel flex items-center justify-center text-[#C6F135] hover:text-[#C6F135] hover:border-[#C6F135] cursor-crosshair shadow-md"
+          title="Video Input (video_in)"
+          data-target={`${id}:video_in`}
+          data-portid="video_in"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onDisconnectStart?.(e, id, 'videos_in');
+            onDisconnectStart?.(e, id, 'video_in');
           }}
         >
-          <Video size={14} />
+          <Camera size={14} />
+        </div>
+        
+        {/* Port 2: Audio */}
+        <div
+          className="port-handle w-8 h-8 rounded-full border border-[#38BDF8]/50 bg-panel flex items-center justify-center text-[#38BDF8] hover:text-[#38BDF8] hover:border-[#38BDF8] cursor-crosshair shadow-md"
+          title="Audio Input (audio_in)"
+          data-target={`${id}:audio_in`}
+          data-portid="audio_in"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onDisconnectStart?.(e, id, 'audio_in');
+          }}
+        >
+          <AudioWaveform size={14} />
+        </div>
+        
+        {/* Port 3: Subtitle/Text */}
+        <div
+          className="port-handle w-8 h-8 rounded-full border border-[#F59E0B]/50 bg-panel flex items-center justify-center text-[#F59E0B] hover:text-[#F59E0B] hover:border-[#F59E0B] cursor-crosshair shadow-md"
+          title="Text/Subtitle Input (subtitle_in)"
+          data-target={`${id}:subtitle_in`}
+          data-portid="subtitle_in"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onDisconnectStart?.(e, id, 'subtitle_in');
+          }}
+        >
+          <Type size={14} />
         </div>
       </div>
 
