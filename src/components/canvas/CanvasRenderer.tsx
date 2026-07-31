@@ -456,17 +456,23 @@ export function CanvasRenderer() {
         if (dist < minDist) {
           const tgtHandle = targetHandle || 'in';
           let isValid = true;
-          if (sourceNode?.type === 'input.text' && tgtHandle === 'image') isValid = false;
-          if (sourceNode?.type === 'input.image' && tgtHandle === 'text') isValid = false;
-          if (sourceNode?.type === 'ai.audioGen' && tgtHandle === 'image') isValid = false;
-          if ((sourceNode?.type === 'input.image' || sourceNode?.type === 'ai.imageGen') && tgtHandle === 'file') isValid = false;
+          // General Input Port Validation
+          if (tgtHandle === 'image') {
+             if (!['input.image', 'ai.imageGen'].includes(sourceNode?.type || '')) isValid = false;
+          }
+          if (tgtHandle === 'text') {
+             if (!['input.text', 'ai.textGen', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
+          }
+          if (tgtHandle === 'file') {
+             if (!['input.file'].includes(sourceNode?.type || '')) isValid = false;
+          }
 
           // Video Editor Node Port Strict Validation
           if (tgtHandle === 'video_in' || tgtHandle === 'videos_in') {
-             if (['input.text', 'input.image', 'ai.audioGen', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
+             if (!['input.video', 'ai.videoGen', 'util.videoEditor'].includes(sourceNode?.type || '')) isValid = false;
           }
           if (tgtHandle === 'audio_in') {
-             if (['input.text', 'input.image', 'ai.textGen', 'ai.imageGen', 'ai.videoGen', 'util.videoEditor'].includes(sourceNode?.type || '')) isValid = false;
+             if (!['ai.audioGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
           }
           if (tgtHandle === 'subtitle_in') {
              if (!['input.text', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
@@ -541,18 +547,24 @@ export function CanvasRenderer() {
           if (sourceNode?.id === targetId) {
             isValid = false;
             invalidReason = 'Không thể nối node với chính nó.';
-          } else if (sourceNode?.type === 'input.text' && tgtHandle === 'image') {
+          } else if (tgtHandle === 'image' && !['input.image', 'ai.imageGen'].includes(sourceNode?.type || '')) {
             isValid = false;
-            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Ảnh (Image), không nhận Text.';
-          } else if (sourceNode?.type === 'input.image' && tgtHandle === 'text') {
+            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Ảnh (Image).';
+          } else if (tgtHandle === 'text' && !['input.text', 'ai.textGen', 'input.file'].includes(sourceNode?.type || '')) {
             isValid = false;
-            invalidReason = 'Cổng nhập này chỉ nhận Prompt Text, không nhận File Ảnh.';
-          } else if (sourceNode?.type === 'ai.audioGen' && tgtHandle === 'image') {
+            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Văn bản (Text/File).';
+          } else if (tgtHandle === 'file' && !['input.file'].includes(sourceNode?.type || '')) {
             isValid = false;
-            invalidReason = 'Cổng nhập này chỉ nhận Ảnh (Image), không nhận File Audio.';
-          } else if ((sourceNode?.type === 'input.image' || sourceNode?.type === 'ai.imageGen') && tgtHandle === 'file') {
+            invalidReason = 'Cổng nhập này chỉ nhận File tài liệu (PDF, Word, TXT, ...).';
+          } else if ((tgtHandle === 'video_in' || tgtHandle === 'videos_in') && !['input.video', 'ai.videoGen', 'util.videoEditor'].includes(sourceNode?.type || '')) {
             isValid = false;
-            invalidReason = 'Cổng nhập này chỉ nhận File Văn bản/PDF, không nhận File Ảnh.';
+            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Video.';
+          } else if (tgtHandle === 'audio_in' && !['ai.audioGen', 'ai.dubSub'].includes(sourceNode?.type || '')) {
+            isValid = false;
+            invalidReason = 'Cổng nhập này chỉ nhận dữ liệu Âm thanh (Audio/Dubbing).';
+          } else if (tgtHandle === 'subtitle_in' && !['input.text', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) {
+            isValid = false;
+            invalidReason = 'Cổng phụ đề chỉ nhận dữ liệu Văn bản hoặc Subtitle.';
           }
           
           if (isValid) {
