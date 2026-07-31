@@ -439,9 +439,12 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       </div>
 
       {/* Floating Header Bar */}
-      <div className="mb-3 px-3.5 py-2 bg-node rounded-xl border border-border-subtle flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <span className="text-xs font-semibold text-text-primary truncate">
+      <div className="mb-4 px-4 py-3 bg-black/40 backdrop-blur-md rounded-[20px] border border-white/10 flex items-center justify-between shadow-2xl">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <Scissors size={16} />
+          </div>
+          <span className="text-sm font-bold text-white tracking-wide truncate">
             {customNodeName || 'Video Editor Pro'}
           </span>
         </div>
@@ -472,12 +475,12 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       <div className="flex gap-4 items-stretch relative">
         {/* LEFT COLUMN: BOX 1 (Preview + Timeline combined) */}
         <div
-          className={`w-[450px] bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
-            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+          className={`w-[470px] bg-[#0c0c0e]/95 backdrop-blur-xl rounded-[24px] p-4 border shadow-2xl flex flex-col gap-4 transition-all ${
+            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-white/10 hover:border-white/20'
           }`}
         >
           {/* --- Nửa trên: Preview --- */}
-          <div className="flex flex-col gap-2 border-b border-border-subtle pb-3">
+          <div className="flex flex-col gap-3 border-b border-white/10 pb-4">
             {/* Aspect Ratio Pills */}
             <div className="flex items-center justify-between text-[10px]">
               <span className="text-text-muted font-medium flex items-center gap-1">
@@ -505,7 +508,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             </div>
 
             {/* Video Preview Box with Canvas Ratio & Interactive Transform */}
-            <div className="w-full aspect-video bg-black rounded-xl relative flex items-center justify-center overflow-hidden border border-border-subtle group/canvas">
+            <div className="w-full aspect-video bg-black rounded-xl relative flex items-center justify-center overflow-hidden border border-white/10 shadow-inner group/canvas">
               {activeVideoUrl ? (
                 <div
                   className="w-full h-full flex items-center justify-center transition-transform"
@@ -544,7 +547,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             </div>
 
             {/* Play Controls & Scrubber */}
-            <div className="flex items-center gap-2 pt-1 text-[11px]">
+            <div className="flex items-center gap-3 pt-2 text-[11px]">
               <button
                 onClick={() => {
                   if (videoRef.current) {
@@ -553,9 +556,9 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                     setIsPlaying(!isPlaying);
                   }
                 }}
-                className="p-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors shrink-0"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 hover:scale-105 transition-all shrink-0"
               >
-                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" className="ml-0.5" />}
               </button>
               <input
                 type="range"
@@ -567,12 +570,15 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                   if (videoRef.current) videoRef.current.currentTime = t;
                   setCurrentTime(t);
                 }}
-                className="flex-1 accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+                className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
+                style={{
+                  background: `linear-gradient(to right, #f43f5e ${(currentTime / (duration || 100)) * 100}%, rgba(255,255,255,0.1) ${(currentTime / (duration || 100)) * 100}%)`
+                }}
               />
-              <span className="font-mono text-[9px] text-text-muted shrink-0">
+              <span className="font-mono text-[10px] text-text-muted shrink-0 w-16 text-right">
                 {currentTime.toFixed(1)}s / {(duration || 0).toFixed(1)}s
               </span>
-          </div>
+            </div>
           </div>
 
           {/* --- Nửa dưới: Timeline --- */}
@@ -580,29 +586,29 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             {/* Timeline Title Bar */}
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-text-primary font-bold flex items-center gap-1.5">
-                <Layers size={13} className="text-rose-400" /> CapCut Multi-track Timeline ({clips.length} clips)
+                <Layers size={13} className="text-rose-400" /> Multi-track Timeline
               </span>
               <span className="text-[10px] font-mono text-text-muted">
-                {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
+                {clips.length} clips • {totalDuration.toFixed(1)}s
               </span>
             </div>
 
             {/* Time Axis Container with Ruler & Playhead */}
             <div
               ref={timelineRef}
-              className="relative overflow-x-auto custom-scrollbar pb-2 flex flex-col gap-2 min-w-full cursor-pointer"
+              className="relative overflow-x-auto custom-scrollbar pb-3 flex flex-col gap-2.5 min-w-full cursor-pointer"
               onPointerDown={(e) => handleRulerScrub(e.clientX)}
             >
             {/* 1. TOP RULER (Thước thời gian) */}
-            <div className="relative h-6 w-full min-w-[420px] border-b border-border-subtle/60 flex items-end pb-1 bg-white/[0.02] rounded-t-lg">
+            <div className="relative h-6 w-full min-w-[420px] border-b border-white/10 flex items-end pb-1 bg-black/20 rounded-t-xl">
               {timeTicks.map((tick) => (
                 <div
                   key={tick.sec}
                   className="absolute bottom-0 flex flex-col items-center transform -translate-x-1/2"
                   style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
                 >
-                  <span className="text-[8px] font-mono text-text-muted/80">{tick.label}</span>
-                  <div className="w-[1px] h-1.5 bg-white/20 mt-0.5" />
+                  <span className="text-[8px] font-mono text-text-muted/60 mb-0.5">{tick.label}</span>
+                  <div className="w-[1px] h-1.5 bg-white/10" />
                 </div>
               ))}
             </div>
@@ -632,15 +638,15 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             </div>
 
             {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
-            <div className="relative flex flex-col gap-2 w-full min-w-[420px]">
+            <div className="relative flex flex-col gap-2.5 w-full min-w-[420px]">
               {/* --- TRACK 1: VIDEO CLIPS (Black Box) --- */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white" /> TRACK 1 — VIDEO CLIPS
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[9px] font-mono text-white/50 tracking-wider pl-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/80" /> VIDEO
                   </span>
                 </div>
-                <div className="relative h-13 w-full bg-black rounded-lg border border-white/10 flex items-center p-1">
+                <div className="relative h-14 w-full bg-black/40 rounded-xl border border-white/5 flex items-center p-1.5 shadow-inner">
                   {clips.length > 0 ? (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
@@ -669,13 +675,13 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               </div>
 
               {/* --- TRACK 2: AUDIO / DUBBING (Sky Blue #38BDF8) --- */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> TRACK 2 — AUDIO / DUBBING
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[9px] font-mono text-[#38BDF8]/60 tracking-wider pl-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> AUDIO
                   </span>
                 </div>
-                <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
                   {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
                     nodeData.dubAudioTrack.map((dub, idx) => {
                       const leftPct = (dub.start / totalDuration) * 100;
@@ -683,14 +689,14 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                       return (
                         <div
                           key={idx}
-                          className="absolute top-1 bottom-1 bg-[#38BDF8] text-black font-semibold rounded-[8px] px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/dub hover:brightness-110 cursor-pointer"
+                          className="absolute top-1 bottom-1 bg-gradient-to-r from-[#38BDF8]/20 to-[#38BDF8]/40 border border-[#38BDF8]/50 text-white font-medium rounded-lg px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/dub hover:brightness-125 cursor-pointer backdrop-blur-sm transition-all"
                           style={{
                             left: `${leftPct}%`,
                             width: `${widthPct}%`,
                           }}
                           title={`Audio ${idx + 1}`}
                         >
-                          <Music size={11} className="shrink-0 text-black/80" />
+                          <Music size={11} className="shrink-0 text-[#38BDF8]" />
                           <span className="truncate text-[9px]">Audio {idx + 1}</span>
                         </div>
                       );
@@ -704,13 +710,13 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               </div>
 
               {/* --- TRACK 3: SUBTITLE / TEXT (Purple #A855F7) --- */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[9px] font-mono text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> TRACK 3 — SUBTITLE / TEXT
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[9px] font-mono text-[#A855F7]/60 tracking-wider pl-1">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> SUBTITLE
                   </span>
                 </div>
-                <div className="relative h-7 w-full bg-white/[0.03] rounded-lg border border-white/5 flex items-center px-1">
+                <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
                   {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
                     nodeData.subtitleTrack.map((sub, idx) => {
                       const leftPct = (sub.start / totalDuration) * 100;
@@ -718,12 +724,12 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                       return (
                         <div
                           key={idx}
-                          className="absolute top-1 bottom-1 bg-[#A855F7] text-white rounded-[8px] px-2 flex items-center gap-1 shadow-sm text-[10px] font-medium truncate group/sub hover:brightness-110 cursor-pointer"
+                          className="absolute top-1 bottom-1 bg-gradient-to-r from-[#A855F7]/20 to-[#A855F7]/40 border border-[#A855F7]/50 text-white font-medium rounded-lg px-2 flex items-center gap-1.5 shadow-sm text-[10px] truncate group/sub hover:brightness-125 cursor-pointer backdrop-blur-sm transition-all"
                           style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
                           title={`[${sub.start.toFixed(1)}s - ${sub.end.toFixed(1)}s]: ${sub.text}`}
                         >
-                          <span className="font-serif font-black text-[10px] shrink-0 opacity-90">Sub {idx + 1}</span>
-                          <span className="truncate text-[9px] font-normal opacity-95">{sub.text}</span>
+                          <span className="font-serif font-black text-[10px] shrink-0 text-[#d8b4fe]">S{idx + 1}</span>
+                          <span className="truncate text-[9px] font-normal">{sub.text}</span>
                         </div>
                       );
                     })
@@ -741,39 +747,39 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
 
         {/* RIGHT COLUMN: BOX 2 (Toolbox) */}
         <div
-          className={`w-[220px] shrink-0 bg-node rounded-2xl p-3 border shadow-xl flex flex-col gap-3 transition-all ${
-            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-border-subtle hover:border-rose-500/40'
+          className={`w-[240px] shrink-0 bg-[#0c0c0e]/95 backdrop-blur-xl rounded-[24px] p-4 border shadow-2xl flex flex-col gap-4 transition-all ${
+            selected ? 'border-rose-500 ring-1 ring-rose-500/30' : 'border-white/10 hover:border-white/20'
           }`}
         >
-          <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1 border-b border-border-subtle pb-1">
-            <Sliders size={12} className="text-rose-400" /> Toolbox CapCut
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-white/10 pb-2">
+            <Sliders size={14} className="text-rose-400" /> Toolbox
           </span>
 
           {/* Split Clip Button */}
           <button
             onClick={handleSplitClip}
             disabled={!selectedClipId}
-            className="w-full py-1.5 px-2 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-border-subtle rounded-lg text-[10px] text-white font-medium flex items-center gap-1.5 transition-colors"
+            className="w-full py-2 px-3 bg-white/5 hover:bg-white/10 disabled:opacity-40 border border-white/10 rounded-xl text-[11px] text-white font-medium flex items-center gap-2 transition-all shadow-sm"
           >
-            <Scissors size={12} className="text-rose-400" /> Cắt Clip (Split)
+            <Scissors size={14} className="text-rose-400" /> Cắt Clip tại Playhead
           </button>
 
           {/* Extract Audio Button */}
           <button
             onClick={handleExtractAudio}
             disabled={nodeData.isSeparatingAudio}
-            className="w-full py-1.5 px-2 bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 rounded-lg text-[10px] font-medium flex items-center gap-1.5 transition-colors"
+            className="w-full py-2 px-3 bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 rounded-xl text-[11px] font-medium flex items-center gap-2 transition-all shadow-sm"
           >
-            <AudioWaveform size={12} className="text-[#38BDF8]" /> Tách Giọng Nói (Stem)
+            <AudioWaveform size={14} className="text-[#38BDF8]" /> Tách Giọng Nói (Stem)
           </button>
 
           {/* Volume Slider */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-[10px] text-text-muted">
-              <span className="flex items-center gap-1">
-                <Volume2 size={11} /> Volume Clip
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-[11px] text-white/70">
+              <span className="flex items-center gap-1.5">
+                <Volume2 size={12} /> Volume
               </span>
-              <span className="font-mono">{activeClip?.volume || 100}%</span>
+              <span className="font-mono text-white/90 bg-white/10 px-1.5 py-0.5 rounded-md">{activeClip?.volume || 100}%</span>
             </div>
             <input
               type="range"
@@ -785,15 +791,18 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                 const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
                 canvasEngine.updateNodeData(id, { clips: updated });
               }}
-              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
+              style={{
+                background: `linear-gradient(to right, #f43f5e ${(activeClip?.volume || 100) / 2}%, rgba(255,255,255,0.1) ${(activeClip?.volume || 100) / 2}%)`
+              }}
             />
           </div>
 
           {/* Transform Adjustment (Scale & Rotation) */}
-          <div className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle">
-            <div className="flex items-center justify-between text-[10px] text-text-muted">
-              <span>Zoom Layer</span>
-              <span className="font-mono">{activeTransform.scale.toFixed(2)}x</span>
+          <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-between text-[11px] text-white/70">
+              <span>Zoom</span>
+              <span className="font-mono text-white/90 bg-white/10 px-1.5 py-0.5 rounded-md">{activeTransform.scale.toFixed(2)}x</span>
             </div>
             <input
               type="range"
@@ -802,14 +811,17 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               step={0.05}
               value={activeTransform.scale}
               onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
-              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
+              style={{
+                background: `linear-gradient(to right, #f43f5e ${((activeTransform.scale - 0.5) / 2.5) * 100}%, rgba(255,255,255,0.1) ${((activeTransform.scale - 0.5) / 2.5) * 100}%)`
+              }}
             />
 
-            <div className="flex items-center justify-between text-[10px] text-text-muted mt-1">
-              <span className="flex items-center gap-1">
-                <RotateCw size={10} /> Xoay Góc
+            <div className="flex items-center justify-between text-[11px] text-white/70 mt-1">
+              <span className="flex items-center gap-1.5">
+                <RotateCw size={12} /> Xoay Góc
               </span>
-              <span className="font-mono">{activeTransform.rotationDeg}°</span>
+              <span className="font-mono text-white/90 bg-white/10 px-1.5 py-0.5 rounded-md">{activeTransform.rotationDeg}°</span>
             </div>
             <input
               type="range"
@@ -818,7 +830,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
               step={5}
               value={activeTransform.rotationDeg}
               onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
-              className="w-full accent-rose-500 h-1 bg-white/10 rounded cursor-pointer"
+              className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
+              style={{
+                background: `linear-gradient(to right, #f43f5e ${((activeTransform.rotationDeg + 180) / 360) * 100}%, rgba(255,255,255,0.1) ${((activeTransform.rotationDeg + 180) / 360) * 100}%)`
+              }}
             />
           </div>
 
@@ -826,16 +841,16 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
           <button
             onClick={handleRunConcat}
             disabled={nodeData.isConcatting || clips.length === 0}
-            className="w-full mt-1 py-2 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 disabled:opacity-50 text-white rounded-xl font-medium flex items-center justify-center gap-2 shadow-md transition-all text-xs"
+            className="w-full mt-auto py-3 bg-rose-600 hover:bg-rose-500 disabled:bg-white/5 disabled:text-white/40 text-white rounded-[14px] font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] disabled:shadow-none transition-all text-xs"
           >
             {nodeData.isConcatting ? (
-              <Loader2 size={14} className="animate-spin" />
+              <Loader2 size={16} className="animate-spin" />
             ) : nodeData.output ? (
-              <CheckCircle2 size={14} />
+              <CheckCircle2 size={16} />
             ) : (
-              <Play size={14} />
+              <Play size={16} fill="currentColor" />
             )}
-            <span>{nodeData.output ? 'Ghép lại Video (FFmpeg CapCut)' : 'Ghép Video (Run Workstation)'}</span>
+            <span>{nodeData.output ? 'Đã Xuất Video (FFmpeg)' : 'Ghép & Xuất Video'}</span>
           </button>
         </div>
       </div>
