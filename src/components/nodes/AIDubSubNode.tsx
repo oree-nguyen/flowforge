@@ -2,7 +2,7 @@ import { type NodeProps } from '@xyflow/react';
 import { Languages, Video, FileText, CheckCircle2, Loader2, UserCheck } from 'lucide-react';
 import type { AIDubSubData } from '../../types/nodes';
 
-export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
+export function AIDubSubNode({ id, data, selected }: NodeProps) {
   const nodeData = data as AIDubSubData;
   const modelId = nodeData.sttModel || 'openai/whisper';
   const customNodeName = data.nodeName as string;
@@ -150,7 +150,6 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
           data-portid="video_in"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onDisconnectStart?.(e, id, 'video_in');
           }}
         >
           <Video size={14} />
@@ -166,7 +165,6 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
           data-portid="video_out"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onConnectStart?.(e, id, 'out');
           }}
         >
           <Video size={14} />
@@ -179,7 +177,6 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
           data-portid="subtitle_out"
           onPointerDown={(e) => {
             e.stopPropagation();
-            onConnectStart?.(e, id, 'out');
           }}
         >
           <FileText size={14} />
