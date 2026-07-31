@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, Info, XCircle, X } from 'lucide-react';
 
 const toastIcons = {
-  success: <CheckCircle2 className="w-4 h-4 text-accent-lime shrink-0" />,
+  success: <CheckCircle2 className="w-4 h-4 text-state-success shrink-0" />,
   error: <XCircle className="w-4 h-4 text-danger shrink-0" />,
   warning: <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />,
   info: <Info className="w-4 h-4 text-sky-400 shrink-0" />,
 };
 
 const toastBorders = {
-  success: 'border-accent-lime/40',
+  success: 'border-state-success/40',
   error: 'border-danger/40',
   warning: 'border-amber-400/40',
   info: 'border-sky-400/40',

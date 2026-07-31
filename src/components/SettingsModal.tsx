@@ -103,7 +103,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
         {/* Header */}
         <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-white/5">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal size={20} className="text-accent-lime" />
+            <SlidersHorizontal size={20} className="text-text-primary" />
             <h2 className="text-lg font-semibold text-text-primary">Workflow & Toolbar Settings</h2>
           </div>
           <button onClick={onClose} className="text-text-muted hover:text-text-primary hover:bg-white/10 p-1.5 rounded-xl transition-colors">
@@ -119,7 +119,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
             {/* OpenRouter API Key */}
             <div className="flex flex-col gap-2 bg-canvas/40 border border-border-subtle rounded-xl p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-text-primary mb-2">
-                <Key size={16} className="text-accent-lime" />
+                <Key size={16} className="text-text-primary" />
                 <span>API Keys</span>
               </div>
               <p className="text-xs text-text-muted mb-3">Stored locally in your browser. Toggle to select the active key.</p>
@@ -128,13 +128,13 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
               {apiKeys && apiKeys.length > 0 && (
                 <div className="flex flex-col gap-2 mb-4">
                   {apiKeys.map((k) => (
-                    <div key={k.id} className={`flex items-center justify-between p-2 rounded-xl border ${k.isActive ? 'border-accent-lime bg-accent-lime/10' : 'border-border-subtle bg-black/20'}`}>
+                    <div key={k.id} className={`flex items-center justify-between p-2 rounded-xl border ${k.isActive ? 'border-text-primary bg-text-primary/10' : 'border-border-subtle bg-black/20'}`}>
                       <div className="flex items-center gap-2 overflow-hidden flex-1">
                         <div 
-                          className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${k.isActive ? 'border-accent-lime bg-accent-lime' : 'border-border-subtle hover:border-text-muted'}`}
+                          className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${k.isActive ? 'border-text-primary bg-text-primary' : 'border-border-subtle hover:border-text-muted'}`}
                           onClick={() => setActiveApiKey(k.id)}
                         >
-                          {k.isActive && <div className="w-1.5 h-1.5 bg-black rounded-full" />}
+                          {k.isActive && <div className="w-1.5 h-1.5 bg-canvas rounded-full" />}
                         </div>
                         <div className="flex flex-col flex-1 overflow-hidden">
                           <span className="text-xs text-text-primary font-medium truncate">{k.name}</span>
@@ -160,14 +160,14 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
                   <input 
                     type="text"
                     placeholder="Name (e.g. Work, Personal)"
-                    className="w-1/3 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary placeholder:text-text-muted"
+                    className="w-1/3 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-text-primary text-text-primary placeholder:text-text-muted"
                     value={tempKeyName}
                     onChange={(e) => setTempKeyName(e.target.value)}
                   />
                   <input 
                     type="password"
                     placeholder="sk-or-v1-..."
-                    className="flex-1 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary font-mono placeholder:font-sans placeholder:text-text-muted"
+                    className="flex-1 bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-text-primary text-text-primary font-mono placeholder:font-sans placeholder:text-text-muted"
                     value={tempKey}
                     onChange={(e) => {
                       setTempKey(e.target.value);
@@ -185,7 +185,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
               </div>
               
               {status === 'success' && (
-                <div className="flex items-center gap-1.5 text-accent-lime text-xs mt-2">
+                <div className="flex items-center gap-1.5 text-state-success text-xs mt-2">
                   <CheckCircle2 size={14} /> Key added successfully
                 </div>
               )}
@@ -199,16 +199,16 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
             {/* UI Behavior */}
             <div className="flex flex-col gap-3 bg-canvas/40 border border-border-subtle rounded-xl p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
-                <Layout size={16} className="text-accent-lime" />
+                <Layout size={16} className="text-text-primary" />
                 <span>UI Preferences</span>
               </div>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-xs text-text-muted">Auto-open properties panel when selecting node</span>
                 <div 
-                  className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${autoOpenProperties ? 'bg-accent-lime' : 'bg-border-subtle'}`}
+                  className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${autoOpenProperties ? 'bg-text-primary' : 'bg-surface-3'}`}
                   onClick={() => setAutoOpenProperties(!autoOpenProperties)}
                 >
-                  <div className={`w-3 h-3 rounded-full bg-black shadow-sm transform transition-transform ${autoOpenProperties ? 'translate-x-4' : 'translate-x-0'}`} />
+                  <div className={`w-3 h-3 rounded-full bg-canvas shadow-sm transform transition-transform ${autoOpenProperties ? 'translate-x-4' : 'translate-x-0'}`} />
                 </div>
               </div>
             </div>
@@ -224,10 +224,10 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
                   <div key={toolKey} className="flex items-center justify-between py-1 border-b border-border-subtle/50 last:border-none">
                     <span className="text-xs text-text-muted">{toolbarLabels[toolKey]}</span>
                     <div 
-                      className={`w-7 h-3.5 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${toolbarVisibility[toolKey] !== false ? 'bg-accent-lime' : 'bg-border-subtle'}`}
+                      className={`w-7 h-3.5 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${toolbarVisibility[toolKey] !== false ? 'bg-text-primary' : 'bg-surface-3'}`}
                       onClick={() => setToolbarVisibility({ [toolKey]: toolbarVisibility[toolKey] === false })}
                     >
-                      <div className={`w-2.5 h-2.5 rounded-full bg-black shadow-sm transform transition-transform ${toolbarVisibility[toolKey] !== false ? 'translate-x-3.5' : 'translate-x-0'}`} />
+                      <div className={`w-2.5 h-2.5 rounded-full bg-canvas shadow-sm transform transition-transform ${toolbarVisibility[toolKey] !== false ? 'translate-x-3.5' : 'translate-x-0'}`} />
                     </div>
                   </div>
                 ))}
@@ -261,7 +261,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
                 <input 
                   type="text"
                   placeholder="Client ID (.apps.googleusercontent.com)"
-                  className="w-full bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-accent-lime text-text-primary placeholder:font-sans placeholder:text-text-muted"
+                  className="w-full bg-canvas border border-border-subtle rounded-xl px-3 py-2 text-xs outline-none focus:border-text-primary text-text-primary placeholder:font-sans placeholder:text-text-muted"
                   value={googleClientId}
                   onChange={(e) => {
                     setGoogleClientId(e.target.value);
@@ -277,7 +277,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
                 </button>
               </div>
               {driveStatus === 'connected' && (
-                <div className="flex items-center gap-1.5 text-accent-lime text-xs mt-1">
+                <div className="flex items-center gap-1.5 text-state-success text-xs mt-1">
                   <CheckCircle2 size={14} /> Connected to Google Drive (FlowForge folder)
                 </div>
               )}

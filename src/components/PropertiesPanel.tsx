@@ -74,20 +74,20 @@ export function PropertiesPanel() {
           <div className="flex items-center justify-between px-3 pt-2.5 border-b border-border-subtle bg-white/5">
             <div className="flex gap-4 px-2">
               <button 
-                className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-accent-lime text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
+                className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-text-primary text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
                 onClick={() => setActiveTab('config')}
               >
                 Config
               </button>
               <button 
-                className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'results' ? 'border-accent-lime text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
+                className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'results' ? 'border-text-primary text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
                 onClick={() => setActiveTab('results')}
               >
                 Results
               </button>
             </div>
             <div className="flex items-center gap-2 px-2 text-text-muted">
-              <button className="hover:text-accent-lime transition-colors p-1 rounded-lg hover:bg-white/10" title="Power"><Power size={14} /></button>
+              <button className="hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-white/10" title="Power"><Power size={14} /></button>
               <button className="hover:text-danger transition-colors p-1 rounded-lg hover:bg-white/10" title="Debug"><Bug size={14} /></button>
               <button onClick={handleClose} className="hover:text-text-primary transition-colors p-1 rounded-lg hover:bg-white/10"><X size={16} /></button>
             </div>
@@ -100,7 +100,7 @@ export function PropertiesPanel() {
                 {selectedNode?.data?.output ? (
                   <>
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-semibold text-accent-lime">Final Output</span>
+                      <span className="text-xs font-semibold text-text-primary">Final Output</span>
                       <pre className="p-3 bg-canvas border border-border-subtle rounded-xl text-xs text-text-primary whitespace-pre-wrap font-mono select-text">
                         {String(selectedNode.data.output)}
                       </pre>

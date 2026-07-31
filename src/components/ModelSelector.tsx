@@ -58,7 +58,7 @@ export function ModelSelector({ modality, value, onChange, className = '' }: Mod
         <div className="flex items-center gap-2 overflow-hidden">
           <span className="truncate">{selectedModel.name}</span>
           {selectedModel.free && (
-            <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-accent-lime/20 text-accent-lime rounded shrink-0">
+            <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-surface-3 text-text-primary rounded shrink-0">
               FREE
             </span>
           )}
@@ -86,14 +86,14 @@ export function ModelSelector({ modality, value, onChange, className = '' }: Mod
           <div className="overflow-y-auto p-1.5 flex flex-col gap-2 custom-scrollbar">
             {freeModels.length > 0 && (
               <div className="flex flex-col gap-1">
-                <div className="text-[10px] font-semibold text-accent-lime uppercase tracking-wider px-2 pt-1 flex items-center gap-1">
+                <div className="text-[10px] font-semibold text-text-primary uppercase tracking-wider px-2 pt-1 flex items-center gap-1">
                   <Sparkles size={10} /> Free Models
                 </div>
                 {freeModels.map(m => (
                   <div
                     key={m.id}
                     onClick={() => handleSelect(m.id)}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${m.id === value ? 'bg-accent-lime/20 text-accent-lime' : 'text-text-primary hover:bg-white/5'}`}
+                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${m.id === value ? 'bg-surface-3 text-text-primary font-medium' : 'text-text-primary hover:bg-white/5'}`}
                   >
                     <span className="truncate">{m.name}</span>
                     {m.id === value && <Check size={12} className="shrink-0" />}
@@ -111,7 +111,7 @@ export function ModelSelector({ modality, value, onChange, className = '' }: Mod
                   <div
                     key={m.id}
                     onClick={() => handleSelect(m.id)}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${m.id === value ? 'bg-accent-lime/20 text-accent-lime' : 'text-text-primary hover:bg-white/5'}`}
+                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${m.id === value ? 'bg-surface-3 text-text-primary font-medium' : 'text-text-primary hover:bg-white/5'}`}
                   >
                     <span className="truncate">{m.name}</span>
                     {m.id === value && <Check size={12} className="shrink-0" />}

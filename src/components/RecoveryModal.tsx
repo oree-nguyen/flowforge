@@ -77,7 +77,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle bg-white/5">
           <div className="flex items-center gap-3">
-            <Database size={20} className="text-accent-lime" />
+            <Database size={20} className="text-text-primary" />
             <div>
               <h2 className="text-base font-semibold text-text-primary">Khôi phục Workflow</h2>
               <p className="text-xs text-text-muted">Đọc trực tiếp từ localStorage — dữ liệu gốc chưa bị xóa</p>
@@ -91,7 +91,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Raw data info */}
           <div className="bg-canvas rounded-xl border border-border-subtle p-4 text-xs font-mono text-text-muted space-y-1">
-            <div>🔑 Storage key: <span className="text-accent-lime">flowforge-workflow-storage</span></div>
+            <div>🔑 Storage key: <span className="text-text-primary">flowforge-workflow-storage</span></div>
             <div>📦 Raw data found: <span className={rawData ? 'text-green-400' : 'text-red-400'}>{rawData ? 'YES' : 'NO — localStorage trống!'}</span></div>
             {rawData && (
               <>
@@ -125,7 +125,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
                     key={wf.id}
                     className={`p-4 rounded-xl border transition-all ${
                       isESDM
-                        ? 'border-accent-lime/50 bg-accent-lime/5'
+                        ? 'border-text-primary/50 bg-surface-2'
                         : isCurrent
                         ? 'border-blue-500/40 bg-blue-500/5'
                         : 'border-border-subtle bg-white/5'
@@ -135,7 +135,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-text-primary text-sm truncate">{wf.name || '(Không tên)'}</span>
-                          {isESDM && <span className="shrink-0 text-[9px] bg-accent-lime text-black px-1.5 py-0.5 rounded-full font-bold">ESDM</span>}
+                          {isESDM && <span className="shrink-0 text-[9px] bg-text-primary text-canvas px-1.5 py-0.5 rounded-full font-bold">ESDM</span>}
                           {isCurrent && <span className="shrink-0 text-[9px] border border-blue-400 text-blue-400 px-1.5 py-0.5 rounded-full">current</span>}
                         </div>
                         <div className="text-xs text-text-muted mt-1 space-x-3">
@@ -159,7 +159,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
                           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
                             nodeCount === 0
                               ? 'bg-border-subtle text-text-muted cursor-not-allowed'
-                              : 'bg-accent-lime text-black hover:bg-accent-lime/80'
+                              : 'bg-text-primary text-canvas hover:opacity-90'
                           }`}
                         >
                           <RotateCcw size={12} />
@@ -196,7 +196,7 @@ export function RecoveryModal({ onClose }: RecoveryModalProps) {
             onClick={onClose}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               recovered
-                ? 'bg-accent-lime text-black hover:bg-accent-lime/80'
+                ? 'bg-text-primary text-canvas hover:opacity-90'
                 : 'bg-border-subtle text-text-primary hover:bg-white/10'
             }`}
           >

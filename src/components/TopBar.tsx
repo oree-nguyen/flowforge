@@ -94,7 +94,7 @@ export function TopBar() {
             type="text"
             value={workflowName}
             onChange={e => setWorkflowName(e.target.value)}
-            className="bg-transparent border border-transparent hover:border-border-subtle focus:border-accent-lime rounded-lg px-2 py-1 text-sm font-medium text-text-primary outline-none transition-colors min-w-[120px] max-w-[220px]"
+            className="bg-transparent border border-transparent hover:border-hairline focus:border-text-primary rounded-lg px-2 py-1 text-sm font-medium text-text-primary outline-none transition-colors min-w-[120px] max-w-[220px]"
             placeholder="Workflow name..."
           />
 
@@ -110,7 +110,7 @@ export function TopBar() {
                 {wf.name}
               </option>
             ))}
-            <option value="NEW_WORKFLOW" className="bg-panel text-accent-lime">+ New Workflow</option>
+            <option value="NEW_WORKFLOW" className="bg-surface-2 font-semibold text-text-primary">+ New Workflow</option>
           </select>
 
           <span className="text-xs text-text-muted">{nodeCount} nodes</span>
@@ -170,10 +170,10 @@ export function TopBar() {
           {/* SAVE */}
           <button
             onClick={handleSave}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-sm font-semibold transition-all shadow-elev-floating ${
               isSavedGlow
-                ? 'bg-accent-lime text-black scale-95'
-                : 'bg-accent-lime/20 border border-accent-lime/40 text-accent-lime hover:bg-accent-lime hover:text-black'
+                ? 'bg-text-primary text-canvas scale-95'
+                : 'bg-surface-2 text-text-primary hover:bg-surface-3'
             }`}
           >
             <Save size={14} />
@@ -216,7 +216,7 @@ export function TopBar() {
               type="text"
               value={promptInputValue}
               onChange={e => setPromptInputValue(e.target.value)}
-              className="w-full bg-black/20 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent-lime"
+              className="w-full bg-surface-1 border border-hairline rounded-xl px-3 py-2 text-sm text-text-primary outline-none focus:border-text-primary"
               onKeyDown={e => {
                 if (e.key === 'Enter' && promptInputValue.trim()) {
                   createNewWorkflow(promptInputValue.trim());
@@ -233,7 +233,7 @@ export function TopBar() {
                     setPromptDialog({ isOpen: false, action: 'new' });
                   }
                 }} 
-                className="px-4 py-2 rounded-xl text-sm bg-accent-lime text-black font-medium hover:brightness-110 transition-all"
+                className="px-4 py-2 rounded-xl text-sm bg-text-primary text-canvas font-medium hover:opacity-90 transition-opacity shadow-elev-floating"
               >
                 Create
               </button>
