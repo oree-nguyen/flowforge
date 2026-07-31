@@ -10,54 +10,61 @@ export function InputTextNode({ id, data, selected, onConnectStart }: NodeProps)
   const isFilledByAI = !!(data.filledByAI);
   const text = (data.text as string) || '';
 
-  return (
-    <div className={`w-[260px] bg-node rounded-2xl shadow-lg border transition-all relative ${
-      selected 
-        ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' 
-        : isFilledByAI 
-          ? 'border-accent-lime/60 shadow-[0_0_12px_rgba(198,241,53,0.15)]' 
-          : 'border-border-subtle'
-    }`}>
-      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full transition-colors ${isFilledByAI ? 'bg-accent-lime' : 'bg-blue-400'}`}></div>
-        <span className="text-sm font-medium text-text-primary">Input Text</span>
-        {isFilledByAI && (
-          <span className="ml-auto text-[9px] text-accent-lime font-mono border border-accent-lime/40 px-1.5 py-0.5 rounded-full">
-            ← AI Output
-          </span>
-        )}
+    <div className="relative group">
+      {/* Node Label above node */}
+      <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
+        <Type size={12} className="text-[#9C27B0]" /> Text Input
       </div>
-      
-      <div className="p-4">
-        <textarea
-          className={`w-full h-24 bg-canvas border rounded-xl p-3 text-sm text-text-primary outline-none resize-none transition-colors placeholder:text-text-muted ${
-            isFilledByAI 
-              ? 'border-accent-lime/40 focus:border-accent-lime' 
-              : 'border-border-subtle focus:border-accent-lime'
-          }`}
-          placeholder="Enter text..."
-          value={text}
-          onChange={handleChange}
-          onPointerDown={e => e.stopPropagation()}
-        />
-        {text && (
-          <div className="flex justify-between items-center mt-1.5 px-1">
-            <span className="text-[9px] text-text-muted">{text.length} chars · {text.split(/\s+/).filter(Boolean).length} words</span>
-            <button
-              className="text-[9px] text-text-muted hover:text-danger transition-colors"
-              onPointerDown={e => e.stopPropagation()}
-              onClick={() => canvasEngine.updateNodeData(id, { text: '', filledByAI: false })}
-            >
-              ✕ Clear
-            </button>
+
+      <div className={`w-[260px] flex rounded-xl transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${selected ? 'border-accent-lime shadow-elev-node-selected' : 'border-defined shadow-elev-node'}`}>
+        <div className="w-[3px] bg-[#9C27B0] shrink-0 rounded-l-xl" />
+        
+        <div className="flex-1 flex flex-col bg-surface-1 rounded-r-xl overflow-hidden">
+          <div className="px-3 h-8 bg-surface-2 border-b border-hairline flex items-center justify-between">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="title-node text-text-primary truncate">
+                Input Text
+              </span>
+            </div>
+            {isFilledByAI ? (
+              <span className="label-micro px-1.5 py-0.5 bg-accent-lime/12 text-accent-lime rounded shrink-0">← AI Output</span>
+            ) : (
+              <span className="label-micro px-1.5 py-0.5 bg-[#9C27B0]/12 text-[#9C27B0] rounded shrink-0">Text</span>
+            )}
           </div>
-        )}
+          
+          <div className="p-3">
+            <textarea
+              className={`w-full h-24 bg-surface-3 border rounded-md p-3 body text-text-primary outline-none resize-none transition-colors placeholder:text-text-muted ${
+                isFilledByAI 
+                  ? 'border-accent-lime/40 focus:border-accent-lime' 
+                  : 'border-hairline focus:border-accent-lime'
+              }`}
+              placeholder="Enter text..."
+              value={text}
+              onChange={handleChange}
+              onPointerDown={e => e.stopPropagation()}
+            />
+            {text && (
+              <div className="flex justify-between items-center mt-1.5 px-1">
+                <span className="label-micro text-text-muted opacity-60">{text.length} chars · {text.split(/\s+/).filter(Boolean).length} words</span>
+                <button
+                  className="label-micro text-text-muted hover:text-danger transition-colors"
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={() => canvasEngine.updateNodeData(id, { text: '', filledByAI: false })}
+                >
+                  ✕ Clear
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Single Output Port Icon (Right) */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
         <div 
-          className="port-handle w-8 h-8 rounded-full border border-accent-lime/60 bg-panel flex items-center justify-center text-accent-lime cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-[#9C27B0]/60 bg-panel flex items-center justify-center text-[#9C27B0] cursor-crosshair shadow-md"
           title="Text Output (out)"
           data-target={`${id}:out`}
           data-portid="out"

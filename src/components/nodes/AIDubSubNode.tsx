@@ -30,36 +30,29 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
   return (
     <div className="relative group">
       {/* Node Label above node */}
-      <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
-        <Languages size={14} className="text-indigo-400" /> Lồng tiếng / Sub
+      <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
+        <Languages size={14} className="text-[#6366F1]" /> Dub & Sub
       </div>
 
       {/* Main Node Card */}
-      <div
-        className={`w-[320px] bg-node rounded-2xl shadow-lg border relative flex overflow-hidden transition-all ${
-          selected
-            ? 'border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.25)]'
-            : 'border-border-subtle hover:border-indigo-500/50'
-        }`}
-      >
-        {/* Left accent color bar */}
-        <div className="w-[4px] bg-indigo-500 shrink-0" />
+      <div className={`w-[320px] flex rounded-xl transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${selected ? 'border-accent-lime shadow-elev-node-selected' : 'border-defined shadow-elev-node'}`}>
+        <div className="w-[3px] bg-[#6366F1] shrink-0 rounded-l-xl" />
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-surface-1 rounded-r-xl overflow-hidden">
           {/* Node Header */}
-          <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-sm font-medium text-text-primary truncate">
+          <div className="px-3 h-8 bg-surface-2 border-b border-hairline flex items-center justify-between">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="title-node text-text-primary truncate">
                 {customNodeName || 'AI Dub & Sub'}
               </span>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-indigo-500/20 rounded text-indigo-400 shrink-0 capitalize">
+            <span className="label-micro px-1.5 py-0.5 bg-[#6366F1]/12 text-[#6366F1] rounded shrink-0">
               {nodeData.mode || 'Subtitle'} Mode
             </span>
           </div>
 
           {/* Node Content */}
-          <div className="p-4 flex flex-col gap-3">
+          <div className="p-3 flex flex-col gap-3">
             {/* Target Languages Badges */}
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] text-text-muted">Đích:</span>
@@ -128,24 +121,28 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
 
             {/* Output Preview */}
             {nodeData.outputVideo ? (
-              <div className="bg-canvas border border-border-subtle rounded-xl p-2.5 flex items-center justify-between">
-                <span className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium">
+              <div className="bg-surface-3 border border-hairline rounded-md p-2.5 flex items-center justify-between">
+                <span className="label-small text-state-success flex items-center gap-1.5 font-medium">
                   <CheckCircle2 size={14} /> Ready Output Video
                 </span>
                 <a
                   href={nodeData.outputVideo}
                   download="dubbed_video.webm"
-                  className="text-[10px] px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors font-medium"
+                  className="label-micro px-2.5 py-1 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded transition-colors"
                 >
                   Tải Video
                 </a>
               </div>
             ) : !isGenerating && !isWaitingCasting && (
-              <div className="text-xs text-text-muted italic flex items-center justify-between">
+              <div className="body text-text-muted italic opacity-50 flex items-center justify-between">
                 <span>Sẵn sàng chạy</span>
-                <span className="text-[10px] text-text-muted font-mono">{displayName}</span>
               </div>
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-3 py-1.5 border-t border-hairline bg-surface-1 flex items-center justify-between">
+             <span className="label-small text-text-muted truncate">{modelId}</span>
           </div>
         </div>
       </div>
@@ -198,7 +195,7 @@ export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectS
       {/* Node Mention Tag */}
       {customNodeName && (
         <div className="absolute -bottom-6 left-0 text-[10px] font-medium text-text-muted flex items-center gap-1">
-          <div className="w-3.5 h-3.5 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+          <div className="w-3.5 h-3.5 rounded-full bg-[#6366F1]/20 border border-[#6366F1]/40 flex items-center justify-center text-[#6366F1]">
             @
           </div>
           <span className="text-white font-mono">{customNodeName}</span>
