@@ -126,6 +126,19 @@
     color: #fff !important;
     z-index: 30 !important;
   }
+  
+  @keyframes energy-flow {
+    from {
+      stroke-dashoffset: 40;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .animate-energy-flow {
+    animation: energy-flow 1s linear infinite;
+    stroke-dasharray: 10 10;
+  }
 }
 
 /* React Flow custom styles */
