@@ -1,16 +1,10 @@
-import { type NodeProps } from '../NodeTypes';
-import { getModelMetadata } from '../../store/modelCatalog';
-import { useWorkflowStore } from '../../store/workflowStore';
+import { type NodeProps } from '@xyflow/react';
 import { Languages, Video, FileText, CheckCircle2, Loader2, UserCheck } from 'lucide-react';
 import type { AIDubSubData } from '../../types/nodes';
 
 export function AIDubSubNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const nodeData = data as AIDubSubData;
   const modelId = nodeData.sttModel || 'openai/whisper';
-  const fetchedModels = useWorkflowStore((state) => state.fetchedModels);
-  const meta = getModelMetadata(modelId, fetchedModels);
-
-  const displayName = meta?.name || modelId;
   const customNodeName = data.nodeName as string;
 
   const currentStep = nodeData.statusStep || 0;

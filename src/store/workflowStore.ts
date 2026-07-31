@@ -638,6 +638,50 @@ export const useWorkflowStore = create<WorkflowState>()(
                 });
                 const content = response.choices?.[0]?.message?.content || '';
                 canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
+              } else if (node.type === 'ai.audioSep') {
+                canvasEngine.updateNodeData(node.id, { isGenerating: true, progress: { status: 'Khởi tạo worker...', percent: 0 } });
+                
+                try {
+                  const audioData = new Float32Array(44100 * 2 * 3); // 3 seconds dummy audio buffer
+
+                  // Initialize worker
+                  const worker = new Worker(new URL('../engine/demucsWorker.ts', import.meta.url), { type: 'module' });
+                  
+                  await new Promise<void>((resolve, reject) => {
+                    worker.onmessage = (e) => {
+                      const { type, status, progress, error } = e.data;
+                      if (type === 'progress') {
+                        canvasEngine.updateNodeData(node.id, { progress: { status, percent: progress } });
+                      } else if (type === 'ready') {
+                        worker.postMessage({ type: 'process', id: 'sep_1', payload: { audioData, channels: 2, sampleRate: 44100 } });
+                      } else if (type === 'complete') {
+                        // Mock blobs
+                        const blobVocals = new Blob(['mock vocals audio data'], { type: 'audio/wav' });
+                        const blobInst = new Blob(['mock instrumental audio data'], { type: 'audio/wav' });
+                        
+                        canvasEngine.updateNodeData(node.id, {
+                          output: { 
+                            vocalsUrl: URL.createObjectURL(blobVocals), 
+                            instrumentalUrl: URL.createObjectURL(blobInst) 
+                          },
+                          isGenerating: false,
+                          progress: null
+                        });
+                        resolve();
+                        worker.terminate();
+                      } else if (type === 'error') {
+                        reject(new Error(error));
+                        worker.terminate();
+                      }
+                    };
+                    
+                    worker.postMessage({ type: 'init', id: 'init_1' });
+                  });
+
+                } catch (err: any) {
+                  canvasEngine.updateNodeData(node.id, { errorDetails: err.message, isGenerating: false, progress: null });
+                  throw err;
+                }
               } else if (node.type === 'ai.imageGen' || node.type === 'ai.videoGen') {
                 canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Generating...' } });
 

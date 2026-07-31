@@ -7,7 +7,6 @@ import { getModelMetadata } from '../../store/modelCatalog';
 
 export function AIVideoGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const output = data.output as any;
-  const isPropertiesPanelOpen = useWorkflowStore(state => (state as any).isPropertiesPanelOpen);
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
 
   // Calculate style based on aspect ratio
@@ -19,15 +18,12 @@ export function AIVideoGenNode({ id, data, selected, onConnectStart, onDisconnec
   };
   const aspectRatio = ratioMap[ratioStr] || '16/9';
   
-  const borderColor = 'border-accent-lime';
-  const glowColor = 'rgba(132,204,22,0.5)';
-  
   const modelId = (data.model as string) || 'minimax/video-01';
   const meta = getModelMetadata(modelId, fetchedModels);
   const displayName = meta?.name || modelId;
   const customNodeName = data.nodeName as string;
   
-  const showBasicSettings = selected && !isPropertiesPanelOpen;
+
   const inputs = meta?.inputs || ['text', 'image'];
 
   const handleRatioChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

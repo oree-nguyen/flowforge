@@ -7,7 +7,6 @@ import { getModelMetadata } from '../../store/modelCatalog';
 
 export function AIImageGenNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
   const output = data.output as any;
-  const isPropertiesPanelOpen = useWorkflowStore(state => (state as any).isPropertiesPanelOpen);
   const fetchedModels = useWorkflowStore(state => state.fetchedModels);
 
   // Calculate style based on aspect ratio
@@ -21,15 +20,12 @@ export function AIImageGenNode({ id, data, selected, onConnectStart, onDisconnec
   };
   const aspectRatio = ratioMap[ratioStr] || '9/16';
   
-  const borderColor = 'border-[#FF9800]';
-  const glowColor = 'rgba(255,152,0,0.5)';
-  
   const modelId = (data.model as string) || 'black-forest-labs/flux-1-schnell';
   const meta = getModelMetadata(modelId, fetchedModels);
   const displayName = meta?.name || modelId;
   const customNodeName = data.nodeName as string;
   
-  const showBasicSettings = selected && !isPropertiesPanelOpen;
+
   const inputs = meta?.inputs || ['text'];
 
   const handleRatioChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

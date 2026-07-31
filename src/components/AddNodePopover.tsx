@@ -60,6 +60,7 @@ export function AddNodePopover({ isOpen, onClose }: { isOpen: boolean, onClose: 
     { type: 'ai.audioGen', label: 'AI Audio Gen', icon: <Headphones size={18} />, color: 'bg-[#F59E0B]/20 text-[#F59E0B]' },
     { type: 'ai.transcription', label: 'AI Transcription', icon: <Mic size={18} />, color: 'bg-[#10B981]/20 text-[#10B981]' },
     { type: 'ai.dubSub', label: 'Lồng tiếng / Sub', icon: <Languages size={18} />, color: 'bg-indigo-500/20 text-indigo-400' },
+    { type: 'ai.audioSep', label: 'HTDemucs Audio Sep', icon: <Sparkles size={18} />, color: 'bg-purple-500/20 text-purple-400' },
     { type: 'util.videoEditor', label: 'Ghép Video (Editor)', icon: <Scissors size={18} />, color: 'bg-rose-500/20 text-rose-400' },
   ];
 

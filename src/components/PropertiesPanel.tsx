@@ -11,6 +11,7 @@ import { AudioGenProperties } from './properties/AudioGenProperties';
 import { TranscriptionProperties } from './properties/TranscriptionProperties';
 import { DubSubProperties } from './properties/DubSubProperties';
 import { VideoEditorProperties } from './properties/VideoEditorProperties';
+import { AudioSepProperties } from './properties/AudioSepProperties';
 import { X, Power, Bug } from 'lucide-react';
 
 export function PropertiesPanel() {
@@ -44,6 +45,8 @@ export function PropertiesPanel() {
         return <VideoEditorProperties nodeId={selectedNode.id} />;
       case 'util.download':
         return <DownloadProperties nodeId={selectedNode.id} />;
+      case 'ai.audioSep':
+        return <AudioSepProperties nodeId={selectedNode.id} />;
       case 'input.file':
         return <FileProperties nodeId={selectedNode.id} />;
       default:
