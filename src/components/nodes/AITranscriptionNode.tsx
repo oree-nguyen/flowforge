@@ -14,54 +14,40 @@ export function AITranscriptionNode({ id, data, selected, onDisconnectStart }: N
   return (
     <div className="relative group">
       {/* Node Label above node */}
-      <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
-        <Mic size={12} className="text-[#10B981]" /> Transcription
+      <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
+        <Mic size={12} /> {displayName}
       </div>
 
       {/* Main Node Card */}
-      <div className={`w-[300px] flex rounded-xl transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${selected ? 'border-accent-lime shadow-elev-node-selected' : 'border-defined shadow-elev-node'}`}>
-        <div className="w-[3px] bg-[#10B981] shrink-0 rounded-l-xl" />
+      <div className={`w-[300px] bg-node rounded-2xl shadow-lg border relative flex overflow-hidden transition-all ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'}`}>
+        <div className="w-[3px] bg-[#10B981] shrink-0" />
         
-        <div className="flex-1 flex flex-col bg-surface-1 rounded-r-xl overflow-hidden">
-          {/* Header */}
-          <div className="px-3 h-8 bg-surface-2 border-b border-hairline flex items-center justify-between">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-               <span className="title-node text-text-primary truncate">
+        <div className="flex-1 flex flex-col">
+          <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+               <span className="text-sm font-medium text-text-primary truncate">
                   {displayName}
                </span>
             </div>
-            <span className="label-micro px-1.5 py-0.5 bg-[#10B981]/12 text-[#10B981] rounded shrink-0">STT</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 bg-[#10B981]/20 rounded text-[#10B981] shrink-0">Speech to Text</span>
           </div>
           
-          {/* Vùng Nội Dung */}
-          <div className="p-3 flex flex-col gap-3">
+          <div className="p-4 flex flex-col gap-3">
             {data.isGenerating && (
-              <div className="flex flex-col gap-1.5 p-2 bg-surface-3 border border-hairline rounded-md">
-                <div className="flex items-center justify-between text-xs text-state-running">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <div className="w-3 h-3 border-2 border-state-running border-t-transparent rounded-full animate-spin"></div>
-                    Transcribing...
-                  </span>
-                </div>
-                <div className="w-full h-1 bg-surface-0 rounded-full overflow-hidden border border-hairline">
-                  <div className="h-full bg-state-running animate-pulse w-full" />
-                </div>
+              <div className="flex items-center gap-2 text-xs text-accent-lime">
+                <div className="w-3 h-3 border-2 border-accent-lime border-t-transparent rounded-full animate-spin"></div>
+                Transcribing...
               </div>
             )}
             
             {data.output && !data.isGenerating ? (
-               <div className="bg-surface-3 border border-hairline rounded-md p-3 body text-text-muted max-h-24 overflow-hidden relative select-text">
+               <div className="bg-canvas border border-border-subtle rounded-xl p-3 text-xs text-text-muted max-h-24 overflow-hidden relative select-text">
                   <p className="line-clamp-3">{data.output as string}</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-surface-3 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-canvas to-transparent"></div>
                </div>
             ) : !data.isGenerating && (
-               <div className="body text-text-muted italic opacity-50">Sẵn sàng</div>
+               <div className="text-xs text-text-muted italic">Ready</div>
             )}
-          </div>
-
-          {/* Footer */}
-          <div className="px-3 py-1.5 border-t border-hairline bg-surface-1 flex items-center justify-between">
-             <span className="label-small text-text-muted truncate">{modelId}</span>
           </div>
         </div>
       </div>

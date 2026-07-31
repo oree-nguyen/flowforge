@@ -72,38 +72,33 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
   };
 
   return (
-    <div className="relative group">
-      {/* Node Label above node */}
-      <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
-        <FileText size={12} className="text-[#FB923C]" /> File Input
+    <div
+      className={`w-[260px] bg-node rounded-2xl shadow-lg border transition-all ${
+        selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'
+      }`}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-orange-400" />
+        <FileText size={14} className="text-orange-400" />
+        <span className="text-sm font-medium text-text-primary">Other Input</span>
+        <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 bg-orange-400/20 rounded text-orange-400">FILE</span>
       </div>
 
-      <div className={`w-[260px] flex rounded-xl transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${selected ? 'border-accent-lime shadow-elev-node-selected' : 'border-defined shadow-elev-node'}`}>
-        <div className="w-[3px] bg-[#FB923C] shrink-0 rounded-l-xl" />
-        
-        <div className="flex-1 flex flex-col bg-surface-1 rounded-r-xl overflow-hidden">
-          <div className="px-3 h-8 bg-surface-2 border-b border-hairline flex items-center justify-between">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className="title-node text-text-primary truncate">
-                Input File
-              </span>
-            </div>
-            <span className="label-micro px-1.5 py-0.5 bg-[#FB923C]/12 text-[#FB923C] rounded shrink-0">FILE</span>
-          </div>
-
-          <div className="p-3 flex flex-col gap-3">
+      {/* Body */}
+      <div className="p-4">
         {isExtracting ? (
-          <div className="h-28 bg-surface-0 border border-dashed border-hairline rounded-md flex flex-col items-center justify-center gap-2">
-            <Loader2 size={20} className="text-[#FB923C] animate-spin" />
-            <span className="label-small text-text-muted">Extracting content...</span>
+          <div className="h-28 bg-canvas border border-dashed border-border-subtle rounded-xl flex flex-col items-center justify-center gap-2">
+            <Loader2 size={20} className="text-orange-400 animate-spin" />
+            <span className="text-xs text-text-muted">Extracting content...</span>
           </div>
         ) : storedFile ? (
           /* File loaded state */
-          <div className="bg-surface-0 border border-hairline rounded-md p-3 relative group/file">
+          <div className="bg-canvas border border-border-subtle rounded-xl p-3 relative group">
             <button
               onClick={removeFile}
               onPointerDown={e => e.stopPropagation()}
-              className="absolute top-2 right-2 opacity-0 group-hover/file:opacity-100 bg-surface-1/80 p-1 rounded-lg hover:bg-state-error transition-all shadow-elev-floating"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-panel/80 p-1 rounded-lg hover:bg-red-500 transition-all"
             >
               <X size={12} />
             </button>
@@ -112,21 +107,21 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
             <div className="flex items-start gap-2 mb-2 pr-5">
               <FileText size={18} className={`shrink-0 mt-0.5 ${getFileColor(storedFile.name)}`} />
               <div className="min-w-0">
-                <p className="label-small font-medium text-text-primary truncate">{storedFile.name}</p>
-                <p className="label-micro text-text-muted opacity-80">{formatBytes(storedFile.sizeBytes)}</p>
+                <p className="text-xs font-medium text-text-primary truncate">{storedFile.name}</p>
+                <p className="text-[10px] text-text-muted">{formatBytes(storedFile.sizeBytes)}</p>
               </div>
             </div>
 
             {/* Text preview */}
-            <div className="bg-surface-3 rounded p-2 body text-[10px] text-text-muted opacity-80 max-h-16 overflow-hidden relative">
+            <div className="bg-black/30 rounded-lg p-2 text-[10px] text-text-muted font-mono max-h-16 overflow-hidden relative">
               <p className="line-clamp-4 whitespace-pre-wrap">{storedFile.text.slice(0, 200)}</p>
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-surface-3 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
 
             {/* Status */}
             <div className="flex items-center gap-1 mt-2">
-              <CheckCircle2 size={10} className="text-state-success" />
-              <span className="label-micro text-state-success">
+              <CheckCircle2 size={10} className="text-accent-lime" />
+              <span className="text-[10px] text-accent-lime">
                 {storedFile.text.split(' ').length.toLocaleString()} words extracted
               </span>
             </div>
@@ -134,10 +129,10 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
         ) : (
           /* Drop zone */
           <div
-            className={`h-28 rounded-md border border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
+            className={`h-28 rounded-xl border border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
               isDragging
-                ? 'border-[#FB923C] bg-[#FB923C]/10'
-                : 'border-hairline bg-surface-0 hover:border-text-muted'
+                ? 'border-orange-400 bg-orange-400/10'
+                : 'border-border-subtle bg-canvas hover:border-text-muted'
             }`}
             onClick={() => fileInputRef.current?.click()}
             onPointerDown={e => e.stopPropagation()}
@@ -145,10 +140,10 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
           >
-            <Upload size={20} className={isDragging ? 'text-[#FB923C]' : 'text-text-muted'} />
+            <Upload size={20} className={isDragging ? 'text-orange-400' : 'text-text-muted'} />
             <div className="text-center px-3">
-              <p className="label-small font-medium text-text-muted">Click or drop file</p>
-              <p className="label-micro text-text-muted opacity-60 mt-0.5">.txt .md .pdf .docx .csv .json</p>
+              <p className="text-xs font-medium text-text-muted">Click or drop file</p>
+              <p className="text-[10px] text-text-muted/60 mt-0.5">.txt .md .pdf .docx .csv .json</p>
             </div>
           </div>
         )}
@@ -168,14 +163,12 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
           ref={fileInputRef}
           onChange={handleFileChange}
         />
-          </div>
-        </div>
       </div>
 
       {/* Single Output Port Icon (Right) */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex flex-col gap-2 pl-2.5 z-20">
         <div 
-          className="port-handle w-8 h-8 rounded-full border border-[#FB923C]/60 bg-panel flex items-center justify-center text-[#FB923C] cursor-crosshair shadow-md"
+          className="port-handle w-8 h-8 rounded-full border border-orange-400/60 bg-panel flex items-center justify-center text-orange-400 cursor-crosshair shadow-md"
           title="File Output (out)"
           data-target={`${id}:out`}
           data-portid="out"

@@ -108,7 +108,7 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
                 <div className="bg-white/5 p-4 rounded-xl border border-border-subtle mt-2">
                   <h4 className="font-semibold text-white mb-2">Cách lấy API Key miễn phí:</h4>
                   <ol className="list-decimal pl-4 space-y-2">
-                    <li>Truy cập <a href="https://openrouter.ai" target="_blank" rel="noreferrer" className="text-text-primary hover:underline">openrouter.ai</a> và tạo tài khoản.</li>
+                    <li>Truy cập <a href="https://openrouter.ai" target="_blank" rel="noreferrer" className="text-accent-lime hover:underline">openrouter.ai</a> và tạo tài khoản.</li>
                     <li>Vào mục <strong>Keys</strong> và tạo một key mới.</li>
                     <li>Mở <kbd className="font-sans text-[10px] bg-white/10 px-1 py-0.5 rounded">Settings</kbd> trong FlowForge, dán key vào và lưu lại.</li>
                   </ol>
@@ -133,8 +133,8 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
 
             {activeCategory === 'about' && (
               <div className="space-y-4 text-sm text-text-muted leading-relaxed flex flex-col items-center justify-center h-40">
-                <div className="w-16 h-16 bg-surface-3 rounded-2xl flex items-center justify-center mb-2 shadow-elev-floating">
-                  <SparklesIcon className="text-text-primary" size={32} />
+                <div className="w-16 h-16 bg-gradient-to-br from-accent-lime to-green-500 rounded-2xl flex items-center justify-center mb-2 shadow-lg shadow-accent-lime/20">
+                  <SparklesIcon className="text-black" size={32} />
                 </div>
                 <h3 className="text-xl font-bold text-white">FlowForge</h3>
                 <p>Node-based AI Workflow Builder</p>
@@ -149,8 +149,8 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
         onClick={onToggle}
         className={`pointer-events-auto w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
           isOpen 
-            ? 'bg-surface-3 border-2 border-text-primary text-text-primary shadow-elev-floating' 
-            : 'bg-surface-2 text-text-primary shadow-elev-floating hover:scale-105 hover:bg-surface-3'
+            ? 'bg-black border-2 border-accent-lime text-accent-lime shadow-[0_0_20px_rgba(163,230,53,0.3)]' 
+            : 'bg-accent-lime text-black shadow-xl hover:scale-105'
         }`}
         title="Guide (Ctrl+K)"
       >
@@ -163,7 +163,7 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
 function ShortcutSection({ title, items }: { title: string, items: { keys: string[], desc: string }[] }) {
   return (
     <div className="mb-6">
-      <h4 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-3">{title}</h4>
+      <h4 className="text-xs font-semibold text-accent-lime uppercase tracking-wider mb-3">{title}</h4>
       <div className="space-y-2.5">
         {items.map((item, i) => (
           <div key={i} className="flex items-center justify-between">

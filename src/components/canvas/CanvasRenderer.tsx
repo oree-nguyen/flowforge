@@ -19,7 +19,6 @@ import { VideoEditorNode } from '../nodes/VideoEditorNode';
 import { NoteNode } from '../nodes/NoteNode';
 import { UtilDownloadNode } from '../nodes/UtilDownloadNode';
 import { InputFileNode } from '../nodes/InputFileNode';
-import { AIAudioSepNode } from '../nodes/AIAudioSepNode';
 
 const NODE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'input.text': InputTextNode,
@@ -34,7 +33,6 @@ const NODE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'note': NoteNode,
   'util.download': UtilDownloadNode,
   'input.file': InputFileNode,
-  'ai.audioSep': AIAudioSepNode,
 };
 
 // --- Connection drag state ---
@@ -83,7 +81,6 @@ function NodeWrapper({
     <div
       ref={wrapRef}
       data-nodeid={node.id}
-      className="animate-node-popup"
       style={{
         position: 'absolute',
         left: node.position.x,
@@ -321,7 +318,6 @@ function EdgeFloatingToolbar({ edgeId }: { edgeId: string }) {
 // --- Main CanvasRenderer ---
 export function CanvasRenderer() {
   const { nodes, edges, viewport, selectedIds } = useCanvasEngine();
-  const isExecuting = useWorkflowStore(state => state.isExecuting);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Hook touch gestures for pinch zoom & 1-finger pan
@@ -704,31 +700,12 @@ export function CanvasRenderer() {
         {/* Edges */}
         <svg style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible', pointerEvents: 'none' }}>
           <defs>
-            {/* Gradient tĩnh cho dây thường */}
             <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="var(--text-muted)" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="var(--text-muted)" stopOpacity="0.5" />
+              <stop offset="0%" stopColor="rgba(198,241,53,0.3)" />
+              <stop offset="100%" stopColor="rgba(198,241,53,0.9)" />
             </linearGradient>
-
-            {/* Gradient phát sáng tĩnh khi Selected */}
-            <linearGradient id="edgeGradSelected" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(198,241,53,0.4)" />
-              <stop offset="50%" stopColor="rgba(198,241,53,1)" />
-              <stop offset="100%" stopColor="rgba(198,241,53,0.4)" />
-            </linearGradient>
-
-            {/* Gradient chuyển động khi isExecuting (Mạch máu năng lượng) */}
-            <linearGradient id="edgeGradFlow" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(198,241,53,0.1)" />
-              <stop offset="50%" stopColor="rgba(198,241,53,1)" />
-              <stop offset="100%" stopColor="rgba(198,241,53,0.1)" />
-            </linearGradient>
-
             <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <polygon points="0 0, 8 3, 0 6" fill="var(--text-muted)" opacity="0.5" />
-            </marker>
-            <marker id="arrowhead-selected" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <polygon points="0 0, 8 3, 0 6" fill="var(--accent-lime)" />
+              <polygon points="0 0, 8 3, 0 6" fill="rgba(198,241,53,0.7)" />
             </marker>
           </defs>
           {edges.map(edge => {
@@ -774,11 +751,10 @@ export function CanvasRenderer() {
                 <path 
                   d={path} 
                   fill="none" 
-                  stroke={isSelected ? "url(#edgeGradSelected)" : isExecuting ? "url(#edgeGradFlow)" : "url(#edgeGrad)"} 
-                  strokeWidth={isSelected || isExecuting ? 3 : 1.5} 
-                  markerEnd={isSelected || isExecuting ? "url(#arrowhead-selected)" : "url(#arrowhead)"}
-                  className={isExecuting ? "animate-energy-flow" : ""}
-                  style={{ pointerEvents: 'none', filter: isSelected ? 'drop-shadow(0 0 8px rgba(198,241,53,0.8))' : (isExecuting ? 'drop-shadow(0 0 4px rgba(198,241,53,0.5))' : 'none') }}
+                  stroke={isSelected ? '#fff' : "url(#edgeGrad)"} 
+                  strokeWidth={isSelected ? 3 : 1.5} 
+                  markerEnd="url(#arrowhead)" 
+                  style={{ pointerEvents: 'none' }}
                 />
               </g>
             );
@@ -847,7 +823,7 @@ function ContextMenuOverlay({ x, y, nodeId, edgeId, onClose }: { x: number; y: n
   }, [onClose]);
 
   const nodeItems = nodeId ? [
-    { icon: <Play size={14} />, label: 'Run AI', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
+    { icon: <Play size={14} />, label: 'Run node', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
     { icon: <Settings size={14} />, label: 'Settings', action: () => { 
         canvasEngine.select(nodeId); 
         useWorkflowStore.getState().setPropertiesPanelOpen(true); 

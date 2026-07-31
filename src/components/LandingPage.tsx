@@ -504,7 +504,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           {t.faqs.map((faq, idx) => (
             <div key={idx} className="bg-[#14141A] border border-white/10 p-8 rounded-3xl hover:border-accent-lime/40 transition-colors flex flex-col gap-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <span className="text-text-primary font-mono text-sm">0{idx + 1}.</span>
+                <span className="text-accent-lime font-mono text-sm">0{idx + 1}.</span>
                 {faq.q}
               </h3>
               <p className="text-sm text-text-muted leading-relaxed pl-6 border-l-2 border-white/10">
@@ -518,7 +518,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       {/* --- FOOTER --- */}
       <footer className="py-12 px-6 border-t border-white/10 text-center text-xs text-text-muted">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-text-primary" />
+          <span className="w-2 h-2 rounded-full bg-accent-lime" />
           <span className="font-semibold text-white">FlowForge Platform</span>
         </div>
         <p>© 2026 {t.footerRights}</p>

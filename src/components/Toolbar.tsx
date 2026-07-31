@@ -33,8 +33,8 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
         {/* Primary Actions */}
         <div className="flex flex-col gap-3 w-full px-2 items-center">
           <button 
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform shadow-elev-floating
-              ${isAddOpen ? 'bg-text-primary text-canvas scale-105' : 'bg-surface-3 text-text-primary hover:scale-105'}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform shadow-[0_0_15px_rgba(198,241,53,0.3)]
+              ${isAddOpen ? 'bg-text-primary text-canvas scale-105' : 'bg-accent-lime text-canvas hover:scale-105'}
             `}
             onClick={() => setIsAddOpen(!isAddOpen)}
             title="Add Node"
@@ -116,8 +116,8 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
 function ToolButton({ icon, active = false, tooltip = "", onClick }: { icon: React.ReactNode; active?: boolean; tooltip?: string; onClick?: () => void }) {
   return (
     <button 
-      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors group relative focus-visible:ring-2 focus-visible:ring-text-primary focus-visible:outline-none
-        ${active ? 'bg-surface-3 text-text-primary' : 'text-text-muted hover:text-text-primary hover:bg-surface-2'}
+      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors group relative focus-visible:ring-2 focus-visible:ring-accent-lime focus-visible:outline-none
+        ${active ? 'bg-border-subtle text-text-primary' : 'text-text-muted hover:text-text-primary hover:bg-white/5'}
       `}
       title={tooltip}
       onClick={onClick}

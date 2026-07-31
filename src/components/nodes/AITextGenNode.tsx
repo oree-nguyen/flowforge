@@ -16,72 +16,65 @@ export function AITextGenNode({ id, data, selected, onConnectStart, onDisconnect
   return (
     <div className="relative group">
       {/* Node Label above node */}
-      <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
-        <Type size={12} className="text-[#9C27B0]" /> Text Generation
+      <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
+        <Type size={12} /> {displayName}
       </div>
 
       {/* Main Node Card */}
-      <div className={`w-[300px] flex rounded-xl transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${selected ? 'border-accent-lime shadow-elev-node-selected' : 'border-defined shadow-elev-node'}`}>
-        <div className="w-[3px] bg-[#9C27B0] shrink-0 rounded-l-xl" />
+      <div className={`w-[300px] bg-node rounded-2xl shadow-lg border relative flex transition-all ${selected ? 'border-text-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-border-subtle'}`}>
+        <div className="w-[3px] bg-[#9C27B0] shrink-0" />
         
-        <div className="flex-1 flex flex-col bg-surface-1 rounded-r-xl overflow-hidden">
-          {/* Header */}
-          <div className="px-3 h-8 bg-surface-2 border-b border-hairline flex items-center justify-between">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-               <span className="title-node text-text-primary truncate">
+        <div className="flex-1 flex flex-col">
+          <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+               <span className="text-sm font-medium text-text-primary truncate">
                   {displayName}
                </span>
             </div>
-            <span className="label-micro px-1.5 py-0.5 bg-[#9C27B0]/12 text-[#9C27B0] rounded shrink-0">Text</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 bg-[#9C27B0]/20 rounded text-[#9C27B0] shrink-0">Text</span>
           </div>
           
-          {/* Vùng Nội Dung */}
-          <div className="p-3 flex flex-col gap-3">
+          <div className="p-4 flex flex-col gap-3">
             {data.isGenerating && (
-              <div className="flex flex-col gap-1.5 p-2 bg-surface-3 border border-hairline rounded-md">
-                <div className="flex items-center justify-between text-xs text-state-running">
+              <div className="flex flex-col gap-1.5 p-2 bg-[#9C27B0]/10 border border-[#9C27B0]/30 rounded-xl">
+                <div className="flex items-center justify-between text-xs text-[#9C27B0]">
                   <span className="flex items-center gap-1.5 font-medium">
-                    <div className="w-3 h-3 border-2 border-state-running border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-3 h-3 border-2 border-[#9C27B0] border-t-transparent rounded-full animate-spin"></div>
                     Đang gọi AI Text API...
                   </span>
                 </div>
-                <div className="w-full h-1 bg-surface-0 rounded-full overflow-hidden border border-hairline">
-                  <div className="h-full bg-state-running animate-pulse w-full" />
+                <div className="w-full h-1 bg-canvas rounded-full overflow-hidden border border-border-subtle">
+                  <div className="h-full bg-gradient-to-r from-[#9C27B0] to-accent-lime animate-pulse w-full" />
                 </div>
               </div>
             )}
             
             {data.errorDetails && !data.isGenerating && (
-              <div className="bg-state-error/10 border border-state-error/30 rounded-md p-3 text-state-error flex flex-col gap-2">
-                <span className="label-small font-semibold flex items-center gap-1">
-                  ⚠️ API Error
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 flex flex-col gap-2">
+                <span className="font-semibold flex items-center gap-1">
+                  ⚠️ API Error:
                 </span>
-                <p className="body text-[11px] break-words opacity-90">{data.errorDetails as string}</p>
+                <p className="text-[11px] break-words opacity-90">{data.errorDetails as string}</p>
                 <button 
                   onClick={() => {
                     canvasEngine.updateNodeData(id, { errorDetails: null });
                     useWorkflowStore.getState().executeWorkflow();
                   }}
-                  className="mt-1 self-end px-2.5 py-1 bg-state-error/20 hover:bg-state-error hover:text-white border border-state-error/40 rounded text-[10px] font-medium transition-colors flex items-center gap-1"
+                  className="mt-1 self-end px-2.5 py-1 bg-red-500/20 hover:bg-red-500 hover:text-white border border-red-500/40 rounded-lg text-[10px] font-medium transition-colors flex items-center gap-1"
                 >
-                  🔄 Thử lại
+                  🔄 Thử lại (Retry)
                 </button>
               </div>
             )}
             
             {data.output && !data.isGenerating && !data.errorDetails ? (
-               <div className="bg-surface-3 border border-hairline rounded-md p-3 body text-text-muted max-h-24 overflow-hidden relative select-text">
+               <div className="bg-canvas border border-border-subtle rounded-xl p-3 text-xs text-text-muted max-h-24 overflow-hidden relative select-text">
                   <p className="line-clamp-3">{data.output as string}</p>
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-surface-3 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-canvas to-transparent"></div>
                </div>
             ) : !data.isGenerating && !data.errorDetails && (
-               <div className="body text-text-muted italic opacity-50">Sẵn sàng</div>
+               <div className="text-xs text-text-muted italic">Ready</div>
             )}
-          </div>
-
-          {/* Footer */}
-          <div className="px-3 py-1.5 border-t border-hairline bg-surface-1 flex items-center justify-between">
-             <span className="label-small text-text-muted truncate">{modelId}</span>
           </div>
         </div>
       </div>
