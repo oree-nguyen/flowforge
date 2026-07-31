@@ -89,6 +89,7 @@ function NodeWrapper({
         top: node.position.y,
         cursor: 'grab',
         userSelect: 'none',
+        zIndex: selected ? 100 : 1,
       }}
       onPointerDown={handlePointerDown}
       onClick={(e) => {
@@ -253,7 +254,7 @@ function NodeFloatingToolbar({ nodeId }: { nodeId: string }) {
         transform: 'translate(-50%, -100%)',
         zIndex: 50,
       }}
-      className="bg-panel/95 backdrop-blur-xl border border-border-subtle rounded-2xl shadow-xl flex items-center p-1.5 gap-1"
+      className="bg-black/60 backdrop-blur-md border border-white/10 rounded-[20px] shadow-2xl flex items-center p-1.5 gap-1"
       onClick={e => e.stopPropagation()}
       onPointerDown={e => e.stopPropagation()}
     >
