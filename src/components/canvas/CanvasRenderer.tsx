@@ -845,7 +845,7 @@ function ContextMenuOverlay({ x, y, nodeId, edgeId, onClose }: { x: number; y: n
   }, [onClose]);
 
   const nodeItems = nodeId ? [
-    { icon: <Play size={14} />, label: 'Run node', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
+    { icon: <Play size={14} />, label: 'Run AI', action: () => { useWorkflowStore.getState().executeWorkflow(); onClose(); } },
     { icon: <Settings size={14} />, label: 'Settings', action: () => { 
         canvasEngine.select(nodeId); 
         useWorkflowStore.getState().setPropertiesPanelOpen(true); 

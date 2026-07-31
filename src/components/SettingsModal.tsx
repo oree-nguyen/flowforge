@@ -203,7 +203,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
                 <span>UI Preferences</span>
               </div>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-xs text-text-muted">Auto-open properties panel when selecting node</span>
+                <span className="text-xs text-text-muted">Auto-open Settings when selecting node</span>
                 <div 
                   className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${autoOpenProperties ? 'bg-text-primary' : 'bg-surface-3'}`}
                   onClick={() => setAutoOpenProperties(!autoOpenProperties)}

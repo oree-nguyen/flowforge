@@ -50,7 +50,7 @@ export function PropertiesPanel() {
         return (
           <div className="p-6 text-center text-text-muted text-sm flex flex-col gap-2 h-full items-center justify-center">
             <span className="text-2xl">⚙️</span>
-            <span>No properties available for <code className="bg-white/10 px-1.5 py-0.5 rounded text-white">{selectedNode.type}</code></span>
+            <span>No settings available for <code className="bg-white/10 px-1.5 py-0.5 rounded text-white">{selectedNode.type}</code></span>
           </div>
         );
     }
@@ -77,7 +77,7 @@ export function PropertiesPanel() {
                 className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-text-primary text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
                 onClick={() => setActiveTab('config')}
               >
-                Config
+                Settings
               </button>
               <button 
                 className={`py-2 text-xs font-medium border-b-2 transition-colors ${activeTab === 'results' ? 'border-text-primary text-text-primary font-semibold' : 'border-transparent text-text-muted hover:text-text-primary'}`}
