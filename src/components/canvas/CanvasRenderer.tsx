@@ -180,27 +180,49 @@ function NodeWrapper({
 
 // --- Helper for Handle Positions ---
 function getHandlePosition(node: NodeData, size: { width: number, height: number }, type: 'in' | 'out', handleId?: string) {
-  // Use Math-based calculation relative to Node position, bypassing DOM layout race conditions during render!
+  // Dynamically calculate port offset relative to node container, using actual DOM scale
+  const nodeEl = document.querySelector(`[data-nodeid="${node.id}"]`) as HTMLElement;
+  if (nodeEl) {
+    let portEl: HTMLElement | null = null;
+    
+    if (handleId) {
+      portEl = (nodeEl.querySelector(`[data-target="${node.id}:${handleId}"]`) || document.querySelector(`[data-target="${node.id}:${handleId}"]`)) as HTMLElement | null;
+    }
+    if (!portEl) {
+      if (type === 'out') {
+        portEl = (nodeEl.querySelector(`[data-target="${node.id}:out"], [data-target="${node.id}:video_out"], [data-target="${node.id}:subtitle_out"]`) || document.querySelector(`[data-target="${node.id}:out"]`)) as HTMLElement | null;
+      } else {
+        portEl = (nodeEl.querySelector(`[data-target="${node.id}:in"], [data-target="${node.id}:text"], [data-target="${node.id}:image"], [data-target="${node.id}:file"], [data-target="${node.id}:video_in"], [data-target="${node.id}:videos_in"]`) || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
+      }
+    }
+    if (!portEl) {
+      portEl = (nodeEl.querySelector('[data-target]') || document.querySelector(`[data-target^="${node.id}"]`)) as HTMLElement | null;
+    }
+
+    if (portEl) {
+      const portRect = portEl.getBoundingClientRect();
+      const nodeRect = nodeEl.getBoundingClientRect();
+      
+      // Calculate actual applied zoom from the DOM to avoid React render phase mismatches
+      const actualZoom = nodeRect.width / size.width;
+      
+      // Calculate local offset within the node container
+      const dx = portRect.left + portRect.width / 2 - nodeRect.left;
+      const dy = portRect.top + portRect.height / 2 - nodeRect.top;
+      
+      const localX = dx / actualZoom;
+      const localY = dy / actualZoom;
+      
+      return { 
+        x: node.position.x + localX, 
+        y: node.position.y + localY 
+      };
+    }
+  }
+
+  // Fallback mathematically if DOM not ready
   let localX = type === 'out' ? size.width : 0;
   let localY = size.height / 2;
-
-  // Custom adjustments for special nodes with complex port layouts
-  if (node.type === 'util.videoEditor') {
-    if (handleId === 'videos_in' || type === 'in') {
-      localY = size.height - 44; // Bottom timeline track approx offset
-    }
-    if (handleId === 'video_out' || type === 'out') {
-      localY = size.height - 44;
-    }
-    if (handleId === 'subtitle_out') {
-      localY = size.height - 18;
-    }
-  } else if (['ai.textGen', 'ai.imageGen', 'ai.videoGen', 'ai.audioGen'].includes(node.type)) {
-    // For AI nodes, if it's an input, and we want to center vertically over the multiple ports
-    // Since ports are flex stacked vertically and centered absolute, Y=height/2 is accurate.
-    // X is always 0 or width.
-    localY = size.height / 2;
-  }
 
   return { 
     x: node.position.x + localX, 
