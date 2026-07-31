@@ -54,6 +54,9 @@ export interface VideoClipItem {
   durationSec?: number;
   videoUrl?: string;
   volume?: number; // 0-200%
+  isMuted?: boolean;
+  trimStart?: number;
+  trimEnd?: number;
 }
 
 export interface VideoEditorData {

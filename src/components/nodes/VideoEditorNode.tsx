@@ -12,7 +12,6 @@ import {
   Pause,
   CheckCircle2,
   Film,
-  GripVertical,
   Trash2,
   AudioWaveform,
   Volume2,
@@ -22,7 +21,9 @@ import {
   Maximize2,
   Music,
   Camera,
-  Type
+  Type,
+  VolumeX,
+  Settings
 } from 'lucide-react';
 
 import {
@@ -64,6 +65,10 @@ function SortableClipCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const hoverNote = typeof canvasEngine.getNode(clip.sourceNodeId)?.data?.note === 'string' 
+      ? canvasEngine.getNode(clip.sourceNodeId)?.data?.note 
+      : clip.sourceNodeId;
+
   return (
     <div
       ref={setNodeRef}
@@ -71,12 +76,13 @@ function SortableClipCard({
       {...attributes}
       {...listeners}
       onClick={() => onSelect(clip.id)}
+      title={String(hoverNote)}
       className={`relative group cursor-grab active:cursor-grabbing rounded-[10px] overflow-hidden border transition-all shrink-0 w-24 h-11 bg-black/80 flex flex-col justify-between p-1.5 ${
         isSelected
-          ? 'border-[#C6F135] ring-2 ring-[#C6F135]/50 shadow-xl'
+          ? 'border-rose-500 ring-2 ring-rose-500/50 shadow-xl'
           : isDragging
-          ? 'border-[#C6F135] ring-2 ring-[#C6F135]/50 shadow-xl'
-          : 'border-[#C6F135]/30 hover:border-[#C6F135]/60'
+          ? 'border-rose-500 ring-2 ring-rose-500/50 shadow-xl'
+          : 'border-white/10 hover:border-white/30'
       }`}
     >
       {/* Background Thumbnail */}
@@ -92,12 +98,11 @@ function SortableClipCard({
         </div>
       )}
 
-      {/* Order Badge & Grip */}
+      {/* Order Badge */}
       <div className="relative z-10 flex items-center justify-between">
-        <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-[#C6F135] text-black shadow-sm">
+        <span className="text-[9px] font-bold font-mono px-1 py-0.2 rounded bg-black/60 backdrop-blur-md text-white shadow-sm border border-white/20">
           #{index + 1}
         </span>
-        <GripVertical size={11} className="text-white/80 drop-shadow" />
       </div>
 
       {/* Hover Remove Button */}
@@ -107,12 +112,20 @@ function SortableClipCard({
             e.stopPropagation();
             onRemove(clip.id);
           }}
-          className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-rose-600/90 hover:bg-rose-600 text-white transition-opacity"
+          className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-rose-600/90 hover:bg-rose-600 text-white transition-opacity shadow-md"
           title="Xóa clip này"
         >
           <Trash2 size={9} />
         </button>
       </div>
+
+      {/* Selection Trim Handles */}
+      {isSelected && (
+        <>
+          <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-white cursor-col-resize hover:scale-x-150 transition-transform origin-left rounded-l-[10px]" title="Kéo để cắt đầu" />
+          <div className="absolute top-0 bottom-0 right-0 w-1.5 bg-white cursor-col-resize hover:scale-x-150 transition-transform origin-right rounded-r-[10px]" title="Kéo để cắt đuôi" />
+        </>
+      )}
     </div>
   );
 }
@@ -640,14 +653,25 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             {/* 3. TRACKS CONTAINER (3 Track xếp chồng: Video -> Audio -> Text) */}
             <div className="relative flex flex-col gap-2.5 w-full min-w-[420px]">
               {/* --- TRACK 1: VIDEO CLIPS (Black Box) --- */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[9px] font-mono text-white/50 tracking-wider pl-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/80" /> VIDEO
-                  </span>
-                </div>
-                <div className="relative h-14 w-full bg-black/40 rounded-xl border border-white/5 flex items-center p-1.5 shadow-inner">
-                  {clips.length > 0 ? (
+              {clips.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-white/50 tracking-wider pl-1 pr-2">
+                    <span className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          const updated = clips.map(c => ({ ...c, isMuted: !c.isMuted }));
+                          canvasEngine.updateNodeData(id, { clips: updated });
+                        }}
+                        className="hover:text-white transition-colors"
+                        title={clips.some(c => c.isMuted) ? 'Bật âm thanh Track Video' : 'Tắt âm thanh Track Video'}
+                      >
+                        {clips.some(c => c.isMuted) ? <VolumeX size={11} className="text-rose-400" /> : <Volume2 size={11} />}
+                      </button>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/80" /> VIDEO
+                    </span>
+                  </div>
+                  <div className="relative h-14 w-full bg-black/40 rounded-xl border border-white/5 flex items-center p-1.5 shadow-inner">
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
                         <div className="flex items-center gap-1 w-full h-full">
@@ -666,24 +690,23 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                         </div>
                       </SortableContext>
                     </DndContext>
-                  ) : (
-                    <div className="p-2 text-[9px] text-text-muted/60 italic">
-                      Nối video input vào port videos_in bên trái
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* --- TRACK 2: AUDIO / DUBBING (Sky Blue #38BDF8) --- */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[9px] font-mono text-[#38BDF8]/60 tracking-wider pl-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> AUDIO
-                  </span>
-                </div>
-                <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
-                  {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 ? (
-                    nodeData.dubAudioTrack.map((dub, idx) => {
+              {nodeData.dubAudioTrack && nodeData.dubAudioTrack.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-[#38BDF8]/60 tracking-wider pl-1 pr-2">
+                    <span className="flex items-center gap-2">
+                      <button className="hover:text-[#38BDF8] transition-colors">
+                        <Volume2 size={11} />
+                      </button>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" /> AUDIO
+                    </span>
+                  </div>
+                  <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
+                    {nodeData.dubAudioTrack.map((dub, idx) => {
                       const leftPct = (dub.start / totalDuration) * 100;
                       const widthPct = Math.max(8, ((dub.end - dub.start) / totalDuration) * 100);
                       return (
@@ -700,25 +723,24 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                           <span className="truncate text-[9px]">Audio {idx + 1}</span>
                         </div>
                       );
-                    })
-                  ) : (
-                    <div className="px-2 text-[9px] text-text-muted/60 italic">
-                      Chưa có dữ liệu lồng tiếng (Nối từ node Dubbing/Sub)
-                    </div>
-                  )}
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* --- TRACK 3: SUBTITLE / TEXT (Purple #A855F7) --- */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[9px] font-mono text-[#A855F7]/60 tracking-wider pl-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> SUBTITLE
-                  </span>
-                </div>
-                <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
-                  {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 ? (
-                    nodeData.subtitleTrack.map((sub, idx) => {
+              {nodeData.subtitleTrack && nodeData.subtitleTrack.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-[9px] font-mono text-[#A855F7]/60 tracking-wider pl-1 pr-2">
+                    <span className="flex items-center gap-2">
+                      <button className="hover:text-[#A855F7] transition-colors">
+                        <Type size={11} />
+                      </button>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" /> SUBTITLE
+                    </span>
+                  </div>
+                  <div className="relative h-8 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-1 shadow-inner">
+                    {nodeData.subtitleTrack.map((sub, idx) => {
                       const leftPct = (sub.start / totalDuration) * 100;
                       const widthPct = Math.max(6, ((sub.end - sub.start) / totalDuration) * 100);
                       return (
@@ -732,17 +754,21 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                           <span className="truncate text-[9px] font-normal">{sub.text}</span>
                         </div>
                       );
-                    })
-                  ) : (
-                    <div className="px-2 text-[9px] text-text-muted/60 italic">
-                      Chưa có phụ đề (Nối từ node Dubbing/Sub)
-                    </div>
-                  )}
+                    })}
+                  </div>
                 </div>
+              )}
+
+              {/* Empty state when NO tracks exist */}
+              {clips.length === 0 && (!nodeData.dubAudioTrack || nodeData.dubAudioTrack.length === 0) && (!nodeData.subtitleTrack || nodeData.subtitleTrack.length === 0) && (
+                <div className="h-20 w-full rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center gap-2 text-white/30 text-[10px] italic">
+                   <Settings size={16} className="opacity-50" />
+                   <span>Kéo dây nối từ các node khác vào các port bên trái để hiển thị Track</span>
                 </div>
-              </div>
+              )}
             </div>
           </div>
+        </div>
         </div>
 
         {/* RIGHT COLUMN: BOX 2 (Toolbox) */}
