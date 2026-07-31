@@ -81,6 +81,7 @@ function NodeWrapper({
     <div
       ref={wrapRef}
       data-nodeid={node.id}
+      className="animate-node-popup"
       style={{
         position: 'absolute',
         left: node.position.x,

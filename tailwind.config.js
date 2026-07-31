@@ -66,6 +66,21 @@ export default {
         'xl': '12px',
         '2xl': '16px',
         'full': '9999px',
+      },
+      transitionTimingFunction: {
+        DEFAULT: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      },
+      transitionDuration: {
+        DEFAULT: '200ms',
+      },
+      animation: {
+        'node-popup': 'node-popup 200ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+      },
+      keyframes: {
+        'node-popup': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        }
       }
     },
   },
