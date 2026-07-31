@@ -15,6 +15,29 @@
     --text-primary: #F2F2F0;
     --text-muted: #8A8A8F;
     --danger: #FF4D4D;
+
+    /* --- NEW VISUAL DESIGN SYSTEM TOKENS --- */
+    /* Surfaces (5 Bậc) */
+    --surface-0: #08080A;  /* nền canvas sâu nhất */
+    --surface-1: #101014;  /* panel, toolbar */
+    --surface-2: #16161B;  /* thân node */
+    --surface-3: #1E1E24;  /* input, field bên trong node/panel */
+    --surface-4: #282830;  /* hover state của surface-3, dropdown nổi */
+
+    /* Borders */
+    --border-hairline: #1F1F26;  /* chia nhỏ bên trong 1 khối */
+    --border-defined:  #2E2E38;  /* ranh giới giữa 2 khối khác nhau */
+
+    /* Semantic States */
+    --state-success: #4ADE80;
+    --state-warning: #FBBF24;
+    --state-error:   #FF4D4D;
+    --state-running: #C6F135;
+
+    /* Elevations */
+    --elev-node: 0 1px 0 0 rgba(255,255,255,0.04) inset, 0 2px 8px -2px rgba(0,0,0,0.6);
+    --elev-node-selected: 0 0 0 1px var(--accent-lime), 0 0 24px -6px rgba(198,241,53,0.35);
+    --elev-floating: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 12px 32px -8px rgba(0,0,0,0.8);
   }
 
   /* Default: Laptop / Large Desktop */
@@ -53,6 +76,28 @@
 }
 
 @layer utilities {
+  /* Typography Scale */
+  .label-micro {
+    @apply text-[10px] font-semibold uppercase tracking-[0.08em];
+  }
+  .label-small {
+    @apply text-[11px] font-medium tracking-[0.01em];
+  }
+  .body {
+    @apply text-[13px] font-normal;
+  }
+  .title-node {
+    @apply text-[14px] font-semibold tracking-[-0.01em];
+  }
+  .title-panel {
+    @apply text-[16px] font-semibold tracking-[-0.02em];
+  }
+  .data-mono {
+    @apply font-mono text-[12px] font-medium;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Existing Utilities */
   .backdrop-blur-panel {
     backdrop-filter: blur(12px);
   }
