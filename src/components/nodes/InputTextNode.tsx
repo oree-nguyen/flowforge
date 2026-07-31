@@ -10,6 +10,7 @@ export function InputTextNode({ id, data, selected, onConnectStart }: NodeProps)
   const isFilledByAI = !!(data.filledByAI);
   const text = (data.text as string) || '';
 
+  return (
     <div className="relative group">
       {/* Node Label above node */}
       <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">

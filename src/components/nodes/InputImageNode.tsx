@@ -21,6 +21,7 @@ export function InputImageNode({ id, data, selected, onConnectStart }: NodeProps
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  return (
     <div className="relative group">
       {/* Node Label above node */}
       <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">

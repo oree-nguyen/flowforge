@@ -71,6 +71,7 @@ export function InputFileNode({ id, data, selected, onConnectStart }: NodeProps)
     return colors[ext || ''] || 'text-text-muted';
   };
 
+  return (
     <div className="relative group">
       {/* Node Label above node */}
       <div className="absolute -top-6 left-0 label-micro text-text-primary flex items-center gap-1.5">
