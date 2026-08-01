@@ -197,6 +197,31 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
   // --- CapCut Timeline Ruler & Playhead Logic ---
   const timelineRef = useRef<HTMLDivElement>(null);
   const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
+  const isDraggingClipRef = useRef(false);
+  const isDraggingPlayheadRef = useRef(false);
+
+  useEffect(() => {
+    isDraggingPlayheadRef.current = isDraggingPlayhead;
+  }, [isDraggingPlayhead]);
+
+  // Click-outside listener to turn off Edit Mode safely when mouseup occurs outside node
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const handleWindowMouseUp = (e: MouseEvent) => {
+      // Lock exit if currently dragging clip or playhead
+      if (isDraggingClipRef.current || isDraggingPlayheadRef.current) {
+        return;
+      }
+
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsEditMode(false);
+      }
+    };
+
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    return () => window.removeEventListener('mouseup', handleWindowMouseUp);
+  }, [isEditMode]);
 
   const playheadPercent = Math.max(0, Math.min(100, (currentTime / totalDuration) * 100));
 
@@ -384,7 +409,12 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     canvasEngine.updateNodeData(id, { clipTransforms: currentTransforms });
   };
 
+  const handleDragStart = () => {
+    isDraggingClipRef.current = true;
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    isDraggingClipRef.current = false;
     const { active, over } = event;
     if (over && active.id !== over.id) {
       const oldIndex = clips.findIndex((c) => c.id === active.id);
@@ -392,6 +422,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       const reordered = arrayMove(clips, oldIndex, newIndex).map((c, idx) => ({ ...c, order: idx }));
       canvasEngine.updateNodeData(id, { clips: reordered });
     }
+  };
+
+  const handleDragCancel = () => {
+    isDraggingClipRef.current = false;
   };
 
   const handleRemoveClip = (clipId: string) => {
@@ -662,14 +696,14 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
          }
       }}
       className={`relative group select-none outline-none transition-all ${
-         isEditMode ? 'ring-4 ring-rose-500/50 shadow-[0_0_40px_rgba(244,63,94,0.3)] rounded-[24px]' : ''
+         isEditMode ? 'ring-1 ring-white/30 rounded-[24px]' : ''
       }`}
     >
       {/* Visual Indicator for Edit Mode */}
       {isEditMode && (
-         <div className="absolute -top-12 right-0 bg-rose-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-rose-400 animate-pulse flex items-center gap-1.5 z-50">
-            <div className="w-1.5 h-1.5 rounded-full bg-white" />
-            EDIT MODE (Nhấn ESC để thoát)
+         <div className="absolute -top-10 right-0 bg-black/80 backdrop-blur-md text-white text-[10px] font-mono font-medium px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 z-50">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            EDIT MODE (Nhấn ESC hoặc Click ra ngoài để thoát)
          </div>
       )}
 
@@ -916,7 +950,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
                     </span>
                   </div>
                   <div className="relative h-14 w-full bg-black/40 rounded-xl border border-white/5 flex items-center p-1.5 shadow-inner">
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
                       <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
                         <div className="flex items-center gap-1 w-full h-full">
                           {clips
