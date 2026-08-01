@@ -7,11 +7,13 @@ export function useKeyboardShortcuts(onToggleGuide: () => void) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input or textarea
+      // Ignore if user is typing in an input or textarea or operating inside a node in Edit Mode
+      const active = document.activeElement as HTMLElement | null;
       if (
-        document.activeElement?.tagName === 'INPUT' ||
-        document.activeElement?.tagName === 'TEXTAREA' ||
-        (document.activeElement as HTMLElement)?.isContentEditable
+        active?.tagName === 'INPUT' ||
+        active?.tagName === 'TEXTAREA' ||
+        active?.isContentEditable ||
+        active?.closest('[data-edit-mode="true"]')
       ) {
         return;
       }

@@ -685,6 +685,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
     <div 
       ref={containerRef}
       tabIndex={0}
+      data-edit-mode={isEditMode}
       onKeyDown={handleKeyDown}
       onPointerDown={(e) => {
          if (!isEditMode) {
