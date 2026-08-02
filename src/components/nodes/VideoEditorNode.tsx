@@ -750,10 +750,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             }}
             onPointerDown={(e) => e.stopPropagation()}
             title={isEditMode ? 'Đang ở Edit Mode — Bấm để thoát (ESC)' : 'Vào Edit Mode (chỉnh sửa clip)'}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-md shrink-0 cursor-pointer ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer ${
               isEditMode
-                ? 'bg-accent-lime text-black ring-2 ring-white/60 animate-pulse scale-105'
-                : 'bg-accent-lime/90 hover:bg-accent-lime text-black hover:scale-105'
+                ? 'bg-[#C6F135] text-black ring-2 ring-white/80 shadow-[0_0_14px_rgba(198,241,53,0.7)] animate-pulse scale-105'
+                : 'bg-[#C6F135] text-black hover:scale-110 shadow-[0_0_10px_rgba(198,241,53,0.4)]'
             }`}
           >
             <Scissors size={14} className="stroke-[2.5]" />
