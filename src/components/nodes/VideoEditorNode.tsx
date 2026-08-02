@@ -688,10 +688,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       data-edit-mode={isEditMode}
       onKeyDown={handleKeyDown}
       onPointerDown={(e) => {
-         if (!isEditMode) {
-            setIsEditMode(true);
-            containerRef.current?.focus();
-         } else {
+         if (isEditMode) {
             // Stop propagation to prevent node dragging or canvas panning when in edit mode
             e.stopPropagation();
          }
@@ -723,7 +720,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             {customNodeName || 'Video Editor Pro'}
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {/* AI vs DSP Quality Badge */}
           {nodeData.vocalSeparationEngine && (
             <span
@@ -744,6 +741,29 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
           <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/20 rounded text-rose-400">
             {clips.length} Clips
           </span>
+
+          {/* Dedicated Edit Mode Toggle Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditMode((prev) => {
+                const next = !prev;
+                if (next) {
+                  containerRef.current?.focus();
+                }
+                return next;
+              });
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            title={isEditMode ? 'Đang ở Edit Mode — Bấm để thoát (ESC)' : 'Vào Edit Mode (chỉnh sửa clip)'}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-md shrink-0 cursor-pointer ${
+              isEditMode
+                ? 'bg-accent-lime text-black ring-2 ring-white/60 animate-pulse scale-105'
+                : 'bg-accent-lime/90 hover:bg-accent-lime text-black hover:scale-105'
+            }`}
+          >
+            <Scissors size={14} className="stroke-[2.5]" />
+          </button>
         </div>
       </div>
 
