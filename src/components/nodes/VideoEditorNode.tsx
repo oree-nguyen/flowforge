@@ -687,12 +687,6 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       tabIndex={0}
       data-edit-mode={isEditMode}
       onKeyDown={handleKeyDown}
-      onPointerDown={(e) => {
-         if (isEditMode) {
-            // Stop propagation to prevent node dragging or canvas panning when in edit mode
-            e.stopPropagation();
-         }
-      }}
       className={`relative group select-none outline-none transition-all ${
          isEditMode ? 'ring-1 ring-white/30 rounded-[24px]' : ''
       }`}
@@ -909,7 +903,10 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             <div
               ref={timelineRef}
               className="relative overflow-x-auto custom-scrollbar pb-3 flex flex-col gap-2.5 min-w-full cursor-pointer"
-              onPointerDown={(e) => handleRulerScrub(e.clientX)}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                handleRulerScrub(e.clientX);
+              }}
             >
             {/* 1. TOP RULER (Thước thời gian) */}
             <div className="relative h-6 w-full min-w-[420px] border-b border-white/10 flex items-end pb-1 bg-black/20 rounded-t-xl">
