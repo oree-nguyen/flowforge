@@ -88,6 +88,7 @@ export function TopBar() {
           >
             <ChevronLeft size={20} />
           </button>
+          <img src="/logo.png" alt="FlowForge" className="w-7 h-7 rounded-lg" />
 
           {/* Editable workflow name */}
           <input
