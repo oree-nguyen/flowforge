@@ -468,18 +468,9 @@ export function CanvasRenderer() {
              if (!['input.file'].includes(sourceNode?.type || '')) isValid = false;
           }
 
-          // Video Editor Node / Floating Window Port Validation
-          if (tgtHandle === 'video_in' || tgtHandle === 'videos_in') {
-             if (!['input.video', 'ai.videoGen', 'util.videoEditor', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
-          }
-          if (tgtHandle === 'image_in') {
-             if (!['input.image', 'ai.imageGen', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
-          }
-          if (tgtHandle === 'audio_in') {
-             if (!['ai.audioGen', 'ai.dubSub', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
-          }
-          if (tgtHandle === 'text_in' || tgtHandle === 'subtitle_in') {
-             if (!['input.text', 'ai.textGen', 'ai.dubSub', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
+          // Video Editor Node / Floating Window Port Validation (Accept all node types)
+          if (['video_in', 'videos_in', 'image_in', 'audio_in', 'text_in', 'subtitle_in'].includes(tgtHandle)) {
+             isValid = true;
           }
 
           if (isValid) {

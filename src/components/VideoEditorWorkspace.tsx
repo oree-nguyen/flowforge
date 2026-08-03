@@ -504,7 +504,20 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
     '4:5': 'aspect-[4/5] h-[190px]',
   };
 
-  const portTargetId = nodeId !== 'global' ? nodeId : 'global';
+  // Guarantee a valid node target in canvasEngine for wire connections
+  const [effectiveNodeId] = useState<string>(() => {
+    if (nodeId !== 'global') return nodeId;
+    const existing = canvasEngine.getNodes().find((n) => n.type === 'util.videoEditor');
+    if (existing) return existing.id;
+    const newId = `node_ve_${Date.now()}`;
+    canvasEngine.addNode({
+      id: newId,
+      type: 'util.videoEditor',
+      position: { x: 500, y: 300 },
+      data: { clips: [] },
+    });
+    return newId;
+  });
 
   return (
     <div
@@ -522,7 +535,7 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
       <div className="absolute -left-11 top-10 flex flex-col gap-5 z-50">
         {/* 1. Text Input Port */}
         <div
-          data-target={`${portTargetId}:text_in`}
+          data-target={`${effectiveNodeId}:text_in`}
           className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-purple-500 text-purple-400 flex items-center justify-center font-bold text-xs shadow-[0_0_15px_rgba(168,85,247,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
           title="Kéo thả dây vào đây để kết nối Text / Phụ đề"
           onPointerDown={(e) => e.stopPropagation()}
@@ -535,7 +548,7 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
 
         {/* 2. Image Input Port */}
         <div
-          data-target={`${portTargetId}:image_in`}
+          data-target={`${effectiveNodeId}:image_in`}
           className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-amber-500 text-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
           title="Kéo thả dây vào đây để kết nối Ảnh / Watermark"
           onPointerDown={(e) => e.stopPropagation()}
@@ -548,7 +561,7 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
 
         {/* 3. Audio/File Input Port */}
         <div
-          data-target={`${portTargetId}:audio_in`}
+          data-target={`${effectiveNodeId}:audio_in`}
           className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-cyan-500 text-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
           title="Kéo thả dây vào đây để kết nối Audio / Voiceover"
           onPointerDown={(e) => e.stopPropagation()}
@@ -561,7 +574,7 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
 
         {/* 4. Video Input Port */}
         <div
-          data-target={`${portTargetId}:video_in`}
+          data-target={`${effectiveNodeId}:video_in`}
           className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-accent-lime text-accent-lime flex items-center justify-center shadow-[0_0_15px_rgba(198,241,53,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
           title="Kéo thả dây vào đây để kết nối Video Input"
           onPointerDown={(e) => e.stopPropagation()}
