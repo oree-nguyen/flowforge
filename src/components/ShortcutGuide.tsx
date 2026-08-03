@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BookOpen, X } from 'lucide-react';
+import { BookOpen, X, Scissors } from 'lucide-react';
+import { useWorkflowStore } from '../store/workflowStore';
 
 interface ShortcutGuideProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ShortcutGuideProps {
 
 export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
   const [activeCategory, setActiveCategory] = useState<'shortcuts' | 'api' | 'tips' | 'about'>('shortcuts');
+  const openVideoEditorNodeId = useWorkflowStore((state) => state.openVideoEditorNodeId);
+  const setOpenVideoEditorNodeId = useWorkflowStore((state) => state.setOpenVideoEditorNodeId);
 
   return (
     <div className="absolute bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
@@ -144,18 +147,34 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
         </div>
       </div>
 
-      {/* Toggle Button - always clickable */}
-      <button
-        onClick={onToggle}
-        className={`pointer-events-auto w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-          isOpen 
-            ? 'bg-black border-2 border-accent-lime text-accent-lime shadow-[0_0_20px_rgba(163,230,53,0.3)]' 
-            : 'bg-accent-lime text-black shadow-xl hover:scale-105'
-        }`}
-        title="Guide (Ctrl+K)"
-      >
-        <BookOpen size={22} className={isOpen ? 'animate-pulse' : ''} />
-      </button>
+      {/* Action Buttons Stack (Scissors above BookOpen) */}
+      <div className="flex flex-col gap-3 items-end">
+        {/* Video Editor Button (Scissors) */}
+        <button
+          onClick={() => setOpenVideoEditorNodeId(openVideoEditorNodeId ? null : 'global')}
+          className={`pointer-events-auto w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            openVideoEditorNodeId 
+              ? 'bg-black border-2 border-accent-lime text-accent-lime shadow-[0_0_20px_rgba(163,230,53,0.3)] scale-105' 
+              : 'bg-accent-lime text-black shadow-xl hover:scale-105'
+          }`}
+          title="Video Editor Workstation"
+        >
+          <Scissors size={22} className={openVideoEditorNodeId ? 'animate-pulse' : ''} />
+        </button>
+
+        {/* Shortcut Guide Button (BookOpen) */}
+        <button
+          onClick={onToggle}
+          className={`pointer-events-auto w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            isOpen 
+              ? 'bg-black border-2 border-accent-lime text-accent-lime shadow-[0_0_20px_rgba(163,230,53,0.3)]' 
+              : 'bg-accent-lime text-black shadow-xl hover:scale-105'
+          }`}
+          title="Guide (Ctrl+K)"
+        >
+          <BookOpen size={22} className={isOpen ? 'animate-pulse' : ''} />
+        </button>
+      </div>
     </div>
   );
 }

@@ -157,10 +157,36 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
   const [isPinned, setIsPinned] = useState(false);
   const [selectedTrackType, setSelectedTrackType] = useState<'video' | 'audio' | 'text' | null>(null);
 
-  // Fetch node data dynamically from canvasEngine
-  const targetNode = canvasEngine.getNode(nodeId);
-  const nodeData = (targetNode?.data || {}) as VideoEditorData;
-  const clips = nodeData.clips || [];
+  // Fetch node data dynamically from canvasEngine or scan canvas for all video nodes
+  const targetNode = nodeId !== 'global' ? canvasEngine.getNode(nodeId) : null;
+  const rawNodeData = (targetNode?.data || {}) as VideoEditorData;
+
+  // Auto-scan canvas nodes if opened globally or if clips are empty
+  const [scannedClips, setScannedClips] = useState<VideoClipItem[]>([]);
+  useEffect(() => {
+    if (!targetNode || !rawNodeData.clips || rawNodeData.clips.length === 0) {
+      const allNodes = canvasEngine.getNodes();
+      const videoNodes = allNodes.filter(
+        (n) => n.data && (n.data.output || n.data.file || n.data.outputVideo)
+      );
+
+      const generatedClips: VideoClipItem[] = videoNodes.map((n, idx) => {
+        const vUrl = (n.data.output || n.data.file || n.data.outputVideo) as string;
+        return {
+          id: `clip_${n.id}`,
+          sourceNodeId: n.id,
+          videoUrl: vUrl,
+          thumbnailUrl: (n.data.thumbnailUrl as string) || '',
+          durationSec: 5,
+          order: idx + 1,
+        };
+      });
+      setScannedClips(generatedClips);
+    }
+  }, [nodeId, targetNode]);
+
+  const clips = (rawNodeData.clips && rawNodeData.clips.length > 0) ? rawNodeData.clips : scannedClips;
+  const nodeData = targetNode ? rawNodeData : { ...rawNodeData, clips };
   const customNodeName = targetNode?.data?.nodeName as string;
 
   const [selectedClipId, setSelectedClipId] = useState<string>(clips[0]?.id || '');
