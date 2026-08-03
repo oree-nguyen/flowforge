@@ -719,18 +719,41 @@ export function CanvasRenderer() {
           </defs>
           {edges.map(edge => {
             const src = canvasEngine.getNode(edge.source);
-            const tgt = canvasEngine.getNode(edge.target);
-            if (!src || !tgt) return null;
+            if (!src) return null;
+
+            const isGlobalTarget = edge.target === 'global' || edge.target.startsWith('global');
+            const tgt = !isGlobalTarget ? canvasEngine.getNode(edge.target) : null;
+
+            if (!isGlobalTarget && !tgt) return null;
+
             const srcSize = canvasEngine.getNodeSize(edge.source);
-            const tgtSize = canvasEngine.getNodeSize(edge.target);
-            
             const srcPos = getHandlePosition(src, srcSize, 'out', edge.sourceHandle);
-            const tgtPos = getHandlePosition(tgt, tgtSize, 'in', edge.targetHandle);
             
+            let x2 = 0;
+            let y2 = 0;
+
+            if (isGlobalTarget) {
+              const canvasRect = canvasRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
+              const portEl = document.querySelector(`[data-target="${edge.target}:${edge.targetHandle}"], [data-target="global:${edge.targetHandle}"]`);
+              if (portEl) {
+                const rect = portEl.getBoundingClientRect();
+                const screenX = rect.left + rect.width / 2 - canvasRect.left;
+                const screenY = rect.top + rect.height / 2 - canvasRect.top;
+                x2 = (screenX - viewport.x) / viewport.zoom;
+                y2 = (screenY - viewport.y) / viewport.zoom;
+              } else {
+                x2 = srcPos.x + 200;
+                y2 = srcPos.y;
+              }
+            } else if (tgt) {
+              const tgtSize = canvasEngine.getNodeSize(edge.target);
+              const tgtPos = getHandlePosition(tgt, tgtSize, 'in', edge.targetHandle);
+              x2 = tgtPos.x;
+              y2 = tgtPos.y;
+            }
+
             const x1 = srcPos.x;
             const y1 = srcPos.y;
-            const x2 = tgtPos.x;
-            const y2 = tgtPos.y;
             
             const dx = Math.abs(x2 - x1) * 0.5;
             const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
