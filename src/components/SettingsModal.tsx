@@ -290,6 +290,25 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
           </div>
 
         </div>
+{/* OpenRouter App Attribution */}
+<div className="flex flex-col gap-4 bg-canvas/40 border border-border-subtle rounded-xl p-4">
+  <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
+    <Cloud size={16} className="text-emerald-400" />
+    <span>OpenRouter App Attribution</span>
+  </div>
+  <p className="text-xs text-text-muted">
+    Your API calls already include the required <code>HTTP-Referer</code> and <code>X-Title</code> headers.
+    Claim your app on OpenRouter to appear in rankings and analytics.
+  </p>
+  <a
+    href="https://openrouter.ai/apps"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="self-start px-4 py-2 bg-accent-lime text-black rounded-xl text-xs font-medium hover:bg-accent-lime/90 transition-colors"
+  >
+    Claim on OpenRouter
+  </a>
+</div>
 
         {/* Footer */}
         <div className="p-4 border-t border-border-subtle bg-white/5 flex justify-end gap-3">

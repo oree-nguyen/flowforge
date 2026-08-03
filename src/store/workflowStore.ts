@@ -197,14 +197,30 @@ export const useWorkflowStore = create<WorkflowState>()(
       setWorkflowEnabled: (enabled) => set({ workflowEnabled: enabled }),
       
       // API Key Management
-      setApiKey: (key) => {
-        const { apiKeys } = get();
-        if (apiKeys.length === 0) {
-          set({ apiKeys: [{ id: Date.now().toString(), name: 'Default', key, isActive: true }], apiKey: key });
-        } else {
-          set({ apiKey: key });
-        }
-      },
+        setApiKey: (key) => {
+          const { apiKeys } = get();
+          if (apiKeys.length === 0) {
+            // No keys yet, create a default one and mark it active
+            set({
+              apiKeys: [{ id: Date.now().toString(), name: 'Default', key, isActive: true }],
+              apiKey: key,
+            });
+          } else {
+            // Update existing keys' active status based on the provided key
+            const updatedKeys = apiKeys.map((k) => ({
+              ...k,
+              isActive: k.key === key,
+            }));
+            const activeExists = updatedKeys.some((k) => k.isActive);
+            if (!activeExists) {
+              // Key not present, add it as a new active key
+              const newKey = { id: Date.now().toString(), name: 'Added', key, isActive: true };
+              set({ apiKeys: [...updatedKeys, newKey], apiKey: key });
+            } else {
+              set({ apiKeys: updatedKeys, apiKey: key });
+            }
+          }
+        },
       addApiKey: (name, key) => {
         const { apiKeys } = get();
         const isFirst = apiKeys.length === 0;
