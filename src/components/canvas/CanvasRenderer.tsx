@@ -468,15 +468,18 @@ export function CanvasRenderer() {
              if (!['input.file'].includes(sourceNode?.type || '')) isValid = false;
           }
 
-          // Video Editor Node Port Strict Validation
+          // Video Editor Node / Floating Window Port Validation
           if (tgtHandle === 'video_in' || tgtHandle === 'videos_in') {
-             if (!['input.video', 'ai.videoGen', 'util.videoEditor'].includes(sourceNode?.type || '')) isValid = false;
+             if (!['input.video', 'ai.videoGen', 'util.videoEditor', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
+          }
+          if (tgtHandle === 'image_in') {
+             if (!['input.image', 'ai.imageGen', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
           }
           if (tgtHandle === 'audio_in') {
-             if (!['ai.audioGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
+             if (!['ai.audioGen', 'ai.dubSub', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
           }
-          if (tgtHandle === 'subtitle_in') {
-             if (!['input.text', 'ai.textGen', 'ai.dubSub'].includes(sourceNode?.type || '')) isValid = false;
+          if (tgtHandle === 'text_in' || tgtHandle === 'subtitle_in') {
+             if (!['input.text', 'ai.textGen', 'ai.dubSub', 'input.file'].includes(sourceNode?.type || '')) isValid = false;
           }
 
           if (isValid) {

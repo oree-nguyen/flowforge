@@ -504,10 +504,12 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
     '4:5': 'aspect-[4/5] h-[190px]',
   };
 
+  const portTargetId = nodeId !== 'global' ? nodeId : 'global';
+
   return (
     <div
       ref={workspaceRef}
-      className="fixed bottom-6 right-24 z-50 overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right"
+      className="fixed bottom-6 right-24 z-50 rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right"
       style={{
         width: '740px',
         height: '520px',
@@ -516,7 +518,62 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex h-full text-text-primary">
+      {/* 4 Connectable Round Input Port Handles (Hanging on OUTSIDE LEFT BORDER for dragging wires) */}
+      <div className="absolute -left-11 top-10 flex flex-col gap-5 z-50">
+        {/* 1. Text Input Port */}
+        <div
+          data-target={`${portTargetId}:text_in`}
+          className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-purple-500 text-purple-400 flex items-center justify-center font-bold text-xs shadow-[0_0_15px_rgba(168,85,247,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
+          title="Kéo thả dây vào đây để kết nối Text / Phụ đề"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          T
+          <span className="absolute right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-purple-300 text-[10px] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none border border-purple-500/40 font-semibold shadow-2xl">
+            Text / Phụ đề Port (Kéo dây vào đây)
+          </span>
+        </div>
+
+        {/* 2. Image Input Port */}
+        <div
+          data-target={`${portTargetId}:image_in`}
+          className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-amber-500 text-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
+          title="Kéo thả dây vào đây để kết nối Ảnh / Watermark"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <ImageIcon size={15} />
+          <span className="absolute right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-amber-300 text-[10px] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none border border-amber-500/40 font-semibold shadow-2xl">
+            Image / Overlay Port (Kéo dây vào đây)
+          </span>
+        </div>
+
+        {/* 3. Audio/File Input Port */}
+        <div
+          data-target={`${portTargetId}:audio_in`}
+          className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-cyan-500 text-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
+          title="Kéo thả dây vào đây để kết nối Audio / Voiceover"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <FileText size={15} />
+          <span className="absolute right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-cyan-300 text-[10px] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none border border-cyan-500/40 font-semibold shadow-2xl">
+            Audio / Voiceover Port (Kéo dây vào đây)
+          </span>
+        </div>
+
+        {/* 4. Video Input Port */}
+        <div
+          data-target={`${portTargetId}:video_in`}
+          className="w-9 h-9 rounded-full bg-[#08080c] border-2 border-accent-lime text-accent-lime flex items-center justify-center shadow-[0_0_15px_rgba(198,241,53,0.6)] cursor-crosshair transition-transform hover:scale-125 group relative"
+          title="Kéo thả dây vào đây để kết nối Video Input"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <Video size={15} />
+          <span className="absolute right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-accent-lime text-[10px] px-2.5 py-1 rounded-lg whitespace-nowrap pointer-events-none border border-accent-lime/40 font-semibold shadow-2xl">
+            Video Input Port (Kéo dây vào đây)
+          </span>
+        </div>
+      </div>
+
+      <div className="flex h-full text-text-primary rounded-2xl overflow-hidden">
         {/* LEFT SIDEBAR COLUMN: Settings & Actions */}
         <div className="w-[200px] shrink-0 border-r border-border-subtle p-4 flex flex-col justify-between gap-3">
           <div className="flex flex-col gap-4">
