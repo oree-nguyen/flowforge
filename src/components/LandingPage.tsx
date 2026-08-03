@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import logoUrl from '../../public/logo.png';
 import { 
   Globe, 
   ArrowRight, 
@@ -241,7 +242,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       {/* --- TOP NAVBAR --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0C]/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src="/logo.png" alt="FlowForge" className="w-8 h-8 rounded-xl shadow-[0_0_15px_rgba(132,204,22,0.4)]" />
+          <img src={logoUrl} alt="FlowForge" className="w-8 h-8 rounded-xl shadow-[0_0_15px_rgba(132,204,22,0.4)]" />
           <span className="text-lg font-bold tracking-tight text-white">FlowForge</span>
         </div>
 

@@ -4,6 +4,7 @@ import { useWorkflowStore } from '../store/workflowStore';
 import { canvasEngine } from '../engine/canvasEngine';
 import { RecoveryModal } from './RecoveryModal';
 import { toast } from '../store/toastStore';
+import logoUrl from '../../public/logo.png';
 
 export function TopBar() {
   const { 
@@ -88,7 +89,7 @@ export function TopBar() {
           >
             <ChevronLeft size={20} />
           </button>
-          <img src="/logo.png" alt="FlowForge" className="w-7 h-7 rounded-lg" />
+          <img src={logoUrl} alt="FlowForge" className="w-7 h-7 rounded-lg" />
 
           {/* Editable workflow name */}
           <input
