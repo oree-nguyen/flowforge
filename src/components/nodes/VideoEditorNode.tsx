@@ -8,8 +8,7 @@ import {
   Video,
   AudioWaveform,
   Camera,
-  Type,
-  Maximize2
+  Type
 } from 'lucide-react';
 
 export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconnectStart }: NodeProps) {
@@ -78,7 +77,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
       } transition-all relative select-none`}
     >
       {/* Node Header */}
-      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between">
+      <div className="px-4 py-3 bg-white/5 border-b border-border-subtle flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 overflow-hidden">
           <div className="w-6 h-6 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
             <Scissors size={13} />
@@ -87,9 +86,22 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
             {customNodeName || 'Video Editor'}
           </span>
         </div>
-        <span className="text-[10px] font-mono px-2 py-0.5 bg-rose-500/20 rounded text-rose-400 shrink-0">
-          {clips.length} Clips
-        </span>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 bg-rose-500/20 rounded text-rose-400">
+            {clips.length} Clips
+          </span>
+
+          {/* Prominent Round Lime Scissors Button */}
+          <button
+            onClick={() => setOpenVideoEditorNodeId(id)}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="w-7 h-7 rounded-full bg-[#C6F135] text-black hover:bg-[#b5de28] flex items-center justify-center shadow-[0_0_12px_rgba(198,241,53,0.6)] transition-all cursor-pointer hover:scale-110"
+            title="Mở Video Editor Workspace"
+          >
+            <Scissors size={14} />
+          </button>
+        </div>
       </div>
 
       {/* Node Body */}
@@ -106,7 +118,7 @@ export function VideoEditorNode({ id, data, selected, onConnectStart, onDisconne
           onPointerDown={(e) => e.stopPropagation()}
           className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.3)] hover:shadow-[0_0_20px_rgba(225,29,72,0.5)] transition-all text-xs cursor-pointer"
         >
-          <Maximize2 size={14} />
+          <Scissors size={14} />
           <span>Mở Video Editor</span>
         </button>
       </div>
