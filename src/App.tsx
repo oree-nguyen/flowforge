@@ -9,6 +9,7 @@ import { PropertiesPanel } from './components/PropertiesPanel';
 import { SettingsModal } from './components/SettingsModal';
 import { ImageLibraryModal } from './components/ImageLibraryModal';
 import { ShortcutGuide } from './components/ShortcutGuide';
+import { VideoEditorWorkspace } from './components/VideoEditorWorkspace';
 import { useWorkflowStore } from './store/workflowStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -25,6 +26,8 @@ function App() {
 
   const isSettingsOpen = useWorkflowStore(state => state.isSettingsOpen);
   const setIsSettingsOpen = useWorkflowStore(state => state.setIsSettingsOpen);
+  const openVideoEditorNodeId = useWorkflowStore(state => state.openVideoEditorNodeId);
+  const setOpenVideoEditorNodeId = useWorkflowStore(state => state.setOpenVideoEditorNodeId);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
@@ -109,6 +112,12 @@ function App() {
       
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
+      {openVideoEditorNodeId && (
+        <VideoEditorWorkspace
+          nodeId={openVideoEditorNodeId}
+          onClose={() => setOpenVideoEditorNodeId(null)}
+        />
+      )}
       <ToastContainer />
     </div>
   );

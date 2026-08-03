@@ -7,13 +7,14 @@ export function useKeyboardShortcuts(onToggleGuide: () => void) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input or textarea or operating inside a node in Edit Mode
+      // Ignore if user is typing in an input/textarea or operating inside open video editor workspace
       const active = document.activeElement as HTMLElement | null;
+      const openVideoEditorNodeId = useWorkflowStore.getState().openVideoEditorNodeId;
       if (
         active?.tagName === 'INPUT' ||
         active?.tagName === 'TEXTAREA' ||
         active?.isContentEditable ||
-        active?.closest('[data-edit-mode="true"]')
+        openVideoEditorNodeId !== null
       ) {
         return;
       }

@@ -79,6 +79,9 @@ interface WorkflowState {
 
   isExecuting: boolean;
   executeWorkflow: () => Promise<void>;
+
+  openVideoEditorNodeId: string | null;
+  setOpenVideoEditorNodeId: (id: string | null) => void;
 }
 
 const DEFAULT_TOOLBAR_VISIBILITY: ToolbarVisibility = {
@@ -225,6 +228,9 @@ export const useWorkflowStore = create<WorkflowState>()(
         const activeKey = mapped.find(k => k.isActive)?.key || '';
         set({ apiKeys: mapped, apiKey: activeKey });
       },
+
+      openVideoEditorNodeId: null,
+      setOpenVideoEditorNodeId: (id) => set({ openVideoEditorNodeId: id }),
 
       setToolMode: (mode) => set({ toolMode: mode }),
       setAutoOpenProperties: (val) => set({ autoOpenProperties: val }),
