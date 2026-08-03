@@ -16,15 +16,11 @@ import {
   Volume2,
   Layers,
   RotateCw,
-  Maximize2,
-  Camera,
-  Type,
   Copy,
   X,
   Pin,
   PinOff,
-  Sliders,
-  Globe
+  Sliders
 } from 'lucide-react';
 
 import {
@@ -85,11 +81,11 @@ function SortableClipCard({
         onSelect(clip.id);
       }}
       title={String(hoverNote)}
-      className={`relative group cursor-grab active:cursor-grabbing rounded-[10px] overflow-hidden border transition-all shrink-0 w-24 h-11 bg-black/80 flex flex-col justify-between p-1.5 ${
+      className={`relative group cursor-grab active:cursor-grabbing rounded-xl overflow-hidden border transition-all shrink-0 w-24 h-11 bg-black/80 flex flex-col justify-between p-1.5 ${
         isSelected
-          ? 'border-rose-500 ring-2 ring-rose-500/50 shadow-xl'
+          ? 'border-accent-lime ring-2 ring-accent-lime/50 shadow-xl'
           : isDragging
-          ? 'border-rose-500 ring-2 ring-rose-500/50 shadow-xl'
+          ? 'border-accent-lime ring-2 ring-accent-lime/50 shadow-xl'
           : 'border-white/10 hover:border-white/30'
       }`}
     >
@@ -121,7 +117,7 @@ function SortableClipCard({
             onDuplicate(clip);
           }}
           className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-blue-500/90 hover:bg-blue-500 text-white transition-opacity shadow-md"
-          title="Nhân bản clip (Lặp)"
+          title="Nhân bản clip"
         >
           <Copy size={9} />
         </button>
@@ -131,7 +127,7 @@ function SortableClipCard({
             onRemove(clip.id);
           }}
           className="opacity-0 group-hover:opacity-100 p-0.5 rounded bg-rose-600/90 hover:bg-rose-600 text-white transition-opacity shadow-md"
-          title="Xóa clip này"
+          title="Xóa clip"
         >
           <Trash2 size={9} />
         </button>
@@ -140,8 +136,8 @@ function SortableClipCard({
       {/* Selection Trim Handles */}
       {isSelected && (
         <>
-          <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-white cursor-col-resize hover:scale-x-150 transition-transform origin-left rounded-l-[10px]" title="Kéo để cắt đầu" />
-          <div className="absolute top-0 bottom-0 right-0 w-1.5 bg-white cursor-col-resize hover:scale-x-150 transition-transform origin-right rounded-r-[10px]" title="Kéo để cắt đuôi" />
+          <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-accent-lime cursor-col-resize hover:scale-x-150 transition-transform origin-left rounded-l-[10px]" title="Kéo để cắt đầu" />
+          <div className="absolute top-0 bottom-0 right-0 w-1.5 bg-accent-lime cursor-col-resize hover:scale-x-150 transition-transform origin-right rounded-r-[10px]" title="Kéo để cắt đuôi" />
         </>
       )}
     </div>
@@ -485,81 +481,110 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
 
   return (
     <div
-      className="fixed top-0 right-0 bottom-0 z-[200] w-[32vw] min-w-[380px] max-w-[500px] bg-panel/95 backdrop-blur-2xl border-l border-border-subtle shadow-2xl flex flex-col overflow-hidden text-text-primary transition-transform duration-200 translate-x-0"
+      className="fixed bottom-6 right-24 z-50 overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right"
+      style={{
+        width: '740px',
+        height: '520px',
+        background: 'rgba(8, 8, 12, 0.85)',
+        backdropFilter: 'blur(20px)',
+      }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Header Bar */}
-      <div className="px-5 py-3.5 bg-black/40 border-b border-white/10 flex items-center justify-between shadow-lg shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-600/20 border border-rose-500/30 flex items-center justify-center text-rose-400">
-            <Scissors size={16} />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-white tracking-wide flex items-center gap-1.5">
-              {customNodeName || 'Video Editor Workstation'}
-            </h2>
-            <p className="text-[10px] text-text-muted">{clips.length} Clips • {totalDuration.toFixed(1)}s</p>
-          </div>
-        </div>
+      <div className="flex h-full text-text-primary">
+        {/* LEFT SIDEBAR COLUMN: Settings & Actions */}
+        <div className="w-[200px] shrink-0 border-r border-border-subtle p-4 flex flex-col justify-between gap-3">
+          <div className="flex flex-col gap-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-accent-lime/20 text-accent-lime border border-accent-lime/40 flex items-center justify-center">
+                  <Scissors size={15} />
+                </div>
+                <h2 className="text-sm font-bold text-white tracking-wide truncate">
+                  {customNodeName || 'Video Editor'}
+                </h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-6 h-6 rounded-lg bg-white/5 hover:bg-rose-500 text-text-muted hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Đóng cửa sổ"
+              >
+                <X size={14} />
+              </button>
+            </div>
 
-        <div className="flex items-center gap-2">
-          {/* Pin / Unpin Toggle Button */}
-          <button
-            onClick={() => setIsPinned((prev) => !prev)}
-            title={isPinned ? 'Đã ghim panel (ESC không đóng)' : 'Ghim panel'}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
-              isPinned
-                ? 'bg-[#C6F135] text-black ring-2 ring-white/80 shadow-[0_0_10px_rgba(198,241,53,0.5)] font-bold'
-                : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
-            }`}
-          >
-            {isPinned ? <PinOff size={13} /> : <Pin size={13} />}
-            <span>{isPinned ? 'Đã ghim' : 'Ghim'}</span>
-          </button>
+            {/* Pin / Unpin Button */}
+            <button
+              onClick={() => setIsPinned((prev) => !prev)}
+              title={isPinned ? 'Đã ghim (ESC không đóng)' : 'Ghim cửa sổ'}
+              className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                isPinned
+                  ? 'bg-accent-lime text-black shadow-[0_0_15px_rgba(198,241,53,0.4)]'
+                  : 'bg-white/5 hover:bg-white/10 text-text-muted hover:text-white border border-white/10'
+              }`}
+            >
+              {isPinned ? <PinOff size={13} /> : <Pin size={13} />}
+              <span>{isPinned ? 'Đã ghim' : 'Ghim cửa sổ'}</span>
+            </button>
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            title="Đóng panel"
-            className="w-7 h-7 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
+            {/* Aspect Ratio */}
+            <div className="flex flex-col gap-1.5 pt-2 border-t border-border-subtle">
+              <span className="text-[11px] font-semibold text-accent-lime uppercase tracking-wider">Tỉ lệ khung hình</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
+                  <button
+                    key={ratio}
+                    onClick={() =>
+                      canvasEngine.updateNodeData(nodeId, {
+                        canvas: { ...canvasSettings, aspectRatio: ratio },
+                      })
+                    }
+                    className={`py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                      canvasSettings.aspectRatio === ratio
+                        ? 'bg-accent-lime text-black font-bold'
+                        : 'bg-white/5 text-text-muted hover:text-white'
+                    }`}
+                  >
+                    {ratio}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* Main Panel Content Body (Single Vertical Scroll Column) */}
-      <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar min-h-0">
-        {/* --- SECTION 1: PREVIEW & CONTROLS --- */}
-        <div className="flex flex-col gap-3 bg-black/30 p-3.5 rounded-2xl border border-white/10 shrink-0">
-          {/* Aspect Ratio Pills */}
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-text-muted font-medium flex items-center gap-1">
-              <Maximize2 size={12} className="text-rose-400" /> Aspect Ratio:
-            </span>
-            <div className="flex items-center gap-1">
-              {(['16:9', '9:16', '1:1', '4:5'] as const).map((ratio) => (
-                <button
-                  key={ratio}
-                  onClick={() =>
-                    canvasEngine.updateNodeData(nodeId, {
-                      canvas: { ...canvasSettings, aspectRatio: ratio },
-                    })
-                  }
-                  className={`px-2 py-0.5 rounded font-mono text-[10px] transition-all cursor-pointer ${
-                    canvasSettings.aspectRatio === ratio
-                      ? 'bg-rose-500 text-white font-bold'
-                      : 'bg-white/5 text-text-muted hover:text-white'
-                  }`}
-                >
-                  {ratio}
-                </button>
-              ))}
+            {/* Stats Summary */}
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-1 text-[11px] font-mono text-text-muted">
+              <div className="flex items-center justify-between">
+                <span>Số clips:</span>
+                <span className="text-white font-bold">{clips.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Thời lượng:</span>
+                <span className="text-white font-bold">{totalDuration.toFixed(1)}s</span>
+              </div>
             </div>
           </div>
 
-          {/* Video Preview Box */}
-          <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-white/10 flex items-center justify-center shadow-inner group">
+          {/* Primary Action Button (Ghép & Xuất Video) */}
+          <button
+            onClick={handleRunConcat}
+            disabled={Boolean(nodeData.isConcatting || clips.length === 0)}
+            className="w-full py-2.5 bg-accent-lime hover:bg-[#b8e62d] disabled:opacity-40 text-black rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(198,241,53,0.3)] transition-all text-xs cursor-pointer"
+          >
+            {nodeData.isConcatting ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : nodeData.output ? (
+              <CheckCircle2 size={15} />
+            ) : (
+              <Play size={15} fill="currentColor" />
+            )}
+            <span>{nodeData.output ? 'Đã Xuất Video' : 'Ghép & Xuất Video'}</span>
+          </button>
+        </div>
+
+        {/* RIGHT MAIN AREA: Preview + Timeline + Contextual Toolbox */}
+        <div className="flex-1 p-4 flex flex-col gap-3 overflow-hidden min-h-0">
+          {/* Video Preview Box & Controls */}
+          <div className="relative aspect-video max-h-[200px] w-full bg-black rounded-xl overflow-hidden border border-border-subtle flex items-center justify-center shadow-inner group">
             {activeVideoUrl ? (
               <div
                 className="w-full h-full flex items-center justify-center overflow-hidden transition-transform duration-75"
@@ -582,19 +607,19 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 text-text-muted">
-                <Video size={32} className="text-white/20 animate-pulse" />
+                <Video size={28} className="text-white/20 animate-pulse" />
                 <span className="text-[11px]">Xem trước Video Canvas</span>
               </div>
             )}
           </div>
 
           {/* Player Controls & Scrubber */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="w-8 h-8 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-lg transition-all shrink-0 cursor-pointer"
+              className="w-7 h-7 rounded-full bg-accent-lime hover:bg-[#b8e62d] text-black flex items-center justify-center shadow-md transition-all shrink-0 cursor-pointer"
             >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+              {isPlaying ? <Pause size={13} /> : <Play size={13} fill="currentColor" className="ml-0.5" />}
             </button>
 
             <input
@@ -614,309 +639,210 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                   videoRef.current.currentTime = localTime;
                 }
               }}
-              className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:shadow-md"
+              className="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent-lime"
               style={{
-                background: `linear-gradient(to right, #f43f5e ${(currentTime / (totalDuration || 100)) * 100}%, rgba(255,255,255,0.1) ${(currentTime / (totalDuration || 100)) * 100}%)`,
+                background: `linear-gradient(to right, #C6F135 ${(currentTime / (totalDuration || 100)) * 100}%, rgba(255,255,255,0.1) ${(currentTime / (totalDuration || 100)) * 100}%)`,
               }}
             />
-            <span className="font-mono text-[11px] text-text-muted shrink-0 w-16 text-right">
+            <span className="font-mono text-[10px] text-text-muted shrink-0 w-16 text-right">
               {currentTime.toFixed(1)}s / {(totalDuration || 0).toFixed(1)}s
             </span>
           </div>
-        </div>
 
-        {/* --- SECTION 2: MULTI-TRACK TIMELINE --- */}
-        <div className="flex flex-col gap-2.5 bg-black/30 p-3.5 rounded-2xl border border-white/10 shrink-0">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-text-primary font-bold flex items-center gap-1.5">
-              <Layers size={13} className="text-rose-400" /> Multi-track Timeline
-            </span>
-            {selectedTrackType && (
-              <button
-                onClick={() => setSelectedTrackType(null)}
-                className="text-[10px] text-rose-400 hover:underline"
-              >
-                Bỏ chọn track
-              </button>
-            )}
-          </div>
-
-          {/* Time Axis Container with Ruler & Playhead */}
-          <div
-            ref={timelineRef}
-            className="flex flex-col gap-2 relative cursor-pointer"
-            onClick={(e) => {
-              handleRulerScrub(e.clientX);
-            }}
-          >
-            {/* 1. TOP RULER (Thước thời gian) */}
-            <div className="relative h-5 w-full border-b border-white/10 flex items-end pb-0.5 bg-black/20 rounded-t-lg shrink-0 overflow-hidden">
-              {timeTicks.map((tick) => (
-                <div
-                  key={tick.sec}
-                  className="absolute bottom-0 flex flex-col items-center -translate-x-1/2"
-                  style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
+          {/* Multi-track Timeline */}
+          <div className="flex-1 flex flex-col gap-2 min-h-0 overflow-hidden bg-black/20 p-2.5 rounded-xl border border-white/5">
+            <div className="flex items-center justify-between text-[11px] shrink-0">
+              <span className="text-white font-bold flex items-center gap-1">
+                <Layers size={12} className="text-accent-lime" /> Multi-track Timeline
+              </span>
+              {selectedTrackType && (
+                <button
+                  onClick={() => setSelectedTrackType(null)}
+                  className="text-[10px] text-accent-lime hover:underline"
                 >
-                  <span className="text-[8px] font-mono text-text-muted select-none">{tick.label}</span>
-                  <div className="w-0.5 h-1 bg-white/20 mt-0.5" />
-                </div>
-              ))}
+                  Bỏ chọn
+                </button>
+              )}
             </div>
 
-            {/* 2. PLAYHEAD NEEDLE (Kim thời gian) */}
+            {/* Time Axis Container with Ruler & Playhead */}
             <div
-              className="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-30 pointer-events-none transition-all duration-75"
-              style={{ left: `${playheadPercent}%` }}
+              ref={timelineRef}
+              className="flex flex-col gap-1.5 relative cursor-pointer flex-1 overflow-x-auto custom-scrollbar"
+              onClick={(e) => handleRulerScrub(e.clientX)}
             >
+              {/* TOP RULER */}
+              <div className="relative h-4 w-full border-b border-white/10 flex items-end pb-0.5 bg-black/30 rounded shrink-0">
+                {timeTicks.map((tick) => (
+                  <div
+                    key={tick.sec}
+                    className="absolute bottom-0 flex flex-col items-center -translate-x-1/2"
+                    style={{ left: `${(tick.sec / totalDuration) * 100}%` }}
+                  >
+                    <span className="text-[8px] font-mono text-text-muted select-none">{tick.label}</span>
+                    <div className="w-0.5 h-1 bg-white/20 mt-0.5" />
+                  </div>
+                ))}
+              </div>
+
+              {/* PLAYHEAD NEEDLE */}
               <div
-                className="w-3 h-3 bg-rose-500 rounded-b-full -translate-x-1/2 cursor-col-resize shadow-[0_0_8px_rgba(244,63,94,0.8)] pointer-events-auto"
-                title="Kéo kim thời gian"
-              />
-            </div>
-
-            {/* TRACK 1: VIDEO TRACK */}
-            <div
-              className={`flex flex-col gap-1 shrink-0 p-1.5 rounded-xl transition-colors ${
-                selectedTrackType === 'video' ? 'bg-rose-500/10 border border-rose-500/30' : ''
-              }`}
-              onClick={() => setSelectedTrackType('video')}
-            >
-              <div className="flex items-center justify-between text-[10px] text-text-muted px-0.5">
-                <span className="flex items-center gap-1 font-semibold text-rose-300">
-                  <Camera size={11} /> Video Track (Kéo thả clip)
-                </span>
+                className="absolute top-0 bottom-0 w-0.5 bg-accent-lime z-30 pointer-events-none transition-all duration-75"
+                style={{ left: `${playheadPercent}%` }}
+              >
+                <div
+                  className="w-2.5 h-2.5 bg-accent-lime rounded-b-full -translate-x-1/2 cursor-col-resize shadow-[0_0_8px_rgba(198,241,53,0.8)] pointer-events-auto"
+                  title="Kéo kim thời gian"
+                />
               </div>
-              <div className="relative h-12 w-full bg-black/40 rounded-xl border border-white/5 flex items-center p-1 overflow-x-auto custom-scrollbar">
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
-                    <div className="flex items-center gap-1 w-full h-full">
-                      {clips
-                        .sort((a, b) => a.order - b.order)
-                        .map((clip, idx) => (
-                          <SortableClipCard
-                            key={clip.id}
-                            clip={clip}
-                            index={idx}
-                            label={getClipLabel(idx)}
-                            isSelected={clip.id === selectedClipId}
-                            onSelect={(id) => {
-                              setSelectedClipId(id);
-                              setSelectedTrackType('video');
-                            }}
-                            onRemove={handleRemoveClip}
-                            onDuplicate={handleDuplicateClip}
-                          />
-                        ))}
+
+              {/* TRACK 1: VIDEO TRACK */}
+              <div
+                className={`flex flex-col gap-1 shrink-0 p-1 rounded-lg transition-colors ${
+                  selectedTrackType === 'video' ? 'bg-accent-lime/10 border border-accent-lime/30' : ''
+                }`}
+                onClick={() => setSelectedTrackType('video')}
+              >
+                <div className="relative h-11 w-full bg-black/40 rounded-lg border border-white/5 flex items-center p-1 overflow-x-auto custom-scrollbar">
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
+                      <div className="flex items-center gap-1 w-full h-full">
+                        {clips
+                          .sort((a, b) => a.order - b.order)
+                          .map((clip, idx) => (
+                            <SortableClipCard
+                              key={clip.id}
+                              clip={clip}
+                              index={idx}
+                              label={getClipLabel(idx)}
+                              isSelected={clip.id === selectedClipId}
+                              onSelect={(id) => {
+                                setSelectedClipId(id);
+                                setSelectedTrackType('video');
+                              }}
+                              onRemove={handleRemoveClip}
+                              onDuplicate={handleDuplicateClip}
+                            />
+                          ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              </div>
+
+              {/* TRACK 2: AUDIO TRACK */}
+              <div
+                className={`flex flex-col gap-1 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
+                  selectedTrackType === 'audio' ? 'bg-cyan-500/10 border border-cyan-500/30' : ''
+                }`}
+                onClick={() => setSelectedTrackType('audio')}
+              >
+                <div className="h-8 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
+                  {nodeData.vocalsAudioUrl ? (
+                    <div className="w-full h-5 bg-cyan-500/20 border border-cyan-500/40 rounded flex items-center px-2 text-[9px] text-cyan-300 font-mono gap-1">
+                      <AudioWaveform size={11} className="animate-pulse" />
+                      <span>Audio ({nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? 'HTDemucs' : 'DSP'})</span>
                     </div>
-                  </SortableContext>
-                </DndContext>
-              </div>
-            </div>
-
-            {/* TRACK 2: AUDIO TRACK */}
-            <div
-              className={`flex flex-col gap-1 shrink-0 p-1.5 rounded-xl transition-colors cursor-pointer ${
-                selectedTrackType === 'audio' ? 'bg-cyan-500/10 border border-cyan-500/30' : ''
-              }`}
-              onClick={() => setSelectedTrackType('audio')}
-            >
-              <div className="flex items-center justify-between text-[10px] text-text-muted px-0.5">
-                <span className="flex items-center gap-1 font-semibold text-cyan-300">
-                  <AudioWaveform size={11} /> Audio Track (Voiceover / Nhạc nền)
-                </span>
-              </div>
-              <div className="h-9 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-2.5 shadow-inner">
-                {nodeData.vocalsAudioUrl ? (
-                  <div className="w-full h-5 bg-cyan-500/20 border border-cyan-500/40 rounded flex items-center px-2 text-[9px] text-cyan-300 font-mono gap-1">
-                    <AudioWaveform size={11} className="animate-pulse" />
-                    <span>Audio đã tách AI ({nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? 'HTDemucs' : 'DSP'})</span>
-                  </div>
-                ) : (
-                  <span className="text-[9px] text-white/30 italic">Chưa chọn audio (Click chọn để chỉnh volume)</span>
-                )}
-              </div>
-            </div>
-
-            {/* TRACK 3: TEXT TRACK */}
-            <div
-              className={`flex flex-col gap-1 shrink-0 p-1.5 rounded-xl transition-colors cursor-pointer ${
-                selectedTrackType === 'text' ? 'bg-amber-500/10 border border-amber-500/30' : ''
-              }`}
-              onClick={() => setSelectedTrackType('text')}
-            >
-              <div className="flex items-center justify-between text-[10px] text-text-muted px-0.5">
-                <span className="flex items-center gap-1 font-semibold text-amber-300">
-                  <Type size={11} /> Text Track (Phụ đề Subtitle)
-                </span>
-              </div>
-              <div className="h-9 w-full bg-black/40 rounded-xl border border-white/5 flex items-center px-2.5 shadow-inner">
-                <span className="text-[9px] text-white/30 italic">Click chọn để cài đặt hiển thị phụ đề</span>
+                  ) : (
+                    <span className="text-[9px] text-white/30 italic">Click chọn audio track</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* --- SECTION 3: CONTEXTUAL TOOLBOX (Only shown when a track is selected) --- */}
-        <div
-          className={`transition-all duration-200 ease-in-out border border-white/10 rounded-2xl bg-black/40 ${
-            selectedTrackType ? 'max-h-[500px] opacity-100 p-3.5 flex flex-col gap-3' : 'max-h-0 opacity-0 p-0 overflow-hidden border-none'
-          }`}
-        >
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-              <Sliders size={13} className="text-rose-400" />
-              {selectedTrackType === 'video' && 'Công Cụ Video Clip'}
-              {selectedTrackType === 'audio' && 'Công Cụ Audio Track'}
-              {selectedTrackType === 'text' && 'Cấu Hình Phụ Đề Text'}
-            </h3>
-            <button
-              onClick={() => setSelectedTrackType(null)}
-              className="text-[10px] text-text-muted hover:text-white"
-            >
-              ✕ Ẩn
-            </button>
-          </div>
-
-          {/* VIDEO TOOLBOX CONTENT */}
-          {selectedTrackType === 'video' && (
-            <div className="flex flex-col gap-3 text-xs">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={handleSplitClip}
-                  className="py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  title="Cắt clip tại kim thời gian (Phím S)"
-                >
-                  <Scissors size={13} className="text-rose-400" /> Cắt Clip (S)
-                </button>
-
-                <button
-                  onClick={handleExtractVocals}
-                  disabled={Boolean(nodeData.isExtractingVocals || !activeVideoUrl)}
-                  className="py-2 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
-                >
-                  {nodeData.isExtractingVocals ? <Loader2 size={13} className="animate-spin" /> : <AudioWaveform size={13} />}
-                  <span>Tách Giọng AI</span>
-                </button>
-              </div>
-
-              {/* Volume Slider */}
-              <div className="flex flex-col gap-1 pt-1">
-                <div className="flex items-center justify-between text-[11px] text-white/70">
-                  <span className="flex items-center gap-1">
-                    <Volume2 size={12} /> Volume Clip
-                  </span>
-                  <span className="font-mono text-white/90 bg-white/10 px-1.5 py-0.2 rounded text-[10px]">
-                    {activeClip?.volume || 100}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={200}
-                  value={activeClip?.volume || 100}
-                  onChange={(e) => {
-                    const vol = parseInt(e.target.value, 10);
-                    const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
-                    canvasEngine.updateNodeData(nodeId, { clips: updated });
-                  }}
-                  className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                />
-              </div>
-
-              {/* Scale & Rotate Sliders */}
-              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/10">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[10px] text-white/70">
-                    <span>Zoom</span>
-                    <span className="font-mono text-[9px]">{activeTransform.scale.toFixed(2)}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={3.0}
-                    step={0.05}
-                    value={activeTransform.scale}
-                    onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between text-[10px] text-white/70">
-                    <span className="flex items-center gap-1">
-                      <RotateCw size={10} /> Góc
-                    </span>
-                    <span className="font-mono text-[9px]">{activeTransform.rotationDeg}°</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-180}
-                    max={180}
-                    step={5}
-                    value={activeTransform.rotationDeg}
-                    onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* AUDIO TOOLBOX CONTENT */}
-          {selectedTrackType === 'audio' && (
-            <div className="flex flex-col gap-2.5 text-xs">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-[11px] text-white/70">
-                  <span className="flex items-center gap-1">
-                    <Volume2 size={12} /> Âm lượng Vocals / Audio
-                  </span>
-                  <span className="font-mono text-white/90 bg-white/10 px-1.5 py-0.2 rounded text-[10px]">100%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={200}
-                  defaultValue={100}
-                  className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cyan-400"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TEXT TOOLBOX CONTENT */}
-          {selectedTrackType === 'text' && (
-            <div className="flex flex-col gap-2.5 text-xs">
-              <div className="flex items-center justify-between text-[11px] text-white/80">
+          {/* Contextual Toolbox (Expandable) */}
+          {selectedTrackType && (
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-2 shrink-0 animate-fadeIn">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-accent-lime">
                 <span className="flex items-center gap-1">
-                  <Globe size={12} className="text-amber-400" /> In Phụ Đề Vào Video (Burn Sub)
+                  <Sliders size={12} />
+                  {selectedTrackType === 'video' && 'Công Cụ Video Clip'}
+                  {selectedTrackType === 'audio' && 'Công Cụ Audio Track'}
+                  {selectedTrackType === 'text' && 'Cấu Hình Phụ Đề'}
                 </span>
-                <input
-                  type="checkbox"
-                  checked={Boolean(nodeData.burnSubtitle)}
-                  onChange={(e) => canvasEngine.updateNodeData(nodeId, { burnSubtitle: e.target.checked })}
-                  className="w-4 h-4 rounded border-white/20 bg-black text-rose-500 focus:ring-0 cursor-pointer"
-                />
+                <button onClick={() => setSelectedTrackType(null)} className="text-[10px] text-text-muted hover:text-white">✕</button>
               </div>
+
+              {selectedTrackType === 'video' && (
+                <div className="flex flex-col gap-2 text-[11px]">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={handleSplitClip}
+                      className="py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Scissors size={12} className="text-accent-lime" /> Cắt Clip (S)
+                    </button>
+
+                    <button
+                      onClick={handleExtractVocals}
+                      disabled={Boolean(nodeData.isExtractingVocals || !activeVideoUrl)}
+                      className="py-1.5 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 rounded-lg font-medium flex items-center justify-center gap-1 transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {nodeData.isExtractingVocals ? <Loader2 size={12} className="animate-spin" /> : <AudioWaveform size={12} />}
+                      <span>Tách Giọng AI</span>
+                    </button>
+                  </div>
+
+                  {/* Volume Slider */}
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center justify-between text-[10px] text-text-muted">
+                      <span className="flex items-center gap-1">
+                        <Volume2 size={11} /> Volume: {activeClip?.volume || 100}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={200}
+                      value={activeClip?.volume || 100}
+                      onChange={(e) => {
+                        const vol = parseInt(e.target.value, 10);
+                        const updated = clips.map((c) => (c.id === selectedClipId ? { ...c, volume: vol } : c));
+                        canvasEngine.updateNodeData(nodeId, { clips: updated });
+                      }}
+                      className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent-lime"
+                    />
+                  </div>
+
+                  {/* Zoom & Rotation Sliders */}
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/10">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between text-[10px] text-text-muted">
+                        <span>Zoom: {activeTransform.scale.toFixed(2)}x</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0.5}
+                        max={3.0}
+                        step={0.05}
+                        value={activeTransform.scale}
+                        onChange={(e) => updateActiveTransform({ scale: parseFloat(e.target.value) })}
+                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between text-[10px] text-text-muted">
+                        <span className="flex items-center gap-0.5">
+                          <RotateCw size={10} /> Góc: {activeTransform.rotationDeg}°
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={-180}
+                        max={180}
+                        step={5}
+                        value={activeTransform.rotationDeg}
+                        onChange={(e) => updateActiveTransform({ rotationDeg: parseInt(e.target.value, 10) })}
+                        className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </div>
-
-        {/* --- SECTION 4: PRIMARY ACTION (Ghép & Xuất Video) --- */}
-        <div className="mt-auto pt-2 shrink-0">
-          <button
-            onClick={handleRunConcat}
-            disabled={Boolean(nodeData.isConcatting || clips.length === 0)}
-            className="w-full py-3 bg-rose-600 hover:bg-rose-500 disabled:bg-white/5 disabled:text-white/40 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] disabled:shadow-none transition-all text-xs cursor-pointer"
-          >
-            {nodeData.isConcatting ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : nodeData.output ? (
-              <CheckCircle2 size={15} />
-            ) : (
-              <Play size={15} fill="currentColor" />
-            )}
-            <span>{nodeData.output ? 'Đã Xuất Video (FFmpeg)' : 'Ghép & Xuất Video'}</span>
-          </button>
         </div>
       </div>
     </div>

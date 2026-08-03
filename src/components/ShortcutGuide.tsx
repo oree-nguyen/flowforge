@@ -13,10 +13,10 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
   const setOpenVideoEditorNodeId = useWorkflowStore((state) => state.setOpenVideoEditorNodeId);
 
   return (
-    <div className="absolute bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
-      {/* The Guide Panel */}
+    <div className="fixed bottom-6 right-6 z-50 flex items-end gap-4 pointer-events-none">
+      {/* The Guide Panel (Opens to the LEFT of the 2 buttons) */}
       <div 
-        className={`mb-4 overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right ${
+        className={`overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right ${
           isOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-50 opacity-0 pointer-events-none'
         }`}
         style={{
