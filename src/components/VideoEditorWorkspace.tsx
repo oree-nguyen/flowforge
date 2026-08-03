@@ -22,7 +22,7 @@ import {
   PinOff,
   Sliders,
   Image as ImageIcon,
-  Type
+  FileText
 } from 'lucide-react';
 
 import {
@@ -577,8 +577,31 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
               </div>
             </div>
 
+            {/* Input Ports Badges Section */}
+            <div className="flex flex-col gap-1.5 pt-2 border-t border-border-subtle">
+              <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Cổng Đầu Vào (Ports)</span>
+              <div className="grid grid-cols-4 gap-1 items-center justify-items-center p-1.5 bg-black/40 rounded-xl border border-white/10">
+                {/* 1. Text Input Port */}
+                <div className="w-6 h-6 rounded-full bg-[#14141a] border border-purple-500/40 text-purple-400 flex items-center justify-center text-[10px] font-bold shadow-sm" title="Text Input Port">
+                  T
+                </div>
+                {/* 2. Image Input Port */}
+                <div className="w-6 h-6 rounded-full bg-[#14141a] border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-sm" title="Image Input Port">
+                  <ImageIcon size={11} />
+                </div>
+                {/* 3. Audio/File Input Port */}
+                <div className="w-6 h-6 rounded-full bg-[#14141a] border border-orange-500/40 text-orange-400 flex items-center justify-center shadow-sm" title="File/Audio Input Port">
+                  <FileText size={11} />
+                </div>
+                {/* 4. Video Input Port */}
+                <div className="w-6 h-6 rounded-full bg-[#14141a] border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-sm" title="Video Input Port">
+                  <Video size={11} />
+                </div>
+              </div>
+            </div>
+
             {/* Stats Summary */}
-            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-1 text-[11px] font-mono text-text-muted">
+            <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex flex-col gap-1 text-[11px] font-mono text-text-muted">
               <div className="flex items-center justify-between">
                 <span>Số clips:</span>
                 <span className="text-white font-bold">{clips.length}</span>
@@ -732,8 +755,11 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                 onClick={() => setSelectedTrackType('video')}
               >
                 <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
-                  <span className="flex items-center gap-1 font-semibold text-rose-300">
-                    <Video size={10} /> Video Track
+                  <span className="flex items-center gap-1.5 font-semibold text-rose-300">
+                    <div className="w-5 h-5 rounded-full bg-[#14141a] border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-sm shrink-0" title="Video Input Port">
+                      <Video size={10} />
+                    </div>
+                    <span>Video Track</span>
                   </span>
                 </div>
                 <div className="relative h-10 w-full bg-black/40 rounded-lg border border-white/5 flex items-center p-1 overflow-x-auto custom-scrollbar">
@@ -771,8 +797,11 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                 onClick={() => setSelectedTrackType('image')}
               >
                 <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
-                  <span className="flex items-center gap-1 font-semibold text-amber-300">
-                    <ImageIcon size={10} /> Image Track (Ảnh / Watermark)
+                  <span className="flex items-center gap-1.5 font-semibold text-amber-300">
+                    <div className="w-5 h-5 rounded-full bg-[#14141a] border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-sm shrink-0" title="Image Input Port">
+                      <ImageIcon size={10} />
+                    </div>
+                    <span>Image Track (Ảnh / Watermark)</span>
                   </span>
                 </div>
                 <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
@@ -788,8 +817,11 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                 onClick={() => setSelectedTrackType('audio')}
               >
                 <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
-                  <span className="flex items-center gap-1 font-semibold text-cyan-300">
-                    <AudioWaveform size={10} /> Audio Track (Voiceover / Stems)
+                  <span className="flex items-center gap-1.5 font-semibold text-cyan-300">
+                    <div className="w-5 h-5 rounded-full bg-[#14141a] border border-orange-500/40 text-orange-400 flex items-center justify-center shadow-sm shrink-0" title="Audio/File Input Port">
+                      <FileText size={10} />
+                    </div>
+                    <span>Audio Track (Voiceover / Stems)</span>
                   </span>
                 </div>
                 <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
@@ -807,13 +839,16 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
               {/* TRACK 4: TEXT INPUT TRACK */}
               <div
                 className={`flex flex-col gap-0.5 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
-                  selectedTrackType === 'text' ? 'bg-emerald-500/10 border border-emerald-500/30' : ''
+                  selectedTrackType === 'text' ? 'bg-purple-500/10 border border-purple-500/30' : ''
                 }`}
                 onClick={() => setSelectedTrackType('text')}
               >
                 <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
-                  <span className="flex items-center gap-1 font-semibold text-emerald-300">
-                    <Type size={10} /> Text Track (Phụ đề Auto-sub)
+                  <span className="flex items-center gap-1.5 font-semibold text-purple-300">
+                    <div className="w-5 h-5 rounded-full bg-[#14141a] border border-purple-500/40 text-purple-400 flex items-center justify-center text-[9px] font-bold shadow-sm shrink-0" title="Text Input Port">
+                      T
+                    </div>
+                    <span>Text Track (Phụ đề Auto-sub)</span>
                   </span>
                 </div>
                 <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
