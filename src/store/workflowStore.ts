@@ -382,17 +382,24 @@ export const useWorkflowStore = create<WorkflowState>()(
 
       deleteWorkflow: (id: string) => {
         const { savedWorkflows, currentWorkflowId } = get();
-        if (savedWorkflows.length <= 1) return;
+        const filtered = (savedWorkflows || []).filter(w => w && w.id !== id);
 
-        const filtered = savedWorkflows.filter(w => w.id !== id);
-        
-        if (currentWorkflowId === id) {
-          // Manually load the first available workflow to avoid triggering saveCurrentWorkflow on the deleted ID
-          const target = filtered[0];
+        // If deleting left 0 workflows, automatically create a fresh clean workflow
+        const fallbackWf: SavedWorkflow = {
+          id: `wf_${Date.now()}`,
+          name: 'New Workflow',
+          updatedAt: new Date().toISOString(),
+          canvasData: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
+        };
+
+        const finalWorkflows = filtered.length > 0 ? filtered : [fallbackWf];
+
+        if (currentWorkflowId === id || !finalWorkflows.some(w => w.id === currentWorkflowId)) {
+          const target = finalWorkflows[0];
           set({ 
-            savedWorkflows: filtered,
+            savedWorkflows: finalWorkflows,
             currentWorkflowId: target.id,
-            workflowName: target.name,
+            workflowName: target.name || 'New Workflow',
           });
           if (target.canvasData) {
             canvasEngine.deserialize(target.canvasData);
@@ -400,7 +407,7 @@ export const useWorkflowStore = create<WorkflowState>()(
             canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
           }
         } else {
-          set({ savedWorkflows: filtered });
+          set({ savedWorkflows: finalWorkflows });
         }
       },
 
@@ -763,14 +770,34 @@ export const useWorkflowStore = create<WorkflowState>()(
         if (!state) return;
         try {
           const { savedWorkflows, currentWorkflowId } = state;
-          if (!savedWorkflows || savedWorkflows.length === 0) return;
-          const current = savedWorkflows.find(w => w.id === currentWorkflowId) || savedWorkflows[0];
-          if (current?.canvasData?.nodes?.length > 0) {
-            canvasEngine.deserialize({
-              nodes: current.canvasData.nodes,
-              edges: current.canvasData.edges || [],
-              viewport: current.canvasData.viewport || { x: 0, y: 0, zoom: 1 },
+          if (!savedWorkflows || savedWorkflows.length === 0) {
+            const newId = `wf_${Date.now()}`;
+            const fallback: SavedWorkflow = {
+              id: newId,
+              name: 'New Workflow',
+              updatedAt: new Date().toISOString(),
+              canvasData: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
+            };
+            useWorkflowStore.setState({
+              savedWorkflows: [fallback],
+              currentWorkflowId: newId,
+              workflowName: 'New Workflow',
             });
+            canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+            return;
+          }
+
+          const current = savedWorkflows.find(w => w && w.id === currentWorkflowId) || savedWorkflows[0];
+          if (current) {
+            if (current.canvasData && Array.isArray(current.canvasData.nodes)) {
+              canvasEngine.deserialize({
+                nodes: current.canvasData.nodes,
+                edges: current.canvasData.edges || [],
+                viewport: current.canvasData.viewport || { x: 0, y: 0, zoom: 1 },
+              });
+            } else {
+              canvasEngine.deserialize({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+            }
           }
         } catch (e) {
           console.error('[FlowForge] Rehydration restore failed:', e);

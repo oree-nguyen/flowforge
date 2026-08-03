@@ -129,15 +129,13 @@ export function TopBar() {
           </button>
 
           {/* Delete current workflow */}
-          {savedWorkflows.length > 1 && (
-            <button
-              onClick={() => setDeleteDialog(true)}
-              className="p-2 hover:bg-red-500/10 hover:text-red-400 text-text-muted rounded-xl transition-colors"
-              title="Delete workflow"
-            >
-              <Trash2 size={15} />
-            </button>
-          )}
+          <button
+            onClick={() => setDeleteDialog(true)}
+            className="p-2 hover:bg-red-500/10 hover:text-red-400 text-text-muted rounded-xl transition-colors"
+            title="Delete current workflow"
+          >
+            <Trash2 size={15} />
+          </button>
 
           {/* New workflow */}
           <button
