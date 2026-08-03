@@ -25,7 +25,7 @@ export async function fetchModels(apiKey: string): Promise<OpenRouterModel[]> {
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.href, // Recommended by OpenRouter
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
   });
@@ -129,7 +129,7 @@ export async function chatCompletion(apiKey: string, model: string, messages: an
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.href,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
     body: JSON.stringify({
@@ -153,7 +153,7 @@ export async function generateImage(apiKey: string, model: string, prompt: strin
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.href,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
     body: JSON.stringify({
@@ -175,7 +175,7 @@ export async function fetchVideoContent(apiKey: string, generationId: string): P
   const response = await fetch(`${OPENROUTER_API_URL}/videos/${generationId}/content?index=0`, {
     headers: {
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': window.location.href,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
   });
@@ -203,7 +203,7 @@ export async function transcribeAudio(
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': window.location.href,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
     body: formData,
@@ -228,7 +228,7 @@ export async function generateSpeech(
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': window.location.href,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
     body: JSON.stringify({
