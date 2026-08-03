@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { BookOpen, X, Scissors } from 'lucide-react';
 import { useWorkflowStore } from '../store/workflowStore';
 
@@ -11,9 +11,23 @@ export function ShortcutGuide({ isOpen, onToggle }: ShortcutGuideProps) {
   const [activeCategory, setActiveCategory] = useState<'shortcuts' | 'api' | 'tips' | 'about'>('shortcuts');
   const openVideoEditorNodeId = useWorkflowStore((state) => state.openVideoEditorNodeId);
   const setOpenVideoEditorNodeId = useWorkflowStore((state) => state.setOpenVideoEditorNodeId);
+  const guideContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDownOutside = (e: PointerEvent) => {
+      if (guideContainerRef.current && !guideContainerRef.current.contains(e.target as Node)) {
+        onToggle();
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDownOutside);
+    return () => window.removeEventListener('pointerdown', handlePointerDownOutside);
+  }, [isOpen, onToggle]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-end gap-4 pointer-events-none">
+    <div ref={guideContainerRef} className="fixed bottom-6 right-6 z-50 flex items-end gap-4 pointer-events-none">
       {/* The Guide Panel (Opens to the LEFT of the 2 buttons) */}
       <div 
         className={`overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right ${

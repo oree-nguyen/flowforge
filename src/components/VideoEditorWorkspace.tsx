@@ -20,7 +20,9 @@ import {
   X,
   Pin,
   PinOff,
-  Sliders
+  Sliders,
+  Image as ImageIcon,
+  Type
 } from 'lucide-react';
 
 import {
@@ -151,7 +153,22 @@ interface VideoEditorWorkspaceProps {
 
 export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspaceProps) {
   const [isPinned, setIsPinned] = useState(false);
-  const [selectedTrackType, setSelectedTrackType] = useState<'video' | 'audio' | 'text' | null>(null);
+  const [selectedTrackType, setSelectedTrackType] = useState<'video' | 'image' | 'audio' | 'text' | null>(null);
+
+  const workspaceRef = useRef<HTMLDivElement>(null);
+
+  // Click Outside Auto-Close logic (respects isPinned)
+  useEffect(() => {
+    const handlePointerDownOutside = (e: PointerEvent) => {
+      if (isPinned) return;
+      if (workspaceRef.current && !workspaceRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDownOutside);
+    return () => window.removeEventListener('pointerdown', handlePointerDownOutside);
+  }, [isPinned, onClose]);
 
   // Fetch node data dynamically from canvasEngine or scan canvas for all video nodes
   const targetNode = nodeId !== 'global' ? canvasEngine.getNode(nodeId) : null;
@@ -208,7 +225,8 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
     return { ...c, start, end };
   });
 
-  const totalDuration = Math.max(currentAccumulated, 30);
+  // Total Duration is 0 when no video clips are present
+  const totalDuration = clips.length > 0 ? Math.max(currentAccumulated, 1) : 0;
 
   // Active clip transform
   const transforms = nodeData.clipTransforms || [];
@@ -479,8 +497,16 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
 
   const getClipLabel = (idx: number) => `#${idx + 1}`;
 
+  const aspectBoxStyle: Record<string, string> = {
+    '16:9': 'aspect-[16/9] w-full max-h-[190px]',
+    '9:16': 'aspect-[9/16] h-[190px]',
+    '1:1': 'aspect-square h-[190px]',
+    '4:5': 'aspect-[4/5] h-[190px]',
+  };
+
   return (
     <div
+      ref={workspaceRef}
       className="fixed bottom-6 right-24 z-50 overflow-hidden rounded-2xl border border-border-subtle shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right"
       style={{
         width: '740px',
@@ -584,33 +610,35 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
         {/* RIGHT MAIN AREA: Preview + Timeline + Contextual Toolbox */}
         <div className="flex-1 p-4 flex flex-col gap-3 overflow-hidden min-h-0">
           {/* Video Preview Box & Controls */}
-          <div className="relative aspect-video max-h-[200px] w-full bg-black rounded-xl overflow-hidden border border-border-subtle flex items-center justify-center shadow-inner group">
-            {activeVideoUrl ? (
-              <div
-                className="w-full h-full flex items-center justify-center overflow-hidden transition-transform duration-75"
-                style={{
-                  transform: `scale(${activeTransform.scale}) translate(${activeTransform.offsetX}px, ${activeTransform.offsetY}px) rotate(${activeTransform.rotationDeg}deg)`,
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  src={activeVideoUrl}
-                  className="max-w-full max-h-full object-contain"
-                  autoPlay={isPlaying}
-                  onEnded={() => {
-                    if (nodeData.output) {
-                      setIsPlaying(false);
-                      setCurrentTime(0);
-                    }
+          <div className="w-full flex items-center justify-center shrink-0">
+            <div className={`relative bg-black rounded-xl overflow-hidden border border-border-subtle flex items-center justify-center shadow-inner group transition-all duration-200 ${aspectBoxStyle[canvasSettings.aspectRatio || '16:9']}`}>
+              {activeVideoUrl ? (
+                <div
+                  className="w-full h-full flex items-center justify-center overflow-hidden transition-transform duration-75"
+                  style={{
+                    transform: `scale(${activeTransform.scale}) translate(${activeTransform.offsetX}px, ${activeTransform.offsetY}px) rotate(${activeTransform.rotationDeg}deg)`,
                   }}
-                />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-text-muted">
-                <Video size={28} className="text-white/20 animate-pulse" />
-                <span className="text-[11px]">Xem trước Video Canvas</span>
-              </div>
-            )}
+                >
+                  <video
+                    ref={videoRef}
+                    src={activeVideoUrl}
+                    className="max-w-full max-h-full object-contain"
+                    autoPlay={isPlaying}
+                    onEnded={() => {
+                      if (nodeData.output) {
+                        setIsPlaying(false);
+                        setCurrentTime(0);
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-text-muted">
+                  <Video size={28} className="text-white/20 animate-pulse" />
+                  <span className="text-[11px]">Xem trước Video Canvas</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Player Controls & Scrubber */}
@@ -649,11 +677,11 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
             </span>
           </div>
 
-          {/* Multi-track Timeline */}
+          {/* Multi-track Timeline with 4 Input Tracks */}
           <div className="flex-1 flex flex-col gap-2 min-h-0 overflow-hidden bg-black/20 p-2.5 rounded-xl border border-white/5">
             <div className="flex items-center justify-between text-[11px] shrink-0">
               <span className="text-white font-bold flex items-center gap-1">
-                <Layers size={12} className="text-accent-lime" /> Multi-track Timeline
+                <Layers size={12} className="text-accent-lime" /> Multi-track Timeline (4 Tracks)
               </span>
               {selectedTrackType && (
                 <button
@@ -668,7 +696,7 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
             {/* Time Axis Container with Ruler & Playhead */}
             <div
               ref={timelineRef}
-              className="flex flex-col gap-1.5 relative cursor-pointer flex-1 overflow-x-auto custom-scrollbar"
+              className="flex flex-col gap-1 relative cursor-pointer flex-1 overflow-x-auto custom-scrollbar"
               onClick={(e) => handleRulerScrub(e.clientX)}
             >
               {/* TOP RULER */}
@@ -696,14 +724,19 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                 />
               </div>
 
-              {/* TRACK 1: VIDEO TRACK */}
+              {/* TRACK 1: VIDEO INPUT TRACK */}
               <div
-                className={`flex flex-col gap-1 shrink-0 p-1 rounded-lg transition-colors ${
-                  selectedTrackType === 'video' ? 'bg-accent-lime/10 border border-accent-lime/30' : ''
+                className={`flex flex-col gap-0.5 shrink-0 p-1 rounded-lg transition-colors ${
+                  selectedTrackType === 'video' ? 'bg-rose-500/10 border border-rose-500/30' : ''
                 }`}
                 onClick={() => setSelectedTrackType('video')}
               >
-                <div className="relative h-11 w-full bg-black/40 rounded-lg border border-white/5 flex items-center p-1 overflow-x-auto custom-scrollbar">
+                <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
+                  <span className="flex items-center gap-1 font-semibold text-rose-300">
+                    <Video size={10} /> Video Track
+                  </span>
+                </div>
+                <div className="relative h-10 w-full bg-black/40 rounded-lg border border-white/5 flex items-center p-1 overflow-x-auto custom-scrollbar">
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={clips.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
                       <div className="flex items-center gap-1 w-full h-full">
@@ -730,22 +763,61 @@ export function VideoEditorWorkspace({ nodeId, onClose }: VideoEditorWorkspacePr
                 </div>
               </div>
 
-              {/* TRACK 2: AUDIO TRACK */}
+              {/* TRACK 2: IMAGE INPUT TRACK */}
               <div
-                className={`flex flex-col gap-1 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
+                className={`flex flex-col gap-0.5 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
+                  selectedTrackType === 'image' ? 'bg-amber-500/10 border border-amber-500/30' : ''
+                }`}
+                onClick={() => setSelectedTrackType('image')}
+              >
+                <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
+                  <span className="flex items-center gap-1 font-semibold text-amber-300">
+                    <ImageIcon size={10} /> Image Track (Ảnh / Watermark)
+                  </span>
+                </div>
+                <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
+                  <span className="text-[8px] text-white/30 italic">Nối node Image Input để tự hiện overlay ảnh</span>
+                </div>
+              </div>
+
+              {/* TRACK 3: AUDIO INPUT TRACK */}
+              <div
+                className={`flex flex-col gap-0.5 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
                   selectedTrackType === 'audio' ? 'bg-cyan-500/10 border border-cyan-500/30' : ''
                 }`}
                 onClick={() => setSelectedTrackType('audio')}
               >
-                <div className="h-8 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
+                <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
+                  <span className="flex items-center gap-1 font-semibold text-cyan-300">
+                    <AudioWaveform size={10} /> Audio Track (Voiceover / Stems)
+                  </span>
+                </div>
+                <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
                   {nodeData.vocalsAudioUrl ? (
-                    <div className="w-full h-5 bg-cyan-500/20 border border-cyan-500/40 rounded flex items-center px-2 text-[9px] text-cyan-300 font-mono gap-1">
-                      <AudioWaveform size={11} className="animate-pulse" />
-                      <span>Audio ({nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? 'HTDemucs' : 'DSP'})</span>
+                    <div className="w-full h-4 bg-cyan-500/20 border border-cyan-500/40 rounded flex items-center px-2 text-[8px] text-cyan-300 font-mono gap-1">
+                      <AudioWaveform size={9} className="animate-pulse" />
+                      <span>Audio Stems ({nodeData.vocalSeparationEngine === 'htdemucs_onnx' ? 'HTDemucs' : 'DSP'})</span>
                     </div>
                   ) : (
-                    <span className="text-[9px] text-white/30 italic">Click chọn audio track</span>
+                    <span className="text-[8px] text-white/30 italic">Click chọn audio track</span>
                   )}
+                </div>
+              </div>
+
+              {/* TRACK 4: TEXT INPUT TRACK */}
+              <div
+                className={`flex flex-col gap-0.5 shrink-0 p-1 rounded-lg transition-colors cursor-pointer ${
+                  selectedTrackType === 'text' ? 'bg-emerald-500/10 border border-emerald-500/30' : ''
+                }`}
+                onClick={() => setSelectedTrackType('text')}
+              >
+                <div className="flex items-center justify-between text-[9px] text-text-muted px-0.5">
+                  <span className="flex items-center gap-1 font-semibold text-emerald-300">
+                    <Type size={10} /> Text Track (Phụ đề Auto-sub)
+                  </span>
+                </div>
+                <div className="h-7 w-full bg-black/40 rounded-lg border border-white/5 flex items-center px-2 shadow-inner">
+                  <span className="text-[8px] text-white/30 italic">Click chọn text/phụ đề track</span>
                 </div>
               </div>
             </div>
