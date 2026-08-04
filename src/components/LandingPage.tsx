@@ -91,7 +91,6 @@ function GlowOrb({ size, color, x, y, blur, opacity }: { size: number; color: st
 
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
-  const [demoCompleted, setDemoCompleted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -422,7 +421,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       </section>
 
       {/* ═══ DEMO CANVAS (scroll-driven) ═══ */}
-      <div ref={demoScrollRef} className="relative w-full" style={{ height: '300vh' }}>
+      <div ref={demoScrollRef} className="relative w-full" style={{ height: '180vh' }}>
         <div className="sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
@@ -441,18 +440,12 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           <DemoCanvas
             scrollProgress={scrollProgress}
             isVisible={isVisible}
-            onComplete={() => setDemoCompleted(true)}
           />
         </div>
       </div>
 
-      {/* ═══ REST OF PAGE (unlocked after demo completes) ═══ */}
-      <motion.div
-        initial={false}
-        animate={{ opacity: demoCompleted ? 1 : 0, height: demoCompleted ? 'auto' : 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="overflow-hidden"
-      >
+      {/* ═══ REST OF PAGE ═══ */}
+      <div className="relative z-10 bg-[#0A0A0C]">
 
         {/* ═══ FEATURES ═══ */}
         <section id="features" className="relative py-28 px-6">
@@ -771,7 +764,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           </button>
         </footer>
 
-      </motion.div>
+      </div>
     </div>
   );
 }
