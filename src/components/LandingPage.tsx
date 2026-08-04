@@ -100,6 +100,16 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
 
 
+  // When demoCompleted becomes true (download finished), align canvas neatly at top-20 to prevent top cutoff
+  useEffect(() => {
+    if (!demoCompleted || pendingScrollId) return;
+    const el = demoScrollRef.current;
+    if (el) {
+      const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+  }, [demoCompleted]);
+
   // Execute scroll to section after demoCompleted unlocks DOM (double-rAF ensures DOM height is expanded first)
   useEffect(() => {
     if (!demoCompleted || !pendingScrollId) return;
