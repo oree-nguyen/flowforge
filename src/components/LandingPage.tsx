@@ -513,7 +513,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       >
 
         {/* ═══ FEATURES ═══ */}
-        <section id="features" className="relative pt-12 pb-24 px-6">
+        <section id="features" className="relative pt-6 pb-24 px-6">
           <div className="max-w-6xl mx-auto">
             {/* Section glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-accent-lime/30 to-transparent" />
