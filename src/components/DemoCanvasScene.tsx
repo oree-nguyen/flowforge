@@ -231,12 +231,12 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
     }
   }, [scrollProgress, isRunning, imageGenDone, videoGenDone]);
 
-  // Notify parent component when generation finishes
+  // Notify parent component when generation finishes AND files are downloaded
   useEffect(() => {
-    if (imageGenDone && videoGenDone && onComplete) {
+    if (imageGenDone && videoGenDone && downloaded && onComplete) {
       onComplete();
     }
-  }, [imageGenDone, videoGenDone, onComplete]);
+  }, [imageGenDone, videoGenDone, downloaded, onComplete]);
 
   // Reset Run states if user scrolls back up
   useEffect(() => {

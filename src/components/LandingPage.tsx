@@ -98,12 +98,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
 
-  // Safety fallback: if user scrolls to end of demo container (98%), complete demo
-  useEffect(() => {
-    if (scrollProgress >= 0.98 && !demoCompleted) {
-      setDemoCompleted(true);
-    }
-  }, [scrollProgress, demoCompleted]);
+
 
   // Execute scroll to section after demoCompleted unlocks DOM (double-rAF ensures DOM height is expanded first)
   useEffect(() => {
