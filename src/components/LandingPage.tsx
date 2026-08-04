@@ -109,8 +109,9 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       const el = demoScrollRef.current;
       if (!el) return;
 
-      const demoTop = el.offsetTop - 80;
-      const maxAllowedScroll = demoTop + 500;
+      const demoPinScrollY = el.getBoundingClientRect().top + window.scrollY - 80;
+      const scrollableDist = el.offsetHeight - window.innerHeight;
+      const maxAllowedScroll = demoPinScrollY + Math.max(0, scrollableDist);
 
       if (window.scrollY > maxAllowedScroll) {
         window.scrollTo({ top: maxAllowedScroll, behavior: 'instant' });
