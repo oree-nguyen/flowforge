@@ -451,45 +451,40 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       </section>
 
       {/* ═══ DEMO CANVAS (scroll-driven) ═══ */}
-      <div ref={demoScrollRef} className="relative w-full" style={{ height: '300vh' }}>
-        {/* Sticky wrapper fills full viewport height to eliminate black gap below canvas */}
-        <div className="sticky top-20 w-full" style={{ height: 'calc(100vh - 80px)' }}>
-          <div className="px-4 max-w-7xl mx-auto h-full flex flex-col">
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
-                  <motion.div
-                    className="h-full bg-accent-lime rounded-full"
-                    style={{ width: `${scrollProgress * 100}%` }}
-                  />
-                </div>
-                <span className="text-[10px] text-white/30 font-mono w-8 text-right">
-                  {Math.round(scrollProgress * 100)}%
-                </span>
+      <div ref={demoScrollRef} className="relative w-full" style={{ height: '200vh' }}>
+        {/* Sticky wrapper takes natural height so no vertical black gap is created inside sticky view */}
+        <div className="sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
+            <div className="flex items-center gap-2">
+              <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
+                <motion.div
+                  className="h-full bg-accent-lime rounded-full"
+                  style={{ width: `${scrollProgress * 100}%` }}
+                />
               </div>
-            </div>
-            {/* Canvas centered vertically in remaining space */}
-            <div className="flex-1 flex items-center">
-              <DemoCanvas
-                scrollProgress={scrollProgress}
-                isVisible={isVisible}
-                onComplete={() => setDemoCompleted(true)}
-              />
+              <span className="text-[10px] text-white/30 font-mono w-8 text-right">
+                {Math.round(scrollProgress * 100)}%
+              </span>
             </div>
           </div>
+          <DemoCanvas
+            scrollProgress={scrollProgress}
+            isVisible={isVisible}
+            onComplete={() => setDemoCompleted(true)}
+          />
         </div>
       </div>
 
       {/* ═══ REST OF PAGE (unlocked only after demo completes or safety fallback) ═══ */}
       <div
-        className={`transition-all duration-1000 ease-in-out ${
+        className={`transition-all duration-700 ease-out ${
           demoCompleted ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden pointer-events-none'
         }`}
       >
 
         {/* ═══ FEATURES ═══ */}
-        <section id="features" className="relative py-28 px-6">
+        <section id="features" className="relative pt-12 pb-24 px-6">
           <div className="max-w-6xl mx-auto">
             {/* Section glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-accent-lime/30 to-transparent" />
