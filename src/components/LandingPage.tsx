@@ -92,17 +92,39 @@ function GlowOrb({ size, color, x, y, blur, opacity }: { size: number; color: st
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
   const [demoCompleted, setDemoCompleted] = useState(false);
+  const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
 
-  // Mark demo complete when scrollProgress reaches 95%
+  // Safety fallback: if user scrolls to end of demo container (98%), complete demo
   useEffect(() => {
-    if (scrollProgress >= 0.95 && !demoCompleted) {
+    if (scrollProgress >= 0.98 && !demoCompleted) {
       setDemoCompleted(true);
     }
   }, [scrollProgress, demoCompleted]);
+
+  // Execute scroll to section after demoCompleted unlocks DOM (double-rAF ensures DOM height is expanded first)
+  useEffect(() => {
+    if (!demoCompleted || !pendingScrollId) return;
+    const targetId = pendingScrollId;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setPendingScrollId(null);
+      });
+    });
+  }, [demoCompleted, pendingScrollId]);
+
+  const handleNavClick = (id: string) => {
+    if (!demoCompleted) {
+      setDemoCompleted(true);
+      setPendingScrollId(id);
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Parallax hero image
   const { scrollY } = useScroll();
@@ -303,14 +325,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
           ] as [string, string][]).map(([id, label]) => (
             <button
               key={id}
-              onClick={() => {
-                // Force demo complete so content is visible before scrolling to it
-                setDemoCompleted(true);
-                // Small delay to let opacity transition start, then scroll
-                setTimeout(() => {
-                  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 50);
-              }}
+              onClick={() => handleNavClick(id)}
               className="hover:text-white transition-colors duration-200 relative group"
             >
               {label}
@@ -459,16 +474,18 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
               <DemoCanvas
                 scrollProgress={scrollProgress}
                 isVisible={isVisible}
+                onComplete={() => setDemoCompleted(true)}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* ═══ REST OF PAGE (fades in after demo progress ≥ 95%) ═══ */}
+      {/* ═══ REST OF PAGE (unlocked only after demo completes or safety fallback) ═══ */}
       <div
-        className="relative z-10 bg-[#0A0A0C] transition-opacity duration-700"
-        style={{ opacity: demoCompleted ? 1 : 0, pointerEvents: demoCompleted ? 'auto' : 'none' }}
+        className={`transition-all duration-1000 ease-in-out ${
+          demoCompleted ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden pointer-events-none'
+        }`}
       >
 
         {/* ═══ FEATURES ═══ */}
