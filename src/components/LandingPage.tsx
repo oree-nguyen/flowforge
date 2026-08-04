@@ -459,7 +459,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       <div
         ref={demoScrollRef}
         className="relative w-full transition-all duration-700 ease-out"
-        style={{ height: demoCompleted ? 'auto' : '150vh' }}
+        style={{ height: demoCompleted ? 'auto' : 'calc(100vh + 450px)' }}
       >
         <div className={demoCompleted ? 'relative px-4 max-w-7xl mx-auto pt-2 pb-4' : 'sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4'}>
           <div className="flex items-center justify-between mb-3">
