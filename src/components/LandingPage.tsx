@@ -91,10 +91,18 @@ function GlowOrb({ size, color, x, y, blur, opacity }: { size: number; color: st
 
 export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [lang, setLang] = useState<'en' | 'vi'>('en');
+  const [demoCompleted, setDemoCompleted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
+
+  // Mark demo complete when scrollProgress reaches 95%
+  useEffect(() => {
+    if (scrollProgress >= 0.95 && !demoCompleted) {
+      setDemoCompleted(true);
+    }
+  }, [scrollProgress, demoCompleted]);
 
   // Parallax hero image
   const { scrollY } = useScroll();
@@ -287,20 +295,27 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </button>
 
         <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-white/50">
-          {[
-            ['#features', t.navFeatures],
-            ['#showcase', t.navPrompts],
-            ['#pricing', t.navPricing],
-            ['#faq', t.navFAQ],
-          ].map(([href, label]) => (
-            <a
-              key={href}
-              href={href}
+          {([
+            ['features', t.navFeatures],
+            ['showcase', t.navPrompts],
+            ['pricing', t.navPricing],
+            ['faq', t.navFAQ],
+          ] as [string, string][]).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => {
+                // Force demo complete so content is visible before scrolling to it
+                setDemoCompleted(true);
+                // Small delay to let opacity transition start, then scroll
+                setTimeout(() => {
+                  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+              }}
               className="hover:text-white transition-colors duration-200 relative group"
             >
               {label}
               <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-lime group-hover:w-full transition-all duration-300" />
-            </a>
+            </button>
           ))}
         </div>
 
@@ -421,31 +436,40 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       </section>
 
       {/* ═══ DEMO CANVAS (scroll-driven) ═══ */}
-      <div ref={demoScrollRef} className="relative w-full" style={{ height: '180vh' }}>
-        <div className="sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
-            <div className="flex items-center gap-2">
-              <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
-                <motion.div
-                  className="h-full bg-accent-lime rounded-full"
-                  style={{ width: `${scrollProgress * 100}%` }}
-                />
+      <div ref={demoScrollRef} className="relative w-full" style={{ height: '300vh' }}>
+        {/* Sticky wrapper fills full viewport height to eliminate black gap below canvas */}
+        <div className="sticky top-20 w-full" style={{ height: 'calc(100vh - 80px)' }}>
+          <div className="px-4 max-w-7xl mx-auto h-full flex flex-col">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
+                  <motion.div
+                    className="h-full bg-accent-lime rounded-full"
+                    style={{ width: `${scrollProgress * 100}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-white/30 font-mono w-8 text-right">
+                  {Math.round(scrollProgress * 100)}%
+                </span>
               </div>
-              <span className="text-[10px] text-white/30 font-mono w-8 text-right">
-                {Math.round(scrollProgress * 100)}%
-              </span>
+            </div>
+            {/* Canvas centered vertically in remaining space */}
+            <div className="flex-1 flex items-center">
+              <DemoCanvas
+                scrollProgress={scrollProgress}
+                isVisible={isVisible}
+              />
             </div>
           </div>
-          <DemoCanvas
-            scrollProgress={scrollProgress}
-            isVisible={isVisible}
-          />
         </div>
       </div>
 
-      {/* ═══ REST OF PAGE ═══ */}
-      <div className="relative z-10 bg-[#0A0A0C]">
+      {/* ═══ REST OF PAGE (fades in after demo progress ≥ 95%) ═══ */}
+      <div
+        className="relative z-10 bg-[#0A0A0C] transition-opacity duration-700"
+        style={{ opacity: demoCompleted ? 1 : 0, pointerEvents: demoCompleted ? 'auto' : 'none' }}
+      >
 
         {/* ═══ FEATURES ═══ */}
         <section id="features" className="relative py-28 px-6">
