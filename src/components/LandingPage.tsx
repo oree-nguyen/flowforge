@@ -451,25 +451,28 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       </section>
 
       {/* ═══ DEMO CANVAS (scroll-driven) ═══ */}
-      <div ref={demoScrollRef} className="relative w-full" style={{ height: '200vh' }}>
-        {/* Sticky wrapper takes natural height so no vertical black gap is created inside sticky view */}
-        <div className="sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4">
+      <div
+        ref={demoScrollRef}
+        className="relative w-full transition-all duration-700 ease-out"
+        style={{ height: demoCompleted ? 'auto' : '200vh' }}
+      >
+        <div className={demoCompleted ? 'relative px-4 max-w-7xl mx-auto pt-2 pb-4' : 'sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4'}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
             <div className="flex items-center gap-2">
               <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
                   className="h-full bg-accent-lime rounded-full"
-                  style={{ width: `${scrollProgress * 100}%` }}
+                  style={{ width: `${(demoCompleted ? 1 : scrollProgress) * 100}%` }}
                 />
               </div>
               <span className="text-[10px] text-white/30 font-mono w-8 text-right">
-                {Math.round(scrollProgress * 100)}%
+                {Math.round((demoCompleted ? 1 : scrollProgress) * 100)}%
               </span>
             </div>
           </div>
           <DemoCanvas
-            scrollProgress={scrollProgress}
+            scrollProgress={demoCompleted ? 1 : scrollProgress}
             isVisible={isVisible}
             onComplete={() => setDemoCompleted(true)}
           />
@@ -479,7 +482,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       {/* ═══ REST OF PAGE (unlocked only after demo completes or safety fallback) ═══ */}
       <div
         className={`transition-all duration-700 ease-out ${
-          demoCompleted ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden pointer-events-none'
+          demoCompleted ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden pointer-events-none'
         }`}
       >
 
