@@ -3,12 +3,12 @@ import { useWorkflowStore, type ToolbarVisibility } from '../store/workflowStore
 import { fetchModels } from '../services/openRouterApi';
 import { X, CheckCircle2, AlertCircle, Database, Cloud, Layout, Key, SlidersHorizontal } from 'lucide-react';
 import { getStorageEstimate, requestPersistentStorage } from '../services/mediaStorage';
+import { toast } from '../store/toastStore';
 
 export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { 
     apiKey,
     apiKeys,
-    setApiKey,
     addApiKey,
     removeApiKey,
     setActiveApiKey,
@@ -320,10 +320,18 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
           </button>
           <button 
             onClick={() => {
-              setApiKey(tempKey);
+              if (tempKey.trim()) {
+                addApiKey(tempKeyName || 'OpenRouter Key', tempKey.trim());
+                setTempKey('');
+                setTempKeyName('OpenRouter Key');
+              }
+              if (googleClientId) {
+                localStorage.setItem('flowforge_gdrive_client_id', googleClientId);
+              }
+              toast.success('Đã lưu cài đặt!');
               onClose();
             }}
-            className="px-5 py-2 rounded-xl text-xs font-semibold bg-text-primary text-canvas hover:bg-text-primary/90 transition-colors"
+            className="px-5 py-2 rounded-xl text-xs font-semibold bg-accent-lime text-black hover:bg-accent-lime/90 transition-colors"
           >
             Save Settings
           </button>

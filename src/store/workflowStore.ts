@@ -197,40 +197,50 @@ export const useWorkflowStore = create<WorkflowState>()(
       setWorkflowEnabled: (enabled) => set({ workflowEnabled: enabled }),
       
       // API Key Management
-        setApiKey: (key) => {
-          const { apiKeys } = get();
-          if (apiKeys.length === 0) {
-            // No keys yet, create a default one and mark it active
-            set({
-              apiKeys: [{ id: Date.now().toString(), name: 'Default', key, isActive: true }],
-              apiKey: key,
-            });
+      setApiKey: (key) => {
+        const { apiKeys } = get();
+        if (!key) {
+          set({ apiKey: '' });
+          return;
+        }
+        if (apiKeys.length === 0) {
+          set({
+            apiKeys: [{ id: Date.now().toString(), name: 'Default Key', key, isActive: true }],
+            apiKey: key,
+          });
+        } else {
+          const updatedKeys = apiKeys.map((k) => ({
+            ...k,
+            isActive: k.key === key,
+          }));
+          const activeExists = updatedKeys.some((k) => k.isActive);
+          if (!activeExists) {
+            const newKey = { id: Date.now().toString(), name: 'API Key', key, isActive: true };
+            set({ apiKeys: [...updatedKeys, newKey], apiKey: key });
           } else {
-            // Update existing keys' active status based on the provided key
-            const updatedKeys = apiKeys.map((k) => ({
-              ...k,
-              isActive: k.key === key,
-            }));
-            const activeExists = updatedKeys.some((k) => k.isActive);
-            if (!activeExists) {
-              // Key not present, add it as a new active key
-              const newKey = { id: Date.now().toString(), name: 'Added', key, isActive: true };
-              set({ apiKeys: [...updatedKeys, newKey], apiKey: key });
-            } else {
-              set({ apiKeys: updatedKeys, apiKey: key });
-            }
+            set({ apiKeys: updatedKeys, apiKey: key });
           }
-        },
+        }
+      },
       addApiKey: (name, key) => {
         const { apiKeys } = get();
-        const isFirst = apiKeys.length === 0;
-        const newKeys = [...apiKeys, { id: Date.now().toString(), name, key, isActive: isFirst }];
-        set({ apiKeys: newKeys, ...(isFirst ? { apiKey: key } : {}) });
+        const trimmedKey = key.trim();
+        if (!trimmedKey) return;
+        const existing = apiKeys.find(k => k.key === trimmedKey);
+        if (existing) {
+          const mapped = apiKeys.map(k => ({ ...k, isActive: k.key === trimmedKey }));
+          set({ apiKeys: mapped, apiKey: trimmedKey });
+          return;
+        }
+        const newKeys = [
+          ...apiKeys.map(k => ({ ...k, isActive: false })),
+          { id: Date.now().toString(), name: name.trim() || 'API Key', key: trimmedKey, isActive: true }
+        ];
+        set({ apiKeys: newKeys, apiKey: trimmedKey });
       },
       removeApiKey: (id) => {
         const { apiKeys } = get();
         const filtered = apiKeys.filter(k => k.id !== id);
-        // If we removed the active one, activate the first available
         if (apiKeys.find(k => k.id === id)?.isActive && filtered.length > 0) {
           filtered[0].isActive = true;
           set({ apiKeys: filtered, apiKey: filtered[0].key });
@@ -775,6 +785,7 @@ export const useWorkflowStore = create<WorkflowState>()(
           workflowName: state.workflowName,
           workflowEnabled: state.workflowEnabled,
           apiKey: state.apiKey,
+          apiKeys: state.apiKeys,
           autoOpenProperties: state.autoOpenProperties,
           savedWorkflows: sanitizedWorkflows,
           currentWorkflowId: state.currentWorkflowId,
@@ -785,6 +796,22 @@ export const useWorkflowStore = create<WorkflowState>()(
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         try {
+          // Rehydrate & sync API keys
+          const { apiKey, apiKeys } = state;
+          if (apiKey && (!apiKeys || apiKeys.length === 0)) {
+            useWorkflowStore.setState({
+              apiKeys: [{ id: Date.now().toString(), name: 'Default Key', key: apiKey, isActive: true }]
+            });
+          } else if (apiKeys && apiKeys.length > 0) {
+            const activeItem = apiKeys.find(k => k.isActive);
+            if (activeItem && activeItem.key !== apiKey) {
+              useWorkflowStore.setState({ apiKey: activeItem.key });
+            } else if (!activeItem) {
+              const updatedKeys = apiKeys.map((k, idx) => ({ ...k, isActive: idx === 0 }));
+              useWorkflowStore.setState({ apiKeys: updatedKeys, apiKey: updatedKeys[0].key });
+            }
+          }
+
           const { savedWorkflows, currentWorkflowId } = state;
           if (!savedWorkflows || savedWorkflows.length === 0) {
             const newId = `wf_${Date.now()}`;
