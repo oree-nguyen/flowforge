@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { DemoCanvas } from './DemoCanvas';
-import { useDemoScroll } from '../hooks/useDemoScroll';
 
 interface LandingPageProps {
   onOpenWorkflow: () => void;
@@ -94,42 +93,99 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   const [demoCompleted, setDemoCompleted] = useState(false);
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [manualScrollProgress, setManualScrollProgress] = useState(0);
+  const [isDemoVisible, setIsDemoVisible] = useState(false);
+  const [isInDemoZone, setIsInDemoZone] = useState(false);
   const demoScrollRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollProgress, isVisible } = useDemoScroll(demoScrollRef);
+  const accumulatedDelta = useRef(0);
+  const SCROLL_PER_STEP = 120; // px of wheel delta per progress step
+  const TOTAL_STEPS = 500;     // total px of delta to go 0→1
+
+  // scrollProgress = manualScrollProgress while demo is active, else 1
+  const scrollProgress = demoCompleted ? 1 : manualScrollProgress;
+  const isVisible = isDemoVisible;
 
 
 
-  // Lock/Clamp scroll position at 100% demo progress while demo is incomplete to prevent unpinning into black void
+  // IntersectionObserver: set isDemoVisible + isInDemoZone when demo section enters viewport
+  useEffect(() => {
+    const el = demoScrollRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsDemoVisible(true);
+          setIsInDemoZone(true);
+        } else {
+          setIsInDemoZone(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // NUCLEAR SCROLL LOCK: while demo is incomplete and in demo zone,
+  // lock body scroll and intercept wheel/touch/key to advance demo steps
   useEffect(() => {
     if (demoCompleted) return;
 
-    const handleScrollClamp = () => {
-      if (demoCompleted) return;
-      const el = demoScrollRef.current;
-      if (!el) return;
+    const preventScroll = (e: Event) => {
+      if (!isInDemoZone) return;
+      e.preventDefault();
+    };
 
-      const demoPinScrollY = el.getBoundingClientRect().top + window.scrollY - 80;
-      const scrollableDist = el.offsetHeight - window.innerHeight;
-      const maxAllowedScroll = demoPinScrollY + Math.max(0, scrollableDist);
+    const handleWheel = (e: WheelEvent) => {
+      if (!isInDemoZone || demoCompleted) return;
+      e.preventDefault();
+      accumulatedDelta.current += e.deltaY;
+      const raw = accumulatedDelta.current / TOTAL_STEPS;
+      const clamped = Math.max(0, Math.min(1, raw));
+      setManualScrollProgress(clamped);
+    };
 
-      if (window.scrollY > maxAllowedScroll) {
-        window.scrollTo({ top: maxAllowedScroll, behavior: 'instant' });
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isInDemoZone || demoCompleted) return;
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isInDemoZone || demoCompleted) return;
+      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
+        e.preventDefault();
+        accumulatedDelta.current += SCROLL_PER_STEP;
+        const raw = accumulatedDelta.current / TOTAL_STEPS;
+        setManualScrollProgress(Math.max(0, Math.min(1, raw)));
+      } else if (['ArrowUp', 'PageUp'].includes(e.key)) {
+        e.preventDefault();
+        accumulatedDelta.current = Math.max(0, accumulatedDelta.current - SCROLL_PER_STEP);
+        const raw = accumulatedDelta.current / TOTAL_STEPS;
+        setManualScrollProgress(Math.max(0, Math.min(1, raw)));
       }
     };
 
-    window.addEventListener('scroll', handleScrollClamp, { passive: true });
-    return () => window.removeEventListener('scroll', handleScrollClamp);
-  }, [demoCompleted]);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchstart', preventScroll, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', preventScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [demoCompleted, isInDemoZone]);
 
-  // When demoCompleted becomes true (download finished), align canvas neatly at top-20 to prevent top cutoff
+  // After demo completes, scroll to features section
   useEffect(() => {
     if (!demoCompleted || pendingScrollId) return;
-    const el = demoScrollRef.current;
-    if (el) {
-      const targetY = el.offsetTop - 80;
-      window.scrollTo({ top: targetY, behavior: 'smooth' });
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
   }, [demoCompleted]);
 
   // Execute scroll to section after demoCompleted unlocks DOM (double-rAF ensures DOM height is expanded first)
@@ -477,34 +533,36 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </div>
       </section>
 
-      {/* ═══ DEMO CANVAS (scroll-driven) ═══ */}
-      <div
-        ref={demoScrollRef}
-        className="relative w-full transition-all duration-700 ease-out"
-        style={{ height: demoCompleted ? 'auto' : 'calc(100vh + 500px)' }}
-      >
-        <div className={demoCompleted ? 'relative px-4 max-w-7xl mx-auto pt-2 pb-4' : 'sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4'}>
+      {/* ═══ DEMO CANVAS ANCHOR — zero height placeholder so page flow is correct ═══ */}
+      <div ref={demoScrollRef} style={{ height: demoCompleted ? 0 : '100vh' }} />
+
+      {/* ═══ DEMO CANVAS (fixed while incomplete, normal flow after complete) ═══ */}
+      {!demoCompleted && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 w-full max-w-7xl z-40 px-4"
+          style={{ top: '80px' }}
+        >
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
             <div className="flex items-center gap-2">
               <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
                   className="h-full bg-accent-lime rounded-full"
-                  style={{ width: `${(demoCompleted ? 1 : scrollProgress) * 100}%` }}
+                  style={{ width: `${scrollProgress * 100}%` }}
                 />
               </div>
               <span className="text-[10px] text-white/30 font-mono w-8 text-right">
-                {Math.round((demoCompleted ? 1 : scrollProgress) * 100)}%
+                {Math.round(scrollProgress * 100)}%
               </span>
             </div>
           </div>
           <DemoCanvas
-            scrollProgress={demoCompleted ? 1 : scrollProgress}
+            scrollProgress={scrollProgress}
             isVisible={isVisible}
             onComplete={() => setDemoCompleted(true)}
           />
         </div>
-      </div>
+      )}
 
       {/* ═══ REST OF PAGE (unlocked only after demo completes or safety fallback) ═══ */}
       <div
