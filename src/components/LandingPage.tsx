@@ -100,12 +100,33 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
 
 
+  // Lock/Clamp scroll position at 100% demo progress while demo is incomplete to prevent unpinning into black void
+  useEffect(() => {
+    if (demoCompleted) return;
+
+    const handleScrollClamp = () => {
+      if (demoCompleted) return;
+      const el = demoScrollRef.current;
+      if (!el) return;
+
+      const demoTop = el.offsetTop - 80;
+      const maxAllowedScroll = demoTop + 500;
+
+      if (window.scrollY > maxAllowedScroll) {
+        window.scrollTo({ top: maxAllowedScroll, behavior: 'instant' });
+      }
+    };
+
+    window.addEventListener('scroll', handleScrollClamp, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollClamp);
+  }, [demoCompleted]);
+
   // When demoCompleted becomes true (download finished), align canvas neatly at top-20 to prevent top cutoff
   useEffect(() => {
     if (!demoCompleted || pendingScrollId) return;
     const el = demoScrollRef.current;
     if (el) {
-      const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+      const targetY = el.offsetTop - 80;
       window.scrollTo({ top: targetY, behavior: 'smooth' });
     }
   }, [demoCompleted]);
@@ -459,7 +480,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
       <div
         ref={demoScrollRef}
         className="relative w-full transition-all duration-700 ease-out"
-        style={{ height: demoCompleted ? 'auto' : 'calc(100vh + 450px)' }}
+        style={{ height: demoCompleted ? 'auto' : 'calc(100vh + 500px)' }}
       >
         <div className={demoCompleted ? 'relative px-4 max-w-7xl mx-auto pt-2 pb-4' : 'sticky top-20 px-4 max-w-7xl mx-auto z-30 pt-2 pb-4'}>
           <div className="flex items-center justify-between mb-3">
