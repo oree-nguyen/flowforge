@@ -231,12 +231,12 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
     }
   }, [scrollProgress, isRunning, imageGenDone, videoGenDone]);
 
-  // Notify parent component when generation finishes AND files are downloaded
+  // Notify parent component when generation finishes
   useEffect(() => {
-    if (imageGenDone && videoGenDone && downloaded && onComplete) {
+    if (imageGenDone && videoGenDone && onComplete) {
       onComplete();
     }
-  }, [imageGenDone, videoGenDone, downloaded, onComplete]);
+  }, [imageGenDone, videoGenDone, onComplete]);
 
   // Reset Run states if user scrolls back up
   useEffect(() => {
@@ -262,42 +262,10 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
       setTimeout(() => {
         setVideoGenDone(true);
         setIsRunning(false);
-
-        // Step 3: Trigger auto-download
-        setTimeout(() => {
-          triggerAutoDownloads();
-        }, 500);
+        setDownloaded(true);
       }, 2500);
     }, 2200);
   };
-
-  // Auto-download generated media files to disk
-  const triggerAutoDownloads = () => {
-    if (downloaded) return;
-    setDownloaded(true);
-
-    const imageBlob = imageGenNode?.data?.output?.previewUrl;
-    const videoBlob = videoGenNode?.data?.output?.previewUrl;
-
-    if (imageBlob) {
-      const a1 = document.createElement('a');
-      a1.href = imageBlob;
-      a1.download = 'FlowForge_Generated_Image.png';
-      document.body.appendChild(a1);
-      a1.click();
-      document.body.removeChild(a1);
-    }
-
-    if (videoBlob) {
-      setTimeout(() => {
-        const a2 = document.createElement('a');
-        a2.href = videoBlob;
-        a2.download = 'FlowForge_Generated_Video.gif';
-        document.body.appendChild(a2);
-        a2.click();
-        document.body.removeChild(a2);
-      }, 600);
-    }
   };
 
   // Force re-measure DOM handle positions on state changes
@@ -408,7 +376,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
           ) : imageGenDone && videoGenDone ? (
             <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 text-xs font-bold">
               <CheckCircle size={13} />
-              <span>Completed {downloaded && '· Downloaded ⬇'}</span>
+              <span>Completed ✓</span>
             </div>
           ) : null}
         </div>
