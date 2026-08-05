@@ -15,7 +15,7 @@ import {
   Shield,
   GitBranch,
 } from 'lucide-react';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring, useMotionTemplate } from 'framer-motion';
 import { DemoCanvas } from './DemoCanvas';
 
 interface LandingPageProps {
@@ -85,6 +85,50 @@ function GlowOrb({ size, color, x, y, blur, opacity }: { size: number; color: st
         transform: 'translate(-50%, -50%)',
       }}
     />
+  );
+}
+
+// ── Spotlight Card component with mouse tracking light ────────
+function SpotlightCard({
+  children,
+  className = '',
+  spotlightColor = 'rgba(132, 204, 22, 0.16)',
+  spotlightSize = 450,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  spotlightColor?: string;
+  spotlightSize?: number;
+}) {
+  const mouseX = useMotionValue(-500);
+  const mouseY = useMotionValue(-500);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(-500);
+    mouseY.set(-500);
+  }
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={`group relative overflow-hidden ${className}`}
+    >
+      {/* Dynamic Mouse Spotlight Track */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
+        style={{
+          background: useMotionTemplate`radial-gradient(${spotlightSize}px circle at ${mouseX}px ${mouseY}px, ${spotlightColor}, transparent 80%)`,
+        }}
+      />
+      {children}
+    </div>
   );
 }
 
@@ -715,104 +759,113 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
             </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              {/* Left: Main Pricing Card */}
+              {/* Left: Main Pricing Card with Mouse Tracking Spotlight */}
               <motion.div
                 variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}
-                className="lg:col-span-7 relative rounded-3xl border border-accent-lime/30 bg-[#0E0E12]/90 backdrop-blur-2xl p-8 md:p-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.6)] flex flex-col justify-between group hover:border-accent-lime/50 transition-colors duration-500"
+                className="lg:col-span-7 flex flex-col"
               >
-                {/* Ambient Card Radial Glow */}
-                <div className="absolute inset-0 rounded-3xl pointer-events-none opacity-70 group-hover:opacity-100 transition-opacity duration-500" 
-                  style={{ background: 'radial-gradient(circle at 15% 0%, rgba(132,204,22,0.14) 0%, transparent 65%)' }} 
-                />
+                <SpotlightCard
+                  spotlightColor="rgba(132, 204, 22, 0.18)"
+                  spotlightSize={500}
+                  className="rounded-3xl border border-accent-lime/30 bg-[#0E0E12]/90 backdrop-blur-2xl p-8 md:p-10 shadow-[0_0_50px_rgba(0,0,0,0.6)] flex flex-col justify-between flex-1 hover:border-accent-lime/60 transition-colors duration-500"
+                >
+                  {/* Subtle inner top glow */}
+                  <div className="absolute inset-0 rounded-3xl pointer-events-none opacity-60" 
+                    style={{ background: 'radial-gradient(circle at 15% 0%, rgba(132,204,22,0.14) 0%, transparent 65%)' }} 
+                  />
 
-                <div className="relative z-10">
-                  {/* Top Badge & Header */}
-                  <div className="flex items-center justify-between gap-4 mb-6">
-                    <div>
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">$0</span>
-                        <span className="text-sm font-bold text-accent-lime flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-accent-lime animate-ping" />
-                          / forever
-                        </span>
-                      </div>
-                      <p className="text-xs text-white/45 font-medium">Full access to all 400+ models. No credit card needed.</p>
-                    </div>
-
-                    <div className="px-3.5 py-1.5 rounded-full border border-accent-lime/40 bg-accent-lime/10 text-accent-lime text-[11px] font-mono font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(132,204,22,0.2)] shrink-0">
-                      Free Forever
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="w-full h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent mb-8" />
-
-                  {/* Features List */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-10">
-                    {t.planFeatures.map((feat, idx) => (
-                      <motion.div
-                        key={idx}
-                        variants={fadeIn} initial="hidden" whileInView="visible" custom={idx}
-                        viewport={{ once: true }}
-                        whileHover={{ x: 3 }}
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors"
-                      >
-                        <div className="w-5 h-5 rounded-full bg-accent-lime/15 border border-accent-lime/40 flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(132,204,22,0.2)]">
-                          <Check size={11} className="text-accent-lime stroke-[3]" />
+                  <div className="relative z-10">
+                    {/* Top Badge & Header */}
+                    <div className="flex items-center justify-between gap-4 mb-6">
+                      <div>
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-b from-white via-white to-white/70 bg-clip-text text-transparent">$0</span>
+                          <span className="text-sm font-bold text-accent-lime flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-accent-lime animate-ping" />
+                            / forever
+                          </span>
                         </div>
-                        <span className="text-xs md:text-[13px] text-white/80 font-medium leading-snug">{feat}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+                        <p className="text-xs text-white/45 font-medium">Full access to all 400+ models. No credit card needed.</p>
+                      </div>
 
-                {/* Bottom CTA */}
-                <div className="relative z-10 pt-4">
-                  <MagneticButton
-                    onClick={onOpenWorkflow}
-                    className="w-full py-4 rounded-2xl bg-accent-lime text-black font-extrabold text-sm shadow-[0_0_35px_rgba(132,204,22,0.4)] hover:shadow-[0_0_65px_rgba(132,204,22,0.7)] transition-all duration-300 flex items-center justify-center gap-2 tracking-wide"
-                  >
-                    {t.pricingCta}
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </MagneticButton>
-                </div>
+                      <div className="px-3.5 py-1.5 rounded-full border border-accent-lime/40 bg-accent-lime/10 text-accent-lime text-[11px] font-mono font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(132,204,22,0.25)] shrink-0">
+                        Free Forever
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="w-full h-px bg-gradient-to-r from-accent-lime/20 via-white/10 to-transparent mb-8" />
+
+                    {/* Features List */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-10">
+                      {t.planFeatures.map((feat, idx) => (
+                        <motion.div
+                          key={idx}
+                          variants={fadeIn} initial="hidden" whileInView="visible" custom={idx}
+                          viewport={{ once: true }}
+                          whileHover={{ x: 4 }}
+                          className="group/item flex items-start gap-3 p-2.5 rounded-xl hover:bg-accent-lime/[0.04] transition-all duration-300"
+                        >
+                          <div className="w-5 h-5 rounded-full bg-accent-lime/15 border border-accent-lime/40 flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(132,204,22,0.2)] group-hover/item:border-accent-lime group-hover/item:bg-accent-lime/30 group-hover/item:shadow-[0_0_15px_rgba(132,204,22,0.5)] transition-all duration-300">
+                            <Check size={11} className="text-accent-lime stroke-[3]" />
+                          </div>
+                          <span className="text-xs md:text-[13px] text-white/80 font-medium leading-snug group-hover/item:text-white transition-colors">{feat}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bottom CTA with Sweeping Light Shimmer */}
+                  <div className="relative z-10 pt-4">
+                    <MagneticButton
+                      onClick={onOpenWorkflow}
+                      className="relative group/btn w-full py-4 rounded-2xl bg-accent-lime text-black font-extrabold text-sm shadow-[0_0_35px_rgba(132,204,22,0.4)] hover:shadow-[0_0_75px_rgba(132,204,22,0.85)] transition-all duration-300 flex items-center justify-center gap-2 tracking-wide overflow-hidden"
+                    >
+                      {/* Sweeping Light Shimmer Effect */}
+                      <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 -translate-x-full group-hover/btn:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
+                      <span className="relative z-10">{t.pricingCta}</span>
+                      <ArrowRight size={16} className="relative z-10 group-hover/btn:translate-x-1.5 transition-transform duration-300" />
+                    </MagneticButton>
+                  </div>
+                </SpotlightCard>
               </motion.div>
 
               {/* Right: Side Pillars & OpenRouter Card */}
               <div className="lg:col-span-5 flex flex-col gap-4">
                 {[
-                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#22d3ee', tag: 'Client-Side Engine' },
-                  { icon: Lock, title: t.securityPillar2Title, desc: t.securityPillar2Desc, color: '#84cc16', tag: 'IndexedDB Encrypted' },
-                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#fbbf24', tag: 'OpenRouter Direct' },
+                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#22d3ee', spotlight: 'rgba(34, 211, 238, 0.18)', tag: 'Client-Side Engine' },
+                  { icon: Lock, title: t.securityPillar2Title, desc: t.securityPillar2Desc, color: '#84cc16', spotlight: 'rgba(132, 204, 22, 0.18)', tag: 'IndexedDB Encrypted' },
+                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#fbbf24', spotlight: 'rgba(251, 191, 36, 0.18)', tag: 'OpenRouter Direct' },
                 ].map((pillar, i) => (
                   <motion.div
                     key={pillar.title}
                     variants={fadeUp} initial="hidden" whileInView="visible" custom={i}
                     viewport={{ once: true, amount: 0.3 }}
                     whileHover={{ x: 6, transition: { duration: 0.2 } }}
-                    className="group relative p-5 rounded-2xl border border-white/[0.08] bg-[#0E0E12]/80 backdrop-blur-xl hover:border-white/20 transition-all duration-300 shadow-lg overflow-hidden"
                   >
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{ background: `radial-gradient(circle at 0% 50%, ${pillar.color}10 0%, transparent 70%)` }}
-                    />
-
-                    <div className="relative z-10 flex items-start gap-4">
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform"
-                        style={{ background: `${pillar.color}15`, border: `1px solid ${pillar.color}30` }}
-                      >
-                        <pillar.icon size={19} style={{ color: pillar.color }} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <h4 className="text-sm font-bold text-white group-hover:text-white transition-colors">{pillar.title}</h4>
-                          <span className="text-[10px] font-mono text-white/30 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
-                            {pillar.tag}
-                          </span>
+                    <SpotlightCard
+                      spotlightColor={pillar.spotlight}
+                      spotlightSize={350}
+                      className="p-5 rounded-2xl border border-white/[0.08] bg-[#0E0E12]/80 backdrop-blur-xl hover:border-white/25 transition-all duration-300 shadow-lg"
+                    >
+                      <div className="relative z-10 flex items-start gap-4">
+                        <div
+                          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300"
+                          style={{ background: `${pillar.color}18`, border: `1px solid ${pillar.color}35` }}
+                        >
+                          <pillar.icon size={19} style={{ color: pillar.color }} />
                         </div>
-                        <p className="text-xs text-white/45 leading-relaxed">{pillar.desc}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <h4 className="text-sm font-bold text-white group-hover:text-white transition-colors">{pillar.title}</h4>
+                            <span className="text-[10px] font-mono text-white/40 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                              {pillar.tag}
+                            </span>
+                          </div>
+                          <p className="text-xs text-white/45 leading-relaxed">{pillar.desc}</p>
+                        </div>
                       </div>
-                    </div>
+                    </SpotlightCard>
                   </motion.div>
                 ))}
 
@@ -821,28 +874,31 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                   variants={fadeUp} initial="hidden" whileInView="visible" custom={3}
                   viewport={{ once: true, amount: 0.3 }}
                   whileHover={{ y: -2 }}
-                  className="p-6 rounded-2xl border border-violet-500/30 bg-gradient-to-b from-violet-500/10 via-[#0E0E12]/90 to-[#0E0E12] relative overflow-hidden shadow-xl"
                 >
-                  <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(circle at 100% 0%, rgba(139,92,246,0.18) 0%, transparent 65%)' }} />
-                  
-                  <div className="relative z-10 flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-violet-400 font-semibold">
-                      <Sparkles size={13} className="text-violet-400 animate-pulse" />
-                      {t.openRouterTag}
+                  <SpotlightCard
+                    spotlightColor="rgba(139, 92, 246, 0.25)"
+                    spotlightSize={400}
+                    className="p-6 rounded-2xl border border-violet-500/35 bg-gradient-to-b from-violet-500/10 via-[#0E0E12]/90 to-[#0E0E12] shadow-xl"
+                  >
+                    <div className="relative z-10 flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2 text-[11px] font-mono text-violet-400 font-semibold">
+                        <Sparkles size={13} className="text-violet-400 animate-pulse" />
+                        {t.openRouterTag}
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Direct Tunnel
+                      </span>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Direct Tunnel
-                    </span>
-                  </div>
 
-                  <h4 className="relative z-10 text-base font-bold text-white mb-1.5">{t.openRouterTitle}</h4>
-                  <p className="relative z-10 text-xs text-white/50 leading-relaxed mb-4">{t.openRouterDesc}</p>
+                    <h4 className="relative z-10 text-base font-bold text-white mb-1.5">{t.openRouterTitle}</h4>
+                    <p className="relative z-10 text-xs text-white/50 leading-relaxed mb-4">{t.openRouterDesc}</p>
 
-                  <div className="relative z-10 pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] font-mono text-white/40">
-                    <span>0% Platform Overhead</span>
-                    <span className="text-violet-300 font-semibold">OpenRouter Token Rates ➔</span>
-                  </div>
+                    <div className="relative z-10 pt-3 border-t border-white/[0.08] flex items-center justify-between text-[11px] font-mono text-white/40">
+                      <span>0% Platform Overhead</span>
+                      <span className="text-violet-300 font-semibold group-hover:text-violet-200 transition-colors">OpenRouter Token Rates ➔</span>
+                    </div>
+                  </SpotlightCard>
                 </motion.div>
               </div>
             </div>
