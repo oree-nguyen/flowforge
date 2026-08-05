@@ -266,7 +266,6 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
       }, 2500);
     }, 2200);
   };
-  };
 
   // Force re-measure DOM handle positions on state changes
   const [, setDomTick] = useState(0);
