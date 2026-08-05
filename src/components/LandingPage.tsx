@@ -375,7 +375,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
   // ── Showcase cards ──────────────────────────────────────
   const videoCards = [
-    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: './showcase-1.jpg', prompt: 'Cinematic character animation, golden hour lighting' },
+    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: './showcase-1.jpg', prompt: 'Cinematic character animation, glowing emerald neon lighting' },
     { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: './showcase-2.jpg', prompt: 'Holographic matrix sphere, emerald green 8k octane render' },
     { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: './showcase-3.jpg', prompt: 'Futuristic cyber portrait, glowing lime green & gold accents' },
     { id: 4, title: 'Voice Narration Pipeline', tag: 'AI Audio Gen', model: 'OpenAI TTS-1 HD', gifUrl: './showcase-4.jpg', prompt: 'Emerald soundwave visualizer, dark obsidian glass acoustics' },
