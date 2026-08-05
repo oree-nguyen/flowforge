@@ -141,7 +141,6 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
   const [isRunning, setIsRunning] = useState(false);
   const [imageGenDone, setImageGenDone] = useState(false);
   const [videoGenDone, setVideoGenDone] = useState(false);
-  const [downloaded, setDownloaded] = useState(false);
 
   // Typewriter state
   const [typedText1, setTypedText1] = useState('');
@@ -244,7 +243,6 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
       setIsRunning(false);
       setImageGenDone(false);
       setVideoGenDone(false);
-      setDownloaded(false);
     }
   }, [scrollProgress]);
 
@@ -262,7 +260,6 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
       setTimeout(() => {
         setVideoGenDone(true);
         setIsRunning(false);
-        setDownloaded(true);
       }, 2500);
     }, 2200);
   };
