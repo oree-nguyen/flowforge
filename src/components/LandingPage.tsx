@@ -685,110 +685,164 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </section>
 
         {/* ═══ PRICING ═══ */}
-        <section id="pricing" className="relative py-28 px-6">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-accent-lime/20 to-transparent" />
-          {/* Big glow behind pricing */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse, rgba(132,204,22,0.07) 0%, transparent 70%)' }}
+        <section id="pricing" className="relative py-32 px-6 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-accent-lime/25 to-transparent" />
+          
+          {/* Ambient background glows */}
+          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] rounded-full pointer-events-none opacity-60"
+            style={{ background: 'radial-gradient(ellipse, rgba(132,204,22,0.1) 0%, transparent 70%)' }}
+          />
+          <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] rounded-full pointer-events-none opacity-40"
+            style={{ background: 'radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%)' }}
           />
 
           <div className="max-w-6xl mx-auto relative z-10">
+            {/* Header */}
             <motion.div
               variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}
-              className="mb-16"
+              className="mb-16 flex flex-col items-start"
             >
-              <h2 className="text-5xl md:text-7xl font-black tracking-tight bg-gradient-to-br from-accent-lime to-emerald-400 bg-clip-text text-transparent mb-4">
-                {t.pricingTitle}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-accent-lime/30 bg-accent-lime/[0.06] text-accent-lime text-[11px] font-mono tracking-wider uppercase mb-4">
+                <Sparkles size={12} className="animate-pulse" />
+                <span>Zero Subscriptions · BYOK Architecture</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">
+                <span className="bg-gradient-to-br from-white via-white to-white/50 bg-clip-text text-transparent">
+                  {t.pricingTitle}
+                </span>
               </h2>
-              <p className="text-base text-white/45 max-w-md">{t.pricingSubtitle}</p>
+              <p className="text-base text-white/50 max-w-lg leading-relaxed">{t.pricingSubtitle}</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Main Pricing Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              {/* Left: Main Pricing Card */}
               <motion.div
                 variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}
-                className="lg:col-span-7 relative rounded-3xl border border-accent-lime/25 bg-white/[0.02] p-8 overflow-hidden"
+                className="lg:col-span-7 relative rounded-3xl border border-accent-lime/30 bg-[#0E0E12]/90 backdrop-blur-2xl p-8 md:p-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.6)] flex flex-col justify-between group hover:border-accent-lime/50 transition-colors duration-500"
               >
-                {/* Card inner glow */}
-                <div className="absolute inset-0 rounded-3xl" style={{ background: 'radial-gradient(circle at 20% 0%, rgba(132,204,22,0.1) 0%, transparent 60%)' }} />
-                {/* Corner badge */}
-                <div className="absolute top-0 right-0 bg-accent-lime text-black text-[10px] font-black px-4 py-1.5 rounded-bl-2xl tracking-wider uppercase">
-                  FREE FOREVER
-                </div>
+                {/* Ambient Card Radial Glow */}
+                <div className="absolute inset-0 rounded-3xl pointer-events-none opacity-70 group-hover:opacity-100 transition-opacity duration-500" 
+                  style={{ background: 'radial-gradient(circle at 15% 0%, rgba(132,204,22,0.14) 0%, transparent 65%)' }} 
+                />
 
                 <div className="relative z-10">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-6xl font-black text-white">$0</span>
-                    <span className="text-sm font-semibold text-accent-lime">/ forever</span>
-                  </div>
-                  <p className="text-sm text-white/40 mb-8">Full access. No credit card needed.</p>
+                  {/* Top Badge & Header */}
+                  <div className="flex items-center justify-between gap-4 mb-6">
+                    <div>
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">$0</span>
+                        <span className="text-sm font-bold text-accent-lime flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-accent-lime animate-ping" />
+                          / forever
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/45 font-medium">Full access to all 400+ models. No credit card needed.</p>
+                    </div>
 
-                  <div className="space-y-3 mb-10">
+                    <div className="px-3.5 py-1.5 rounded-full border border-accent-lime/40 bg-accent-lime/10 text-accent-lime text-[11px] font-mono font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(132,204,22,0.2)] shrink-0">
+                      Free Forever
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="w-full h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent mb-8" />
+
+                  {/* Features List */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-10">
                     {t.planFeatures.map((feat, idx) => (
                       <motion.div
                         key={idx}
                         variants={fadeIn} initial="hidden" whileInView="visible" custom={idx}
                         viewport={{ once: true }}
-                        className="flex items-center gap-3"
+                        whileHover={{ x: 3 }}
+                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors"
                       >
-                        <div className="w-5 h-5 rounded-full bg-accent-lime/15 border border-accent-lime/30 flex items-center justify-center shrink-0">
-                          <Check size={11} className="text-accent-lime" />
+                        <div className="w-5 h-5 rounded-full bg-accent-lime/15 border border-accent-lime/40 flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_10px_rgba(132,204,22,0.2)]">
+                          <Check size={11} className="text-accent-lime stroke-[3]" />
                         </div>
-                        <span className="text-sm text-white/70">{feat}</span>
+                        <span className="text-xs md:text-[13px] text-white/80 font-medium leading-snug">{feat}</span>
                       </motion.div>
                     ))}
                   </div>
+                </div>
 
+                {/* Bottom CTA */}
+                <div className="relative z-10 pt-4">
                   <MagneticButton
                     onClick={onOpenWorkflow}
-                    className="w-full py-4 rounded-2xl bg-accent-lime text-black font-bold text-sm shadow-[0_0_30px_rgba(132,204,22,0.4)] hover:shadow-[0_0_60px_rgba(132,204,22,0.7)] transition-all duration-300 flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl bg-accent-lime text-black font-extrabold text-sm shadow-[0_0_35px_rgba(132,204,22,0.4)] hover:shadow-[0_0_65px_rgba(132,204,22,0.7)] transition-all duration-300 flex items-center justify-center gap-2 tracking-wide"
                   >
                     {t.pricingCta}
-                    <ArrowRight size={16} />
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </MagneticButton>
                 </div>
               </motion.div>
 
-              {/* Side pillars */}
+              {/* Right: Side Pillars & OpenRouter Card */}
               <div className="lg:col-span-5 flex flex-col gap-4">
                 {[
-                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#22d3ee' },
-                  { icon: Lock, title: t.securityPillar2Title, desc: t.securityPillar2Desc, color: '#84cc16' },
-                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#fbbf24' },
+                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#22d3ee', tag: 'Client-Side Engine' },
+                  { icon: Lock, title: t.securityPillar2Title, desc: t.securityPillar2Desc, color: '#84cc16', tag: 'IndexedDB Encrypted' },
+                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#fbbf24', tag: 'OpenRouter Direct' },
                 ].map((pillar, i) => (
                   <motion.div
                     key={pillar.title}
                     variants={fadeUp} initial="hidden" whileInView="visible" custom={i}
                     viewport={{ once: true, amount: 0.3 }}
-                    whileHover={{ x: 4 }}
-                    className="group flex items-start gap-4 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-white/15 transition-colors"
+                    whileHover={{ x: 6, transition: { duration: 0.2 } }}
+                    className="group relative p-5 rounded-2xl border border-white/[0.08] bg-[#0E0E12]/80 backdrop-blur-xl hover:border-white/20 transition-all duration-300 shadow-lg overflow-hidden"
                   >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${pillar.color}18`, border: `1px solid ${pillar.color}25` }}
-                    >
-                      <pillar.icon size={18} style={{ color: pillar.color }} />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white mb-1">{pillar.title}</h4>
-                      <p className="text-xs text-white/40 leading-relaxed">{pillar.desc}</p>
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: `radial-gradient(circle at 0% 50%, ${pillar.color}10 0%, transparent 70%)` }}
+                    />
+
+                    <div className="relative z-10 flex items-start gap-4">
+                      <div
+                        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform"
+                        style={{ background: `${pillar.color}15`, border: `1px solid ${pillar.color}30` }}
+                      >
+                        <pillar.icon size={19} style={{ color: pillar.color }} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-white group-hover:text-white transition-colors">{pillar.title}</h4>
+                          <span className="text-[10px] font-mono text-white/30 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+                            {pillar.tag}
+                          </span>
+                        </div>
+                        <p className="text-xs text-white/45 leading-relaxed">{pillar.desc}</p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
 
-                {/* OpenRouter partner card */}
+                {/* OpenRouter Integration Card */}
                 <motion.div
                   variants={fadeUp} initial="hidden" whileInView="visible" custom={3}
                   viewport={{ once: true, amount: 0.3 }}
-                  className="p-5 rounded-2xl border border-violet-500/25 bg-violet-500/5 relative overflow-hidden"
+                  whileHover={{ y: -2 }}
+                  className="p-6 rounded-2xl border border-violet-500/30 bg-gradient-to-b from-violet-500/10 via-[#0E0E12]/90 to-[#0E0E12] relative overflow-hidden shadow-xl"
                 >
-                  <div className="absolute inset-0 rounded-2xl" style={{ background: 'radial-gradient(circle at 0% 50%, rgba(139,92,246,0.12) 0%, transparent 70%)' }} />
-                  <div className="relative z-10 flex items-center gap-2 text-[11px] font-mono text-violet-400 mb-2">
-                    <Sparkles size={12} />
-                    {t.openRouterTag}
+                  <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: 'radial-gradient(circle at 100% 0%, rgba(139,92,246,0.18) 0%, transparent 65%)' }} />
+                  
+                  <div className="relative z-10 flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-[11px] font-mono text-violet-400 font-semibold">
+                      <Sparkles size={13} className="text-violet-400 animate-pulse" />
+                      {t.openRouterTag}
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Direct Tunnel
+                    </span>
                   </div>
-                  <h4 className="relative z-10 text-sm font-bold text-white mb-1">{t.openRouterTitle}</h4>
-                  <p className="relative z-10 text-xs text-white/40 leading-relaxed">{t.openRouterDesc}</p>
+
+                  <h4 className="relative z-10 text-base font-bold text-white mb-1.5">{t.openRouterTitle}</h4>
+                  <p className="relative z-10 text-xs text-white/50 leading-relaxed mb-4">{t.openRouterDesc}</p>
+
+                  <div className="relative z-10 pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] font-mono text-white/40">
+                    <span>0% Platform Overhead</span>
+                    <span className="text-violet-300 font-semibold">OpenRouter Token Rates ➔</span>
+                  </div>
                 </motion.div>
               </div>
             </div>
