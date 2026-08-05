@@ -331,10 +331,10 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
   // ── Showcase cards ──────────────────────────────────────
   const videoCards = [
-    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZhcTBxaTFhZWhwZHA3dWxpdnRmcDVwZnkyZXRocDRnZnZhbWVzZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R1tvI9svvjDDy267/giphy.gif', prompt: 'Cinematic dolly zoom, golden hour lighting' },
-    { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNG1ycnhidTRyZjEwNmNzMTFwbGF6M2NpdTczZGt5cmJtdnhidWFmaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tn33aiTi1jkl6H6/giphy.gif', prompt: 'Futuristic Neo Tokyo, 8k octane render' },
-    { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnZza29rNGlna284d3JqN3lhdWZ3NXgxaGJtN25sd2I3NmFnNXZnZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vR1v8TjR5r3aM40/giphy.gif', prompt: 'Glossy magazine cover, vibrant neon colors' },
-    { id: 4, title: 'Voice Narration Pipeline', tag: 'AI Audio Gen', model: 'OpenAI TTS-1 HD', gifUrl: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2JqOW9ldmtscGFxZHMyaWFzaDFoc3gxbGJtNmR0eHkyazlnNnB5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif', prompt: 'Studio voiceover, warm acoustics, crisp range' },
+    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: './showcase-1.jpg', prompt: 'Cinematic dolly zoom, golden hour lighting' },
+    { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: './showcase-2.jpg', prompt: 'Futuristic Neo Tokyo, 8k octane render' },
+    { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: './showcase-3.jpg', prompt: 'Glossy magazine cover, vibrant neon colors' },
+    { id: 4, title: 'Voice Narration Pipeline', tag: 'AI Audio Gen', model: 'OpenAI TTS-1 HD', gifUrl: './showcase-4.jpg', prompt: 'Studio voiceover, warm acoustics, crisp range' },
   ];
 
   // Particle dots background
