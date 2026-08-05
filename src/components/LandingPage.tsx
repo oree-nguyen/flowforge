@@ -178,12 +178,16 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
     };
   }, [demoCompleted, isInDemoZone]);
 
-  // After demo completes, scroll to features section
+  // After demo completes, align canvas top neatly at top-20 (80px) so canvas remains fully visible with features below
   useEffect(() => {
     if (!demoCompleted || pendingScrollId) return;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const el = demoScrollRef.current;
+        if (el) {
+          const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
       });
     });
   }, [demoCompleted]);
@@ -533,14 +537,19 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         </div>
       </section>
 
-      {/* ═══ DEMO CANVAS ANCHOR — zero height placeholder so page flow is correct ═══ */}
-      <div ref={demoScrollRef} style={{ height: demoCompleted ? 0 : '100vh' }} />
-
-      {/* ═══ DEMO CANVAS (fixed while incomplete, normal flow after complete) ═══ */}
-      {!demoCompleted && (
+      {/* ═══ DEMO CANVAS (fixed while incomplete, normal relative flow after complete) ═══ */}
+      <div
+        ref={demoScrollRef}
+        className="w-full transition-all duration-700 ease-out"
+        style={{ height: demoCompleted ? 'auto' : '100vh' }}
+      >
         <div
-          className="fixed left-1/2 -translate-x-1/2 w-full max-w-7xl z-40 px-4"
-          style={{ top: '80px' }}
+          className={
+            demoCompleted
+              ? 'relative max-w-7xl mx-auto px-4 pt-2 pb-4'
+              : 'fixed left-1/2 -translate-x-1/2 w-full max-w-7xl z-40 px-4'
+          }
+          style={demoCompleted ? {} : { top: '80px' }}
         >
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] text-white/30 font-mono tracking-wide">{t.scrollHint}</p>
@@ -562,7 +571,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
             onComplete={() => setDemoCompleted(true)}
           />
         </div>
-      )}
+      </div>
 
       {/* ═══ REST OF PAGE (unlocked only after demo completes or safety fallback) ═══ */}
       <div
