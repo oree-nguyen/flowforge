@@ -369,8 +369,8 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
   // ── Feature cards ────────────────────────────────────────
   const features = [
     { icon: Zap, title: t.feature1Title, desc: t.feature1Desc, color: '#84cc16' },
-    { icon: GitBranch, title: t.feature2Title, desc: t.feature2Desc, color: '#22d3ee' },
-    { icon: Shield, title: t.feature3Title, desc: t.feature3Desc, color: '#a78bfa' },
+    { icon: GitBranch, title: t.feature2Title, desc: t.feature2Desc, color: '#10b981' },
+    { icon: Shield, title: t.feature3Title, desc: t.feature3Desc, color: '#059669' },
   ];
 
   // ── Showcase cards ──────────────────────────────────────
@@ -425,8 +425,8 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
         ))}
         {/* Large ambient glow orbs */}
         <GlowOrb size={600} color="rgba(132,204,22,0.06)" x="20%" y="10%" blur={120} opacity={1} />
-        <GlowOrb size={500} color="rgba(34,211,238,0.04)" x="80%" y="40%" blur={120} opacity={1} />
-        <GlowOrb size={400} color="rgba(132,204,22,0.05)" x="50%" y="80%" blur={100} opacity={1} />
+        <GlowOrb size={500} color="rgba(16,185,129,0.06)" x="80%" y="40%" blur={120} opacity={1} />
+        <GlowOrb size={400} color="rgba(5,150,105,0.05)" x="50%" y="80%" blur={100} opacity={1} />
       </div>
 
       {/* ═══ NAVBAR ═══ */}
@@ -833,9 +833,9 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
               {/* Right: Side Pillars & OpenRouter Card */}
               <div className="lg:col-span-5 flex flex-col gap-4">
                 {[
-                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#22d3ee', spotlight: 'rgba(34, 211, 238, 0.18)', tag: 'Client-Side Engine' },
+                  { icon: Server, title: t.securityPillar1Title, desc: t.securityPillar1Desc, color: '#10b981', spotlight: 'rgba(16, 185, 129, 0.18)', tag: 'Client-Side Engine' },
                   { icon: Lock, title: t.securityPillar2Title, desc: t.securityPillar2Desc, color: '#84cc16', spotlight: 'rgba(132, 204, 22, 0.18)', tag: 'IndexedDB Encrypted' },
-                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#fbbf24', spotlight: 'rgba(251, 191, 36, 0.18)', tag: 'OpenRouter Direct' },
+                  { icon: DollarSign, title: t.securityPillar3Title, desc: t.securityPillar3Desc, color: '#34d399', spotlight: 'rgba(52, 211, 153, 0.18)', tag: 'OpenRouter Direct' },
                 ].map((pillar, i) => (
                   <motion.div
                     key={pillar.title}
@@ -876,17 +876,17 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                   whileHover={{ y: -2 }}
                 >
                   <SpotlightCard
-                    spotlightColor="rgba(139, 92, 246, 0.25)"
+                    spotlightColor="rgba(16, 185, 129, 0.22)"
                     spotlightSize={400}
-                    className="p-6 rounded-2xl border border-violet-500/35 bg-gradient-to-b from-violet-500/10 via-[#0E0E12]/90 to-[#0E0E12] shadow-xl"
+                    className="p-6 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 via-[#0E0E12]/90 to-[#0E0E12] shadow-xl"
                   >
                     <div className="relative z-10 flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-violet-400 font-semibold">
-                        <Sparkles size={13} className="text-violet-400 animate-pulse" />
+                      <div className="flex items-center gap-2 text-[11px] font-mono text-emerald-400 font-semibold">
+                        <Sparkles size={13} className="text-emerald-400 animate-pulse" />
                         {t.openRouterTag}
                       </div>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent-lime/10 border border-accent-lime/30 text-[10px] font-mono text-accent-lime font-semibold shadow-[0_0_10px_rgba(132,204,22,0.2)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent-lime animate-pulse" />
                         Direct Tunnel
                       </span>
                     </div>
@@ -896,7 +896,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
                     <div className="relative z-10 pt-3 border-t border-white/[0.08] flex items-center justify-between text-[11px] font-mono text-white/40">
                       <span>0% Platform Overhead</span>
-                      <span className="text-violet-300 font-semibold group-hover:text-violet-200 transition-colors">OpenRouter Token Rates ➔</span>
+                      <span className="text-accent-lime font-semibold group-hover:text-emerald-300 transition-colors">OpenRouter Token Rates ➔</span>
                     </div>
                   </SpotlightCard>
                 </motion.div>
