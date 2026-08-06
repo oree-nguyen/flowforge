@@ -127,10 +127,10 @@ export function LoadingScreen({
                 rx="8" ry="8"
               />
 
-              {/* Bottom-right triangle */}
+              {/* Bottom-right triangle (rounded right-triangle matching logo.png) */}
               <path
                 className="ff-triangle"
-                d="M54,52 L88,70 L54,88 Z"
+                d="M 60,52 L 75,52 Q 88,52 79.5,60.5 L 60.5,79.5 Q 52,88 52,75 L 52,60 Q 52,52 60,52 Z"
               />
             </g>
           </svg>
