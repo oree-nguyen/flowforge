@@ -15,15 +15,16 @@ import { useAutoSave } from './hooks/useAutoSave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { ToastContainer } from './components/ToastContainer';
 import { LoadingScreen } from './components/LoadingScreen';
+import { useRouteLoading } from './hooks/useRouteLoading';
 
 function App() {
-  // Simple Hash-based routing: #/landing, #/workflow, or path based
-  const [route, setRoute] = useState<'landing' | 'workflow'>(() => {
-    const hash = window.location.hash;
-    const path = window.location.pathname;
-    if (hash === '#/workflow' || path.endsWith('/workflow')) return 'workflow';
-    return 'landing'; // Default page is Landing Page
-  });
+  const {
+    route,
+    isLoadingVisible,
+    isFadingOut,
+    loadingTagline,
+    navigateWithLoading,
+  } = useRouteLoading();
 
   const isSettingsOpen = useWorkflowStore(state => state.isSettingsOpen);
   const setIsSettingsOpen = useWorkflowStore(state => state.setIsSettingsOpen);
@@ -31,35 +32,6 @@ function App() {
   const setOpenVideoEditorNodeId = useWorkflowStore(state => state.setOpenVideoEditorNodeId);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      const path = window.location.pathname;
-      if (hash === '#/workflow' || path.endsWith('/workflow')) {
-        setRoute('workflow');
-      } else {
-        setRoute('landing');
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener('popstate', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener('popstate', handleHashChange);
-    };
-  }, []);
-
-  const navigateTo = (page: 'landing' | 'workflow') => {
-    setRoute(page);
-    window.location.hash = page === 'workflow' ? '#/workflow' : '#/landing';
-    document.body.dataset.page = page;
-  };
-
-  useEffect(() => {
-    document.body.dataset.page = route;
-  }, [route]);
 
   useAutoSave();
   useKeyboardShortcuts(() => setIsGuideOpen(prev => !prev));
@@ -77,44 +49,51 @@ function App() {
     }
   }, []);
 
-  if (route === 'landing') {
-    return <LandingPage onOpenWorkflow={() => navigateTo('workflow')} />;
-  }
-
-  if (!hydrated) {
-    return <LoadingScreen minDuration={800} />;
-  }
-
   return (
-    <div className="w-screen h-screen flex flex-col bg-canvas text-text-primary overflow-hidden">
-      <TopBar />
-      <div className="relative flex-1 w-full h-full">
-        <Canvas />
-        <Toolbar 
-          onOpenSettings={() => setIsSettingsOpen(true)} 
-          onOpenImageLibrary={() => setIsImageLibraryOpen(true)}
-        />
-        <PropertiesPanel />
-        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-4">
-          <ZoomControls />
+    <>
+      {/* Full-screen Loading Screen Overlay for Case 1 (boot) & Case 2 (3s navigation) */}
+      <LoadingScreen
+        visible={isLoadingVisible || !hydrated}
+        fadeOut={isFadingOut}
+        tagline={loadingTagline}
+      />
+
+      {route === 'landing' ? (
+        <LandingPage onOpenWorkflow={() => navigateWithLoading('workflow')} />
+      ) : (
+        <div className="w-screen h-screen flex flex-col bg-canvas text-text-primary overflow-hidden">
+          <TopBar />
+          <div className="relative flex-1 w-full h-full">
+            <Canvas />
+            <Toolbar
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              onOpenImageLibrary={() => setIsImageLibraryOpen(true)}
+            />
+            <PropertiesPanel />
+            <div className="absolute bottom-6 left-6 z-10 flex items-center gap-4">
+              <ZoomControls />
+            </div>
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+              <RecenterButton />
+            </div>
+            <ShortcutGuide isOpen={isGuideOpen} onToggle={() => setIsGuideOpen(!isGuideOpen)} />
+          </div>
+
+          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+          <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
+          {openVideoEditorNodeId && (
+            <VideoEditorWorkspace
+              nodeId={openVideoEditorNodeId}
+              onClose={() => setOpenVideoEditorNodeId(null)}
+            />
+          )}
+          <ToastContainer />
         </div>
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-          <RecenterButton />
-        </div>
-        <ShortcutGuide isOpen={isGuideOpen} onToggle={() => setIsGuideOpen(!isGuideOpen)} />
-      </div>
-      
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
-      {openVideoEditorNodeId && (
-        <VideoEditorWorkspace
-          nodeId={openVideoEditorNodeId}
-          onClose={() => setOpenVideoEditorNodeId(null)}
-        />
       )}
-      <ToastContainer />
-    </div>
+    </>
   );
 }
+
+export default App;
 
 export default App;

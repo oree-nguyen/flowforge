@@ -2,45 +2,61 @@ import { useEffect, useRef } from 'react';
 import './LoadingScreen.css';
 
 interface LoadingScreenProps {
+  visible?: boolean;
+  fadeOut?: boolean;
+  tagline?: string;
   onHide?: () => void;
   minDuration?: number; // ms before allowing fade out
 }
 
-const TAGLINES = [
+const DEFAULT_TAGLINES = [
   'Initializing AI workflow engine...',
   'Preparing your creative workspace...',
   'Connecting to AI models...',
   'FlowForge is getting ready...',
 ];
 
-export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps) {
+export function LoadingScreen({
+  visible = true,
+  fadeOut = false,
+  tagline,
+  onHide,
+  minDuration = 0,
+}: LoadingScreenProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLSpanElement>(null);
   const taglineIdx = useRef(0);
 
   // Cycle taglines with fade
   useEffect(() => {
+    if (tagline) return; // If custom tagline is provided, don't cycle
     let alive = true;
     const cycle = () => {
       if (!alive || !taglineRef.current) return;
       taglineRef.current.style.opacity = '0';
       setTimeout(() => {
         if (!alive || !taglineRef.current) return;
-        taglineIdx.current = (taglineIdx.current + 1) % TAGLINES.length;
-        taglineRef.current.textContent = TAGLINES[taglineIdx.current];
+        taglineIdx.current = (taglineIdx.current + 1) % DEFAULT_TAGLINES.length;
+        taglineRef.current.textContent = DEFAULT_TAGLINES[taglineIdx.current];
         taglineRef.current.style.opacity = '1';
       }, 400);
     };
     const id = setInterval(cycle, 2800);
-    return () => { alive = false; clearInterval(id); };
-  }, []);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [tagline]);
 
-  // Auto-hide after minDuration
+  // Handle minDuration auto-hide if onHide prop is passed
   useEffect(() => {
-    if (!onHide) return;
+    if (!onHide || minDuration <= 0) return;
     const t = setTimeout(() => {
       const el = rootRef.current;
-      if (!el) { onHide(); return; }
+      if (!el) {
+        onHide();
+        return;
+      }
       el.style.opacity = '0';
       el.style.transform = 'scale(1.04)';
       el.style.filter = 'blur(4px)';
@@ -49,8 +65,13 @@ export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps
     return () => clearTimeout(t);
   }, [onHide, minDuration]);
 
+  if (!visible) return null;
+
   return (
-    <div className="ff-loading-root" ref={rootRef}>
+    <div
+      className={`ff-loading-root ${fadeOut ? 'ff-loading-fade-out' : ''}`}
+      ref={rootRef}
+    >
       {/* Ambient glow layers */}
       <div className="ff-glow-outer" />
       <div className="ff-grid-bg" />
@@ -62,7 +83,7 @@ export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps
           {/* Glow halo behind icon */}
           <div className="ff-icon-halo" />
 
-          {/* SVG icon — all animation driven by CSS classes on this wrapper */}
+          {/* SVG icon — all animation driven by CSS keyframes */}
           <svg
             className="ff-icon-svg"
             viewBox="0 0 100 100"
@@ -76,9 +97,9 @@ export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps
               rx="24" ry="24"
             />
 
-            {/* ── Shape group (3 squares + triangle) ── */}
+            {/* ── Shape group (3 squares + 1 triangle) ── */}
             <g className="ff-shapes-group">
-              {/* Large single square for state (*) — morphs to group */}
+              {/* Large single square for state (*) */}
               <rect
                 className="ff-merge-square"
                 x="18" y="18" width="64" height="64"
@@ -106,7 +127,7 @@ export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps
                 rx="8" ry="8"
               />
 
-              {/* Bottom-right triangle (right-pointing, rounded corners via path) */}
+              {/* Bottom-right triangle */}
               <path
                 className="ff-triangle"
                 d="M54,52 L88,70 L54,88 Z"
@@ -117,12 +138,13 @@ export function LoadingScreen({ onHide, minDuration = 1200 }: LoadingScreenProps
 
         {/* Wordmark */}
         <div className="ff-wordmark">
-          <span className="ff-wordmark-flow">Flow</span><span className="ff-wordmark-forge">Forge</span>
+          <span className="ff-wordmark-flow">Flow</span>
+          <span className="ff-wordmark-forge">Forge</span>
         </div>
 
         {/* Tagline */}
         <span className="ff-tagline" ref={taglineRef}>
-          {TAGLINES[0]}
+          {tagline || DEFAULT_TAGLINES[0]}
         </span>
 
         {/* Dots */}
