@@ -14,6 +14,7 @@ import { useWorkflowStore } from './store/workflowStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { ToastContainer } from './components/ToastContainer';
+import { LoadingScreen } from './components/LoadingScreen';
 
 function App() {
   // Simple Hash-based routing: #/landing, #/workflow, or path based
@@ -81,14 +82,7 @@ function App() {
   }
 
   if (!hydrated) {
-    return (
-      <div className="w-screen h-screen flex items-center justify-center bg-canvas text-text-primary">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-accent-lime border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-text-muted">Restoring workflow...</span>
-        </div>
-      </div>
-    );
+    return <LoadingScreen minDuration={800} />;
   }
 
   return (
