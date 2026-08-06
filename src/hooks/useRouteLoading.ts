@@ -63,8 +63,6 @@ export function useRouteLoading() {
         setIsFadingOut(false);
         setLoadingTagline('Initializing AI workflow canvas...');
 
-        const startTime = Date.now();
-
         // 1. Min 3000ms delay requirement
         const minDelayPromise = new Promise<void>((resolve) =>
           setTimeout(resolve, MIN_WORKFLOW_LOADING_MS)
