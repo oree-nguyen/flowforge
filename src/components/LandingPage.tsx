@@ -4,7 +4,7 @@ import heroBg from '../../public/hero-bg.jpg';
 import showcaseVideo1 from '../../public/showcase-1.mp4';
 import showcaseImg2 from '../../public/showcase-2.jpg';
 import showcaseImg3 from '../../public/showcase-3.jpg';
-import showcaseImg4 from '../../public/showcase-4.jpg';
+import showcaseVideo4 from '../../public/showcase-4.mp4';
 import {
   Globe,
   ArrowRight,
@@ -382,7 +382,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
     { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: showcaseVideo1, prompt: 'Cinematic character animation, glowing emerald neon lighting' },
     { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: showcaseImg2, prompt: 'Holographic matrix sphere, emerald green 8k octane render' },
     { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: showcaseImg3, prompt: 'Futuristic cyber portrait, glowing lime green & gold accents' },
-    { id: 4, title: 'Elemental Green Dragon', tag: 'AI Video Gen', model: 'OpenAI TTS-1 + Video', gifUrl: showcaseImg4, prompt: 'Lloyd summoning glowing emerald green light dragon, epic energy pulse' },
+    { id: 4, title: 'Elemental Green Dragon', tag: 'AI Video Gen', model: 'OpenAI TTS-1 + Video', gifUrl: showcaseVideo4, prompt: 'Lloyd summoning glowing emerald green light dragon, epic energy pulse' },
   ];
 
   // Particle dots background
@@ -702,7 +702,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                       style={{ background: 'radial-gradient(circle at 50% 0%, rgba(132,204,22,0.08) 0%, transparent 70%)' }}
                     />
                     <div className="relative h-56 overflow-hidden">
-                      {card.id === 1 || card.gifUrl.includes('.mp4') ? (
+                      {card.id === 1 || card.id === 4 || card.gifUrl.includes('.mp4') ? (
                         <video
                           src={card.gifUrl}
                           autoPlay
