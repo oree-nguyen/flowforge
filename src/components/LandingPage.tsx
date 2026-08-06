@@ -375,7 +375,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
 
   // ── Showcase cards ──────────────────────────────────────
   const videoCards = [
-    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: './showcase-1.jpg', prompt: 'Cinematic character animation, glowing emerald neon lighting' },
+    { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: './showcase-1.mp4', prompt: 'Cinematic character animation, glowing emerald neon lighting' },
     { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: './showcase-2.jpg', prompt: 'Holographic matrix sphere, emerald green 8k octane render' },
     { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: './showcase-3.jpg', prompt: 'Futuristic cyber portrait, glowing lime green & gold accents' },
     { id: 4, title: 'Voice Narration Pipeline', tag: 'AI Audio Gen', model: 'OpenAI TTS-1 HD', gifUrl: './showcase-4.jpg', prompt: 'Emerald soundwave visualizer, dark obsidian glass acoustics' },
@@ -698,11 +698,22 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
                       style={{ background: 'radial-gradient(circle at 50% 0%, rgba(132,204,22,0.08) 0%, transparent 70%)' }}
                     />
                     <div className="relative h-56 overflow-hidden">
-                      <img
-                        src={card.gifUrl}
-                        alt={card.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+                      {card.gifUrl.endsWith('.mp4') ? (
+                        <video
+                          src={card.gifUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      ) : (
+                        <img
+                          src={card.gifUrl}
+                          alt={card.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute top-3 left-3 flex gap-2">
                         <span className="bg-black/70 backdrop-blur-md border border-accent-lime/30 px-2.5 py-1 rounded-full text-[11px] font-semibold text-accent-lime">
