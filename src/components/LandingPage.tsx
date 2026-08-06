@@ -382,7 +382,7 @@ export function LandingPage({ onOpenWorkflow }: LandingPageProps) {
     { id: 1, title: 'Image → 8s Video', tag: 'AI Video Gen', model: 'MiniMax Video-01', gifUrl: showcaseVideo1, prompt: 'Cinematic character animation, glowing emerald neon lighting' },
     { id: 2, title: 'Stylized 3D Render', tag: 'AI Image Gen', model: 'FLUX.1 Schnell', gifUrl: showcaseImg2, prompt: 'Holographic matrix sphere, emerald green 8k octane render' },
     { id: 3, title: 'Neon Billboard Gen', tag: 'AI Image Gen', model: 'FLUX Pro', gifUrl: showcaseImg3, prompt: 'Futuristic cyber portrait, glowing lime green & gold accents' },
-    { id: 4, title: 'Voice Narration Pipeline', tag: 'AI Audio Gen', model: 'OpenAI TTS-1 HD', gifUrl: showcaseImg4, prompt: 'Emerald soundwave visualizer, dark obsidian glass acoustics' },
+    { id: 4, title: 'Elemental Green Dragon', tag: 'AI Video Gen', model: 'OpenAI TTS-1 + Video', gifUrl: showcaseImg4, prompt: 'Lloyd summoning glowing emerald green light dragon, epic energy pulse' },
   ];
 
   // Particle dots background
