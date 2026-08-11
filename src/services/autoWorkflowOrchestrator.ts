@@ -392,12 +392,19 @@ Hãy xuất ra JSON đúng schema scene nodes & edges.`;
   const formattedNodes: NodeData[] = allRawNodes.map((n, i) => {
     const rawId = n.node_id || `auto_${Date.now()}_${i}`;
     const id = rawId.startsWith('node_') ? rawId : `node_${rawId}`;
+
+    // Sanitize model ID: If LLM generated invalid/dummy model ID or unknown model, fallback to solid defaults
+    let rawModel = (n.data?.model as string) || '';
+    if (!rawModel || rawModel.includes('banana') || rawModel.includes('veo') || !rawModel.includes('/')) {
+      rawModel = n.type === 'ai.videoGen' ? 'minimax/video-01' : 'black-forest-labs/flux-1-schnell';
+    }
+
     return {
       id,
       type: n.type || 'ai.imageGen',
       position: { x: 0, y: 0 },
       data: {
-        model: n.data?.model || (n.type === 'ai.videoGen' ? 'minimax/video-01' : 'black-forest-labs/flux-1-schnell'),
+        model: rawModel,
         prompt: n.data?.prompt || '',
         aspectRatio: n.data?.aspectRatio || '16:9',
         duration: n.data?.duration || 5,
