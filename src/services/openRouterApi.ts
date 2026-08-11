@@ -123,7 +123,13 @@ export function getModelInputCapabilities(modelId: string, modelObj?: OpenRouter
   return Array.from(new Set(inputs));
 }
 
-export async function chatCompletion(apiKey: string, model: string, messages: any[], params: any = {}) {
+export async function chatCompletion(
+  apiKey: string,
+  model: string,
+  messages: any[],
+  params: any = {},
+  options?: { signal?: AbortSignal }
+) {
   const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -137,6 +143,7 @@ export async function chatCompletion(apiKey: string, model: string, messages: an
       messages,
       ...params
     }),
+    signal: options?.signal,
   });
 
   if (!response.ok) {
@@ -147,7 +154,13 @@ export async function chatCompletion(apiKey: string, model: string, messages: an
   return response.json();
 }
 
-export async function generateImage(apiKey: string, model: string, prompt: string | any[], params: any = {}) {
+export async function generateImage(
+  apiKey: string,
+  model: string,
+  prompt: string | any[],
+  params: any = {},
+  options?: { signal?: AbortSignal }
+) {
   const content = prompt;
   const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
     method: 'POST',
@@ -162,6 +175,7 @@ export async function generateImage(apiKey: string, model: string, prompt: strin
       messages: [{ role: 'user', content }],
       ...params
     }),
+    signal: options?.signal,
   });
 
   if (!response.ok) {
