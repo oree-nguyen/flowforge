@@ -14,49 +14,44 @@ export interface ModelMetadata {
 }
 
 export const TEXT_MODELS: ModelMetadata[] = [
+  // DeepSeek
+  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', free: false, inputs: ['text'] },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', free: false, inputs: ['text'] },
+  { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1 (Free)', free: true, inputs: ['text'] },
+
   // Free Models
   { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', free: true, inputs: ['text'] },
   { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B (Free)', free: true, inputs: ['text'] },
-  { id: 'mistralai/mistral-nemo:free', name: 'Mistral Nemo (Free)', free: true, inputs: ['text'] },
   { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash Exp (Free)', free: true, inputs: ['text', 'image', 'video', 'file'] },
-  { id: 'google/gemini-2.0-pro-exp-02-05:free', name: 'Gemini 2.0 Pro Exp (Free)', free: true, inputs: ['text', 'image', 'video', 'file'] },
-  { id: 'cognitivecomputations/dolphin3.0-r1-mistral-24b:free', name: 'Dolphin 3.0 R1 24B (Free)', free: true, inputs: ['text'] },
 
   // Paid Models
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', free: false, inputs: ['text', 'image', 'video', 'file'] },
+  { id: 'google/gemini-1.5-pro', name: 'Gemini 1.5 Pro', free: false, inputs: ['text', 'image', 'video', 'file'] },
   { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', free: false, inputs: ['text', 'image', 'file'] },
   { id: 'anthropic/claude-3.7-sonnet', name: 'Claude 3.7 Sonnet', free: false, inputs: ['text', 'image', 'file'] },
-  { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', free: false, inputs: ['text', 'image', 'file'] },
   { id: 'openai/gpt-4o', name: 'GPT-4o', free: false, inputs: ['text', 'image', 'file'] },
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', free: false, inputs: ['text', 'image', 'file'] },
   { id: 'openai/o3-mini', name: 'o3-mini', free: false, inputs: ['text'] },
   { id: 'openai/o1', name: 'o1', free: false, inputs: ['text', 'image', 'file'] },
-  { id: 'google/gemini-1.5-pro', name: 'Gemini 1.5 Pro', free: false, inputs: ['text', 'image', 'video', 'file'] },
-  { id: 'google/gemini-1.5-flash', name: 'Gemini 1.5 Flash', free: false, inputs: ['text', 'image', 'video', 'file'] },
   { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', free: false, inputs: ['text'] },
 ];
 
 export const IMAGE_MODELS: ModelMetadata[] = [
-  // Free Models
-  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Free/Low cost)', free: true, inputs: ['text'] },
-
-  // Google
-  { id: 'google/gemini-banana-nano-2-pro', name: 'Gemini Banana Nano 2 Pro', free: false, inputs: ['text', 'image'] },
-
-  // Paid Models
+  // FLUX
+  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Fast)', free: true, inputs: ['text'] },
+  { id: 'black-forest-labs/flux-1-dev', name: 'FLUX.1 Dev', free: false, inputs: ['text'] },
   { id: 'black-forest-labs/flux-1-pro', name: 'FLUX.1 Pro', free: false, inputs: ['text'] },
-  { id: 'black-forest-labs/flux-1.1-pro-ultra', name: 'FLUX 1.1 Pro Ultra', free: false, inputs: ['text'] },
+  { id: 'black-forest-labs/flux-1.1-pro', name: 'FLUX 1.1 Pro', free: false, inputs: ['text'] },
+
+  // OpenAI & Stability
   { id: 'openai/dall-e-3', name: 'DALL-E 3', free: false, inputs: ['text'] },
+  { id: 'stabilityai/stable-diffusion-3.5-large', name: 'Stable Diffusion 3.5 Large', free: false, inputs: ['text'] },
 ];
 
 export const VIDEO_MODELS: ModelMetadata[] = [
-  // Google
-  { id: 'google/veo-3.1-pro', name: 'Google Veo 3.1 Pro', free: false, inputs: ['text', 'image'] },
-
-  // Paid Models
-  { id: 'luma/ray', name: 'Luma Ray', free: false, inputs: ['text', 'image'] },
-  { id: 'luma/dream-machine', name: 'Luma Dream Machine', free: false, inputs: ['text', 'image'] },
   { id: 'minimax/video-01', name: 'MiniMax Video-01', free: false, inputs: ['text', 'image'] },
-  { id: 'kling/video', name: 'Kling Video', free: false, inputs: ['text', 'image'] },
+  { id: 'luma/ray-2', name: 'Luma Ray 2', free: false, inputs: ['text', 'image'] },
+  { id: 'luma/dream-machine', name: 'Luma Dream Machine', free: false, inputs: ['text', 'image'] },
 ];
 
 export const AUDIO_MODELS: ModelMetadata[] = [

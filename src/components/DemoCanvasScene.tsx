@@ -595,7 +595,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
           >
             {/* Floating Node Label above frame */}
             <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
-              <ImageIcon size={12} /> Google - Nano Banana 2 (Gemini 3.1 Flash Image)
+              <ImageIcon size={12} /> FLUX.1 Schnell (Image Gen)
             </div>
 
             {/* Main Frame */}
@@ -605,7 +605,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
                 <div className="w-full h-full bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 animate-pulse flex flex-col items-center justify-center gap-3 p-4 text-center">
                   <div className="w-10 h-10 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin" />
                   <span className="text-xs font-bold text-yellow-300 font-mono tracking-wide">
-                    Gemini 3.1 Synthesis...
+                    FLUX.1 Schnell Synthesis...
                   </span>
                 </div>
               ) : imageGenDone ? (
@@ -700,7 +700,7 @@ export function DemoCanvasScene({ scrollProgress, isVisible, onRun, onComplete }
           >
             {/* Floating Node Label above frame */}
             <div className="absolute -top-6 left-0 text-xs font-medium text-text-primary flex items-center gap-2">
-              <VideoIcon size={12} /> Google Veo 3.1 Pro
+              <VideoIcon size={12} /> MiniMax Video-01
             </div>
 
             {/* Main Frame */}

@@ -101,7 +101,7 @@ export function AutoModeDialog({ isOpen, onClose }: AutoModeDialogProps) {
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 Chế độ Auto — Tạo Workflow Phim bằng AI
                 <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-accent-lime/20 text-accent-lime border border-accent-lime/30">
-                  DEEPSEEK V4 FLASH
+                  DEEPSEEK ORCHESTRATOR
                 </span>
               </h2>
               <p className="text-xs text-text-muted">Nhập ý tưởng phim, AI sẽ tự động phân tích kịch bản & sinh toàn bộ DAG workflow</p>
@@ -159,9 +159,9 @@ export function AutoModeDialog({ isOpen, onClose }: AutoModeDialogProps) {
             <div className="p-3.5 rounded-xl bg-canvas/40 border border-white/5 flex items-center justify-between text-[11px] text-text-muted">
               <span>Mô hình mặc định sinh ảnh & video:</span>
               <div className="flex items-center gap-2 font-mono text-[10px]">
-                <span className="px-2 py-0.5 rounded bg-white/10 text-accent-lime">Nano Banana 2</span>
+                <span className="px-2 py-0.5 rounded bg-white/10 text-accent-lime">FLUX.1 Schnell</span>
                 <span>+</span>
-                <span className="px-2 py-0.5 rounded bg-white/10 text-emerald-400">Gemini Veo 3</span>
+                <span className="px-2 py-0.5 rounded bg-white/10 text-emerald-400">MiniMax Video-01</span>
               </div>
             </div>
 

@@ -46,8 +46,8 @@ export interface SceneNodeResult {
 }
 
 const MODEL_CANDIDATES = [
-  'deepseek/deepseek-v4-flash',
   'deepseek/deepseek-chat',
+  'deepseek/deepseek-r1',
   'google/gemini-2.0-flash-001',
   'meta-llama/llama-3.3-70b-instruct',
 ];
@@ -151,8 +151,8 @@ GLOBAL ASSET REGISTRY FOR THIS MOVIE (STRICT REFERENCE - REUSE ASSET IDs ONLY):
 ${JSON.stringify(assetRegistry, null, 2)}
 
 DEFAULT MODEL IDs TO USE:
-- For Image Nodes: "google/gemini-banana-nano-2-pro"
-- For Video Nodes: "google/veo-3.1-pro"
+- For Image Nodes: "black-forest-labs/flux-1-schnell"
+- For Video Nodes: "minimax/video-01"
 
 RULES FOR SCENE NODE GENERATION:
 1. For any character/object/environment asset used for the FIRST TIME in the movie, create an AI Image Node (type: "ai.imageGen") to generate the primary reference image.
@@ -170,7 +170,7 @@ JSON SCHEMA OUTPUT FOR THE SCENE:
       "type": "ai.imageGen",
       "asset_ref": "asset_id",
       "data": {
-        "model": "google/gemini-banana-nano-2-pro",
+        "model": "black-forest-labs/flux-1-schnell",
         "prompt": "Detailed description for reference image...",
         "aspectRatio": "16:9",
         "label": "Reference Image - Asset Name"
@@ -180,7 +180,7 @@ JSON SCHEMA OUTPUT FOR THE SCENE:
       "node_id": "video_scene_X",
       "type": "ai.videoGen",
       "data": {
-        "model": "google/veo-3.1-pro",
+        "model": "minimax/video-01",
         "prompt": "Detailed prompt for 8s scene video action, camera, environment, dialogue...",
         "duration": 5,
         "aspectRatio": "16:9",
@@ -397,7 +397,7 @@ Hãy xuất ra JSON đúng schema scene nodes & edges.`;
       type: n.type || 'ai.imageGen',
       position: { x: 0, y: 0 },
       data: {
-        model: n.data?.model || (n.type === 'ai.videoGen' ? 'google/veo-3.1-pro' : 'google/gemini-banana-nano-2-pro'),
+        model: n.data?.model || (n.type === 'ai.videoGen' ? 'minimax/video-01' : 'black-forest-labs/flux-1-schnell'),
         prompt: n.data?.prompt || '',
         aspectRatio: n.data?.aspectRatio || '16:9',
         duration: n.data?.duration || 5,

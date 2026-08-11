@@ -742,7 +742,7 @@ export const useWorkflowStore = create<WorkflowState>()(
                     finalPrompt = contentParts;
                   }
 
-                  const response = await generateImage(apiKey, (data.model as string) || 'google/gemini-banana-nano-2-pro', finalPrompt);
+                  const response = await generateImage(apiKey, (data.model as string) || 'black-forest-labs/flux-1-schnell', finalPrompt);
                   let imageUrl = '';
                   const content = response.choices?.[0]?.message?.content || '';
                   const match = content.match(/!\[.*?\]\((.*?)\)/) || content.match(/(https?:\/\/[^\s]+)/);
