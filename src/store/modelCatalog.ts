@@ -37,18 +37,19 @@ export const TEXT_MODELS: ModelMetadata[] = [
 ];
 
 export const IMAGE_MODELS: ModelMetadata[] = [
-  // Google Multimodal Image Models
-  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Multimodal Image)', free: false, inputs: ['text', 'image'] },
-  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash Exp (Free)', free: true, inputs: ['text', 'image'] },
+  // === TRUE IMAGE GENERATION MODELS (use OpenRouter /images endpoint) ===
+  // These models actually generate/create images from text prompts
+  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Fast, via OpenRouter)', free: true, inputs: ['text'] },
+  { id: 'black-forest-labs/flux-1-dev', name: 'FLUX.1 Dev (Quality, via OpenRouter)', free: false, inputs: ['text'] },
+  { id: 'black-forest-labs/flux-1-pro', name: 'FLUX.1 Pro (Premium, via OpenRouter)', free: false, inputs: ['text'] },
+  { id: 'black-forest-labs/flux-1.1-pro', name: 'FLUX 1.1 Pro (Latest, via OpenRouter)', free: false, inputs: ['text'] },
+  { id: 'openai/dall-e-3', name: 'DALL·E 3 (OpenAI)', free: false, inputs: ['text'] },
 
-  // OpenAI Multimodal Image
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Multimodal Image)', free: false, inputs: ['text', 'image'] },
-  { id: 'openai/gpt-4o', name: 'GPT-4o (Vision & Image)', free: false, inputs: ['text', 'image'] },
-
-  // FLUX Engine
-  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Fast Engine)', free: true, inputs: ['text'] },
-  { id: 'black-forest-labs/flux-1-dev', name: 'FLUX.1 Dev', free: false, inputs: ['text'] },
-  { id: 'black-forest-labs/flux-1-pro', name: 'FLUX.1 Pro', free: false, inputs: ['text'] },
+  // === MULTIMODAL VISION MODELS (can analyse images, NOT generate them) ===
+  // Selecting these will route to Pollinations AI automatically for actual generation
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Vision → auto Pollinations)', free: false, inputs: ['text', 'image'] },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash Exp Free (Vision → auto Pollinations)', free: true, inputs: ['text', 'image'] },
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Vision → auto Pollinations)', free: false, inputs: ['text', 'image'] },
 ];
 
 export const VIDEO_MODELS: ModelMetadata[] = [

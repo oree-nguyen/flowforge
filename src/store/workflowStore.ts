@@ -459,23 +459,25 @@ async function executeSingleNode(
           finalPrompt = contentParts;
         }
 
-        const validModel = resolveValidModelId(data.model as string, 'google/gemini-2.0-flash-001', fetchedModels);
+        const validModel = resolveValidModelId(data.model as string, 'black-forest-labs/flux-1-schnell', fetchedModels);
 
         let imageUrl = '';
         try {
-          console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${validModel}):`, finalPrompt);
+          console.log(`[FlowForge Image Engine] Node "${data.label || node.id}" using model: ${validModel}`);
           const response = await generateImage(apiKey, validModel, finalPrompt, {}, { signal: controller.signal });
-          const content = response.choices?.[0]?.message?.content || '';
-          const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
-          if (match && match[1]) {
-            imageUrl = match[1];
+          // Prefer direct _imageUrl shortcut (set by generateImage internally)
+          imageUrl = (response as any)._imageUrl || '';
+          if (!imageUrl) {
+            const content = response.choices?.[0]?.message?.content || '';
+            const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
+            if (match && match[1]) imageUrl = match[1];
           }
         } catch (e: any) {
           if (e?.name === 'AbortError' || controller.signal.aborted) {
             canvasEngine.updateNodeData(node.id, { isGenerating: false });
             return;
           }
-          console.warn('[FlowForge OpenRouter ImageGen call failed, falling back to Pollinations Engine]:', e);
+          console.warn('[FlowForge Image Engine] Generation failed, using Pollinations fallback:', e);
         }
 
         if (controller.signal.aborted) {
