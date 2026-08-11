@@ -498,91 +498,78 @@ async function executeSingleNode(
           const cleanPrompt = typeof promptText === 'string' && promptText
             ? promptText
             : ((data.prompt as string) || 'cinematic professional photograph');
-          try {
-            if (!imageUrl || !imageUrl.startsWith('http')) {
-              const { generateImagePollinations } = await import('../services/openRouterApi');
-              const pollRes = await generateImagePollinations(cleanPrompt, { signal: controller.signal });
-              const bstr = atob(pollRes.dataUrl.split(',')[1]);
-              const bytes = new Uint8Array(bstr.length);
-              for (let i = 0; i < bstr.length; i++) bytes[i] = bstr.charCodeAt(i);
-              blob = new Blob([bytes], { type: 'image/png' });
-            } else {
-              const imgRes = await fetch(imageUrl, { signal: controller.signal });
-              if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}`);
-              blob = await imgRes.blob();
-            }
-          } catch (err) {
-            console.warn('[FlowForge Fail-Safe Engine] Image network fetch failed, generating procedural image blob:', err);
-            const { generateProceduralImageBlob } = await import('../services/openRouterApi');
-            blob = await generateProceduralImageBlob(cleanPrompt, 1024, 1024);
+
+          if (!imageUrl || !imageUrl.startsWith('http')) {
+            const { generateImagePollinations } = await import('../services/openRouterApi');
+            const pollRes = await generateImagePollinations(cleanPrompt, { signal: controller.signal });
+            const bstr = atob(pollRes.dataUrl.split(',')[1]);
+            const bytes = new Uint8Array(bstr.length);
+            for (let i = 0; i < bstr.length; i++) bytes[i] = bstr.charCodeAt(i);
+            blob = new Blob([bytes], { type: 'image/png' });
+          } else {
+            const imgRes = await fetch(imageUrl, { signal: controller.signal });
+            if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}: Không thể tải ảnh từ OpenRouter CDN`);
+            blob = await imgRes.blob();
           }
         }
       } else {
-        // ai.videoGen — OpenRouter /api/v1/videos with polling & procedural fail-safe
+        // ai.videoGen — OpenRouter /api/v1/videos with polling
+        if (!apiKey) {
+          throw new Error('Cần có API Key OpenRouter để sinh Video AI! Vui lòng nhập API Key trong Cài đặt.');
+        }
+
         const videoPrompt = promptText || (data.prompt as string) || 'cinematic short film scene';
         const duration = (data.duration as number) || 4;
-        const ratio = (data.aspectRatio as string) || '16:9';
 
-        try {
-          const { generateVideoOpenRouter, pollVideoStatus, fetchVideoContent } = await import('../services/openRouterApi');
+        const { generateVideoOpenRouter, pollVideoStatus, fetchVideoContent } = await import('../services/openRouterApi');
 
-          // Collect reference image from incoming image edges
-          const videoImgEdges = incomingEdges.filter(e => e.targetHandle === 'image');
-          let referenceImageUrl: string | undefined;
-          for (const ie of videoImgEdges) {
-            const srcNode = canvasEngine.getNode(ie.source);
-            if (srcNode) {
-              const url = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl;
-              if (url && typeof url === 'string') { referenceImageUrl = url; break; }
-            }
+        // Collect reference image from incoming image edges
+        const videoImgEdges = incomingEdges.filter(e => e.targetHandle === 'image');
+        let referenceImageUrl: string | undefined;
+        for (const ie of videoImgEdges) {
+          const srcNode = canvasEngine.getNode(ie.source);
+          if (srcNode) {
+            const url = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl;
+            if (url && typeof url === 'string') { referenceImageUrl = url; break; }
           }
-
-          const videoModel = resolveValidModelId(data.model as string, 'minimax/video-01', fetchedModels);
-          canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Đang gửi yêu cầu tạo video...' } });
-
-          const job = await generateVideoOpenRouter(
-            apiKey, videoModel, videoPrompt,
-            referenceImageUrl,
-            { resolution: '720p', duration },
-            { signal: controller.signal }
-          );
-
-          const jobId = job.id;
-          canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý (ID: ${jobId.slice(0, 8)}...)` } });
-
-          // Poll every 15s, max 20 minutes
-          const MAX_POLL = 80;
-          let videoBlob: Blob | null = null;
-          for (let attempt = 0; attempt < MAX_POLL; attempt++) {
-            await new Promise<void>((resolve, reject) => {
-              const timer = setTimeout(resolve, 15000);
-              controller.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
-            });
-            if (controller.signal.aborted) { canvasEngine.updateNodeData(node.id, { isGenerating: false }); return; }
-
-            const status = await pollVideoStatus(apiKey, jobId, { signal: controller.signal });
-            canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý... lần ${attempt + 1} (${status.status})` } });
-
-            if (status.status === 'completed') {
-              videoBlob = await fetchVideoContent(apiKey, jobId, { signal: controller.signal });
-              break;
-            } else if (status.status === 'failed' || status.status === 'error') {
-              throw new Error(`Video generation failed: ${status.error || status.status}`);
-            }
-          }
-
-          if (!videoBlob) throw new Error('Video generation timed out after 20 minutes');
-          blob = videoBlob;
-        } catch (e: any) {
-          if (e?.name === 'AbortError' || controller.signal.aborted) {
-            canvasEngine.updateNodeData(node.id, { isGenerating: false });
-            return;
-          }
-          console.warn('[FlowForge Fail-Safe Engine] OpenRouter Video API failed, generating procedural video blob:', e);
-          canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Đang tạo Video AI (Procedural Fail-Safe)...' } });
-          const { generateProceduralVideoBlob } = await import('../services/openRouterApi');
-          blob = await generateProceduralVideoBlob(videoPrompt, duration, ratio);
         }
+
+        const videoModel = resolveValidModelId(data.model as string, 'minimax/video-01', fetchedModels);
+        canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Đang gửi yêu cầu tạo video...' } });
+
+        const job = await generateVideoOpenRouter(
+          apiKey, videoModel, videoPrompt,
+          referenceImageUrl,
+          { resolution: '720p', duration },
+          { signal: controller.signal }
+        );
+
+        const jobId = job.id;
+        canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý (ID: ${jobId.slice(0, 8)}...)` } });
+
+        // Poll every 15s, max 20 minutes
+        const MAX_POLL = 80;
+        let videoBlob: Blob | null = null;
+        for (let attempt = 0; attempt < MAX_POLL; attempt++) {
+          await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, 15000);
+            controller.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
+          });
+          if (controller.signal.aborted) { canvasEngine.updateNodeData(node.id, { isGenerating: false }); return; }
+
+          const status = await pollVideoStatus(apiKey, jobId, { signal: controller.signal });
+          canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý... lần ${attempt + 1} (${status.status})` } });
+
+          if (status.status === 'completed') {
+            videoBlob = await fetchVideoContent(apiKey, jobId, { signal: controller.signal });
+            break;
+          } else if (status.status === 'failed' || status.status === 'error') {
+            throw new Error(`Video generation failed: ${status.error || status.status}`);
+          }
+        }
+
+        if (!videoBlob) throw new Error('Video generation timed out after 20 minutes');
+        blob = videoBlob;
       }
 
       if (controller.signal.aborted) {
