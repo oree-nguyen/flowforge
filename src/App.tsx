@@ -10,6 +10,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { ImageLibraryModal } from './components/ImageLibraryModal';
 import { ShortcutGuide } from './components/ShortcutGuide';
 import { VideoEditorWorkspace } from './components/VideoEditorWorkspace';
+import { AutoModeDialog } from './components/AutoModeDialog';
 import { useWorkflowStore } from './store/workflowStore';
 import { useAutoSave } from './hooks/useAutoSave';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -32,6 +33,7 @@ function App() {
   const setOpenVideoEditorNodeId = useWorkflowStore(state => state.setOpenVideoEditorNodeId);
   const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isAutoModeOpen, setIsAutoModeOpen] = useState(false);
 
   useAutoSave();
   useKeyboardShortcuts(() => setIsGuideOpen(prev => !prev));
@@ -68,6 +70,7 @@ function App() {
             <Toolbar
               onOpenSettings={() => setIsSettingsOpen(true)}
               onOpenImageLibrary={() => setIsImageLibraryOpen(true)}
+              onOpenAutoMode={() => setIsAutoModeOpen(true)}
             />
             <PropertiesPanel />
             <div className="absolute bottom-6 left-6 z-10 flex items-center gap-4">
@@ -81,6 +84,7 @@ function App() {
 
           <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
           <ImageLibraryModal isOpen={isImageLibraryOpen} onClose={() => setIsImageLibraryOpen(false)} />
+          <AutoModeDialog isOpen={isAutoModeOpen} onClose={() => setIsAutoModeOpen(false)} />
           {openVideoEditorNodeId && (
             <VideoEditorWorkspace
               nodeId={openVideoEditorNodeId}

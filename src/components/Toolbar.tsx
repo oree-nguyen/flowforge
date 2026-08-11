@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
-import { Settings, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText, Square } from 'lucide-react';
+import { Settings, Undo2, Redo2, Play, MousePointer2, Hand, ImagePlus, Plus, StickyNote, RefreshCw, FileText, Square, Clapperboard } from 'lucide-react';
 import { AddNodePopover } from './AddNodePopover';
 import { canvasEngine } from '../engine/canvasEngine';
 
-export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings?: () => void, onOpenImageLibrary?: () => void }) {
+export function Toolbar({
+  onOpenSettings,
+  onOpenImageLibrary,
+  onOpenAutoMode,
+}: {
+  onOpenSettings?: () => void;
+  onOpenImageLibrary?: () => void;
+  onOpenAutoMode?: () => void;
+}) {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const isExecuting = useWorkflowStore(state => state.isExecuting);
   const cancelExecution = useWorkflowStore(state => state.cancelExecution);
@@ -41,6 +49,16 @@ export function Toolbar({ onOpenSettings, onOpenImageLibrary }: { onOpenSettings
           >
             <Plus size={24} strokeWidth={2.5} className={isAddOpen ? 'rotate-45 transition-transform' : 'transition-transform'} />
           </button>
+
+          {isVisible('autoMode') && (
+            <button
+              className="w-10 h-10 rounded-2xl flex items-center justify-center transition-all bg-accent-lime/10 text-accent-lime border border-accent-lime/30 hover:bg-accent-lime hover:text-black hover:scale-105 shadow-[0_0_15px_rgba(198,241,53,0.2)]"
+              onClick={onOpenAutoMode}
+              title="Chế độ Auto — Tạo Workflow phim bằng AI"
+            >
+              <Clapperboard size={18} />
+            </button>
+          )}
         </div>
 
         <div className="w-8 h-[1px] bg-border-subtle my-3"></div>

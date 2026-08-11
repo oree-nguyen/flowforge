@@ -147,7 +147,8 @@ export async function chatCompletion(apiKey: string, model: string, messages: an
   return response.json();
 }
 
-export async function generateImage(apiKey: string, model: string, prompt: string, params: any = {}) {
+export async function generateImage(apiKey: string, model: string, prompt: string | any[], params: any = {}) {
+  const content = prompt;
   const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -158,7 +159,7 @@ export async function generateImage(apiKey: string, model: string, prompt: strin
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content }],
       ...params
     }),
   });

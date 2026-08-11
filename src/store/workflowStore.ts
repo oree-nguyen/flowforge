@@ -25,6 +25,7 @@ export interface SavedWorkflow {
 }
 
 export interface ToolbarVisibility {
+  autoMode: boolean;
   select: boolean;
   pan: boolean;
   note: boolean;
@@ -85,6 +86,7 @@ interface WorkflowState {
 }
 
 const DEFAULT_TOOLBAR_VISIBILITY: ToolbarVisibility = {
+  autoMode: true,
   select: true,
   pan: true,
   note: true,
@@ -682,8 +684,65 @@ export const useWorkflowStore = create<WorkflowState>()(
 
                 let blob: Blob;
                 if (node.type === 'ai.imageGen') {
-                  console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${data.model}) prompt:`, promptText);
-                  const response = await generateImage(apiKey, data.model as string, promptText);
+                  const imageEdges = incomingEdges.filter(e => e.targetHandle === 'image');
+                  const imageSources: string[] = [];
+
+                  for (const ie of imageEdges) {
+                    const srcNode = canvasEngine.getNode(ie.source);
+                    if (!srcNode) continue;
+                    const srcUrl = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl || srcNode.data?.file;
+                    if (srcUrl && typeof srcUrl === 'string' && srcUrl !== '[Embedded Image]') {
+                      imageSources.push(srcUrl);
+                    }
+                  }
+
+                  if (Array.isArray(data.referenceImageNodeIds)) {
+                    for (const refId of data.referenceImageNodeIds as string[]) {
+                      const refNode = canvasEngine.getNode(refId);
+                      if (refNode) {
+                        const srcUrl = refNode.data?.output?.previewUrl || refNode.data?.imageUrl || refNode.data?.file;
+                        if (srcUrl && typeof srcUrl === 'string' && !imageSources.includes(srcUrl) && srcUrl !== '[Embedded Image]') {
+                          imageSources.push(srcUrl);
+                        }
+                      }
+                    }
+                  }
+
+                  console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${data.model}) prompt:`, promptText, 'Image sources:', imageSources.length);
+
+                  let finalPrompt: any = promptText;
+
+                  if (imageSources.length > 0) {
+                    const contentParts: any[] = [];
+                    for (const imgUrl of imageSources) {
+                      let finalDataUrl = imgUrl;
+                      if (imgUrl.startsWith('blob:') || (imgUrl.startsWith('http') && !imgUrl.startsWith('data:'))) {
+                        try {
+                          const imgRes = await fetch(imgUrl);
+                          const imgBlob = await imgRes.blob();
+                          finalDataUrl = await new Promise<string>((resolve, reject) => {
+                            const r = new FileReader();
+                            r.onloadend = () => resolve(r.result as string);
+                            r.onerror = reject;
+                            r.readAsDataURL(imgBlob);
+                          });
+                        } catch (e) {
+                          console.warn('Failed converting blob image to data URI', e);
+                        }
+                      }
+                      contentParts.push({
+                        type: 'image_url',
+                        image_url: { url: finalDataUrl }
+                      });
+                    }
+                    contentParts.push({
+                      type: 'text',
+                      text: promptText || (data.prompt as string) || ''
+                    });
+                    finalPrompt = contentParts;
+                  }
+
+                  const response = await generateImage(apiKey, (data.model as string) || 'google/gemini-banana-nano-2-pro', finalPrompt);
                   let imageUrl = '';
                   const content = response.choices?.[0]?.message?.content || '';
                   const match = content.match(/!\[.*?\]\((.*?)\)/) || content.match(/(https?:\/\/[^\s]+)/);

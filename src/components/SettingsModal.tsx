@@ -85,6 +85,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
   if (!isOpen) return null;
 
   const toolbarLabels: Record<keyof ToolbarVisibility, string> = {
+    autoMode: 'Auto Mode (Movie AI Generator)',
     select: 'Select Tool (V)',
     pan: 'Pan Tool (Space)',
     note: 'Add Note',
@@ -343,6 +344,7 @@ export function SettingsModal({ isOpen, onClose }: { isOpen: boolean, onClose: (
 }
 
 const DEFAULT_TOOLBAR_VISIBILITY: ToolbarVisibility = {
+  autoMode: true,
   select: true,
   pan: true,
   note: true,

@@ -159,6 +159,7 @@ export interface AIImageGenData {
   outputFormat?: 'png' | 'webp' | 'jpeg';
   background?: 'transparent' | 'opaque';
   output?: string[];
+  referenceImageNodeIds?: string[];
   costEstimate?: number;
   actualCost?: number;
   [key: string]: unknown;

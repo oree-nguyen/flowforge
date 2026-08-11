@@ -153,20 +153,19 @@ export function AIImageGenNode({ id, data, selected, onConnectStart, onDisconnec
           </div>
         )}
 
-        {inputs.includes('image') && (
-          <div 
-            className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
-            title="Image Input"
-            data-target={`${id}:image`}
-            data-portid="image"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onDisconnectStart?.(e, id, 'image');
-            }}
-          >
-            <ImageIcon size={14} />
-          </div>
-        )}
+        {/* Always enable Image input handle for reference / composed image nodes */}
+        <div 
+          className="port-handle w-8 h-8 rounded-full border border-border-subtle bg-panel flex items-center justify-center text-text-muted hover:text-white hover:border-white cursor-crosshair shadow-md"
+          title="Image Input (Reference Image)"
+          data-target={`${id}:image`}
+          data-portid="image"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onDisconnectStart?.(e, id, 'image');
+          }}
+        >
+          <ImageIcon size={14} />
+        </div>
 
         {inputs.includes('file') && (
           <div 
