@@ -401,7 +401,7 @@ async function executeSingleNode(
     } else if (node.type === 'ai.imageGen' || node.type === 'ai.videoGen') {
       canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Generating...' } });
 
-      let blob: Blob;
+      let blob: Blob | undefined;
       if (node.type === 'ai.imageGen') {
         const imageEdges = incomingEdges.filter(e => e.targetHandle === 'image');
         const imageSources: string[] = [];
@@ -467,7 +467,16 @@ async function executeSingleNode(
           const response = await generateImage(apiKey, validModel, finalPrompt, {}, { signal: controller.signal });
           // Prefer direct _imageUrl shortcut (set by generateImage internally)
           imageUrl = (response as any)._imageUrl || '';
-          if (!imageUrl) {
+          const imageDataUrl: string = (response as any)._imageDataUrl || '';
+          // If we already have the blob data (Pollinations / b64_json), skip the second fetch
+          if (imageDataUrl) {
+            const arr = imageDataUrl.split(',');
+            const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+            const bstr = atob(arr[1]);
+            const bytes = new Uint8Array(bstr.length);
+            for (let i = 0; i < bstr.length; i++) bytes[i] = bstr.charCodeAt(i);
+            blob = new Blob([bytes], { type: mime });
+          } else if (!imageUrl) {
             const content = response.choices?.[0]?.message?.content || '';
             const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
             if (match && match[1]) imageUrl = match[1];
@@ -485,13 +494,17 @@ async function executeSingleNode(
           return;
         }
 
-        if (!imageUrl || !imageUrl.startsWith('http')) {
-          const cleanPrompt = typeof promptText === 'string' && promptText ? promptText : ((data.prompt as string) || 'Cinematic fantasy scene');
-          imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+        if (!blob) {
+          // blob not yet created (OpenRouter plain URL path or fallback)
+          if (!imageUrl || !imageUrl.startsWith('http')) {
+            const cleanPrompt = typeof promptText === 'string' && promptText
+              ? promptText
+              : ((data.prompt as string) || 'cinematic professional photograph');
+            imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+          }
+          const imgRes = await fetch(imageUrl, { signal: controller.signal });
+          blob = await imgRes.blob();
         }
-
-        const imgRes = await fetch(imageUrl, { signal: controller.signal });
-        blob = await imgRes.blob();
       } else {
         blob = new Blob(['dummy video'], { type: 'video/mp4' });
       }
@@ -503,6 +516,10 @@ async function executeSingleNode(
 
       const runId = Date.now().toString();
       const indexedDbKey = `${targetWfId}:${node.id}:${runId}`;
+      if (!blob) {
+        canvasEngine.updateNodeData(node.id, { isGenerating: false, output: { status: 'Error: image generation produced no output' } });
+        return;
+      }
       await saveMediaBlob(indexedDbKey, blob, node.type === 'ai.imageGen' ? 'image' : 'video', targetWfId, node.id);
 
       const previewUrl = URL.createObjectURL(blob);

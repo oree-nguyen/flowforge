@@ -165,19 +165,30 @@ const OPENROUTER_IMAGE_GEN_MODELS = new Set([
   'openai/dall-e-2',
 ]);
 
-// Generate image using Pollinations AI (free, reliable, no API key required)
+// Generate image using Pollinations AI — fetches blob immediately (avoids double-fetch in workflowStore)
 export async function generateImagePollinations(
   promptText: string,
   options?: { signal?: AbortSignal; width?: number; height?: number; seed?: number }
-): Promise<{ url: string }> {
-  const seed = options?.seed || Math.floor(Math.random() * 1000000);
+): Promise<{ url: string; dataUrl: string }> {
+  const seed = options?.seed ?? Math.floor(Math.random() * 1000000);
   const width = options?.width || 1024;
   const height = options?.height || 1024;
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=${width}&height=${height}&nologo=true&seed=${seed}`;
+  // Ensure prompt is never empty — use generic fallback
+  const safePrompt = (promptText || '').trim() || 'cinematic professional photograph';
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=${width}&height=${height}&nologo=true&seed=${seed}`;
   const res = await fetch(url, { signal: options?.signal });
   if (!res.ok) throw new Error(`Pollinations image generation failed: ${res.statusText}`);
-  return { url };
+  const blob = await res.blob();
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+  return { url, dataUrl };
 }
+
+
 
 export async function generateImage(
   apiKey: string,
@@ -203,7 +214,7 @@ export async function generateImage(
       },
       body: JSON.stringify({
         model,
-        prompt: promptText,
+        prompt: promptText || 'cinematic professional photograph',
         ...params,
       }),
       signal: options?.signal,
@@ -215,20 +226,35 @@ export async function generateImage(
     }
 
     const result = await response.json();
-    // OpenRouter /images returns { data: [{ url: '...', b64_json: '...' }] }
-    const imageUrl = result.data?.[0]?.url || result.data?.[0]?.b64_json;
-    if (!imageUrl) throw new Error('No image URL in OpenRouter /images response');
-    return { choices: [{ message: { content: `![image](${imageUrl})` } }], _imageUrl: imageUrl };
+    // OpenRouter /images returns { data: [{ url: '...' }] } or { data: [{ b64_json: '...' }] }
+    const rawUrl: string = result.data?.[0]?.url || '';
+    const rawB64: string = result.data?.[0]?.b64_json || '';
+
+    if (!rawUrl && !rawB64) throw new Error('No image data in OpenRouter /images response');
+
+    if (rawB64) {
+      // b64_json: convert to data URL directly — no second fetch needed
+      const dataUrl = `data:image/png;base64,${rawB64}`;
+      return { choices: [{ message: { content: `![image](openrouter-b64)` } }], _imageUrl: rawUrl || 'openrouter-b64', _imageDataUrl: dataUrl };
+    }
+
+    // Plain URL from OpenRouter — return it (workflowStore will fetch it once)
+    return { choices: [{ message: { content: `![image](${rawUrl})` } }], _imageUrl: rawUrl };
   }
 
-  // For multimodal models (Gemini, GPT-4o etc.) that can understand/describe images
-  // but cannot generate them via /chat/completions: route directly to Pollinations AI
+  // For vision-only models (Gemini, GPT-4o etc.): route to Pollinations AI
+  // generateImagePollinations fetches blob immediately → returns dataUrl to avoid second fetch
   const pollinationsResult = await generateImagePollinations(promptText, {
     signal: options?.signal,
     seed: Math.floor(Math.random() * 1000000),
   });
-  return { choices: [{ message: { content: `![image](${pollinationsResult.url})` } }], _imageUrl: pollinationsResult.url };
+  return {
+    choices: [{ message: { content: `![image](${pollinationsResult.url})` } }],
+    _imageUrl: pollinationsResult.url,
+    _imageDataUrl: pollinationsResult.dataUrl,
+  };
 }
+
 
 export async function fetchVideoContent(apiKey: string, generationId: string): Promise<Blob> {
   const response = await fetch(`${OPENROUTER_API_URL}/videos/${generationId}/content?index=0`, {
