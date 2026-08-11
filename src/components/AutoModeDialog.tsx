@@ -133,7 +133,7 @@ export function AutoModeDialog({ isOpen, onClose }: AutoModeDialogProps) {
                 onChange={e => setTopic(e.target.value)}
                 placeholder="Ví dụ: Phim hành động ngắn kể về 2 robot đánh nhau ở thành phố tương lai, có cảnh rượt đuổi bằng xe bay..."
                 rows={4}
-                className="w-full bg-canvas/80 border border-border-subtle focus:border-accent-lime rounded-2xl p-4 text-xs text-white placeholder-text-muted/50 outline-none transition-colors leading-relaxed resize-none"
+                className="w-full bg-[#121216] border border-white/15 focus:border-accent-lime focus:bg-[#16161F] rounded-2xl p-4 text-xs text-white placeholder-text-muted/60 outline-none transition-all leading-relaxed resize-none shadow-inner"
               />
             </div>
 
