@@ -807,10 +807,10 @@ export function CanvasRenderer() {
       </div>
 
       {/* Floating Toolbar */}
-      {selectedIds.length === 1 && selectedIds[0].startsWith('node') && (
+      {selectedIds.length === 1 && Boolean(canvasEngine.getNode(selectedIds[0])) && (
         <NodeFloatingToolbar nodeId={selectedIds[0]} />
       )}
-      {selectedIds.length === 1 && selectedIds[0].startsWith('e_') && (
+      {selectedIds.length === 1 && (selectedIds[0].startsWith('e_') || selectedIds[0].startsWith('edge_')) && (
         <EdgeFloatingToolbar edgeId={selectedIds[0]} />
       )}
 

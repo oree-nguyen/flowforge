@@ -389,35 +389,42 @@ Hãy xuất ra JSON đúng schema scene nodes & edges.`;
   const existingNodeIds = new Set(allRawNodes.map(n => n.node_id));
 
   // Convert to FlowForge NodeData format
-  const formattedNodes: NodeData[] = allRawNodes.map((n, i) => ({
-    id: n.node_id || `node_${Date.now()}_${i}`,
-    type: n.type || 'ai.imageGen',
-    position: { x: 0, y: 0 },
-    data: {
-      model: n.data?.model || (n.type === 'ai.videoGen' ? 'google/veo-3.1-pro' : 'google/gemini-banana-nano-2-pro'),
-      prompt: n.data?.prompt || '',
-      aspectRatio: n.data?.aspectRatio || '16:9',
-      duration: n.data?.duration || 5,
-      nodeName: n.data?.label || n.data?.nodeName || (n.type === 'ai.videoGen' ? `Video Cảnh ${i + 1}` : `Image Asset`),
-      scene_id: n.scene_id,
-      asset_ref: n.asset_ref,
-      referenceImageNodeIds: n.data?.referenceImageNodeIds || [],
-    }
-  }));
+  const formattedNodes: NodeData[] = allRawNodes.map((n, i) => {
+    const rawId = n.node_id || `auto_${Date.now()}_${i}`;
+    const id = rawId.startsWith('node_') ? rawId : `node_${rawId}`;
+    return {
+      id,
+      type: n.type || 'ai.imageGen',
+      position: { x: 0, y: 0 },
+      data: {
+        model: n.data?.model || (n.type === 'ai.videoGen' ? 'google/veo-3.1-pro' : 'google/gemini-banana-nano-2-pro'),
+        prompt: n.data?.prompt || '',
+        aspectRatio: n.data?.aspectRatio || '16:9',
+        duration: n.data?.duration || 5,
+        nodeName: n.data?.label || n.data?.nodeName || (n.type === 'ai.videoGen' ? `Video Cảnh ${i + 1}` : `Image Asset`),
+        scene_id: n.scene_id,
+        asset_ref: n.asset_ref,
+        referenceImageNodeIds: (n.data?.referenceImageNodeIds || []).map((rid: string) => rid.startsWith('node_') ? rid : `node_${rid}`),
+      }
+    };
+  });
 
   // Filter valid edges
   const formattedEdges: EdgeData[] = [];
   const edgeIdSet = new Set<string>();
+  const formatNodeId = (id: string) => id.startsWith('node_') ? id : `node_${id}`;
 
   allRawEdges.forEach((e) => {
     if (existingNodeIds.has(e.source) && existingNodeIds.has(e.target)) {
-      const edgeId = `edge_${e.source}_${e.target}_${e.sourceHandle || 'out'}_${e.targetHandle || 'in'}`;
+      const srcId = formatNodeId(e.source);
+      const tgtId = formatNodeId(e.target);
+      const edgeId = `edge_${srcId}_${tgtId}_${e.sourceHandle || 'out'}_${e.targetHandle || 'in'}`;
       if (!edgeIdSet.has(edgeId)) {
         edgeIdSet.add(edgeId);
         formattedEdges.push({
           id: edgeId,
-          source: e.source,
-          target: e.target,
+          source: srcId,
+          target: tgtId,
           sourceHandle: e.sourceHandle || 'out',
           targetHandle: e.targetHandle || (e.source.includes('img') ? 'image' : 'text'),
         });
