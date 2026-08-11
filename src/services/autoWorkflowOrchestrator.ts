@@ -45,13 +45,20 @@ export interface SceneNodeResult {
   }>;
 }
 
+const MODEL_CANDIDATES = [
+  'deepseek/deepseek-v4-flash',
+  'deepseek/deepseek-chat',
+  'google/gemini-2.0-flash-001',
+  'meta-llama/llama-3.3-70b-instruct',
+];
+
 // ── Call API helper with DeepSeek V4 Flash config & retries ──
 async function callDeepSeekJSON<T>(
   apiKey: string,
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number = 8000,
-  maxRetries: number = 3
+  maxRetries: number = 4
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -62,20 +69,21 @@ async function callDeepSeekJSON<T>(
         { role: 'user', content: userPrompt }
       ];
 
+      const selectedModel = MODEL_CANDIDATES[(attempt - 1) % MODEL_CANDIDATES.length];
+
       const params: Record<string, any> = {
-        model: 'deepseek/deepseek-v4-flash',
+        model: selectedModel,
         thinking: { type: 'disabled' },
-        provider: { only: ['deepseek'], allow_fallbacks: false },
         max_tokens: maxTokens,
         temperature: 0.3,
         response_format: { type: 'json_object' }
       };
 
-      const response = await chatCompletion(apiKey, 'deepseek/deepseek-v4-flash', messages, params);
+      const response = await chatCompletion(apiKey, selectedModel, messages, params);
 
       // Log prompt caching usage if present
       if (response?.usage) {
-        console.log(`[AutoOrchestrator DeepSeek Cache] hit: ${response.usage.prompt_cache_hit_tokens || 0}, miss: ${response.usage.prompt_cache_miss_tokens || 0}`);
+        console.log(`[AutoOrchestrator ${selectedModel} Cache] hit: ${response.usage.prompt_cache_hit_tokens || 0}, miss: ${response.usage.prompt_cache_miss_tokens || 0}`);
       }
 
       const choice = response.choices?.[0];
@@ -91,9 +99,9 @@ async function callDeepSeekJSON<T>(
       return parsed;
     } catch (err: any) {
       lastError = err;
-      console.warn(`[AutoOrchestrator DeepSeek Call Attempt ${attempt}/${maxRetries} Failed]:`, err.message);
+      console.warn(`[AutoOrchestrator Call Attempt ${attempt}/${maxRetries} Failed]:`, err.message);
       if (attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, 1500 * attempt));
+        await new Promise(r => setTimeout(r, 1200 * attempt));
       }
     }
   }
