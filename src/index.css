@@ -7,7 +7,6 @@
 @layer base {
   :root {
     --bg-canvas: #0A0A0C;
-    --bg-canvas-rgb: 10, 10, 12;
     --bg-panel: rgba(20, 20, 22, 0.85);
     --bg-node: #1C1C1F;
     --accent-lime: #C6F135;

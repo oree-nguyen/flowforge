@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: 'rgb(var(--bg-canvas-rgb) / <alpha-value>)',
+        canvas: 'var(--bg-canvas)',
         panel: 'var(--bg-panel)',
         node: 'var(--bg-node)',
         accent: {
