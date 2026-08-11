@@ -37,15 +37,18 @@ export const TEXT_MODELS: ModelMetadata[] = [
 ];
 
 export const IMAGE_MODELS: ModelMetadata[] = [
-  // FLUX
-  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Fast)', free: true, inputs: ['text'] },
+  // Google Multimodal Image Models
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash (Multimodal Image)', free: false, inputs: ['text', 'image'] },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash Exp (Free)', free: true, inputs: ['text', 'image'] },
+
+  // OpenAI Multimodal Image
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini (Multimodal Image)', free: false, inputs: ['text', 'image'] },
+  { id: 'openai/gpt-4o', name: 'GPT-4o (Vision & Image)', free: false, inputs: ['text', 'image'] },
+
+  // FLUX Engine
+  { id: 'black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Fast Engine)', free: true, inputs: ['text'] },
   { id: 'black-forest-labs/flux-1-dev', name: 'FLUX.1 Dev', free: false, inputs: ['text'] },
   { id: 'black-forest-labs/flux-1-pro', name: 'FLUX.1 Pro', free: false, inputs: ['text'] },
-  { id: 'black-forest-labs/flux-1.1-pro', name: 'FLUX 1.1 Pro', free: false, inputs: ['text'] },
-
-  // OpenAI & Stability
-  { id: 'openai/dall-e-3', name: 'DALL-E 3', free: false, inputs: ['text'] },
-  { id: 'stabilityai/stable-diffusion-3.5-large', name: 'Stable Diffusion 3.5 Large', free: false, inputs: ['text'] },
 ];
 
 export const VIDEO_MODELS: ModelMetadata[] = [

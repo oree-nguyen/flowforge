@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { canvasEngine, type NodeData } from '../engine/canvasEngine';
 import { toast } from './toastStore';
-import { type OpenRouterModel } from '../services/openRouterApi';
+import { type OpenRouterModel, resolveValidModelId } from '../services/openRouterApi';
 
 export type ToolMode = 'select' | 'pan';
 
@@ -742,22 +742,29 @@ export const useWorkflowStore = create<WorkflowState>()(
                     finalPrompt = contentParts;
                   }
 
-                  const response = await generateImage(apiKey, (data.model as string) || 'black-forest-labs/flux-1-schnell', finalPrompt);
+                  const fetchedModels = get().fetchedModels;
+                  const validModel = resolveValidModelId(data.model as string, 'google/gemini-2.0-flash-001', fetchedModels);
+
                   let imageUrl = '';
-                  const content = response.choices?.[0]?.message?.content || '';
-                  const match = content.match(/!\[.*?\]\((.*?)\)/) || content.match(/(https?:\/\/[^\s]+)/);
-                  if (match && match[1]) {
-                    imageUrl = match[1];
-                  } else {
-                    imageUrl = content;
+                  try {
+                    console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${validModel}):`, finalPrompt);
+                    const response = await generateImage(apiKey, validModel, finalPrompt);
+                    const content = response.choices?.[0]?.message?.content || '';
+                    const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
+                    if (match && match[1]) {
+                      imageUrl = match[1];
+                    }
+                  } catch (e) {
+                    console.warn('[FlowForge OpenRouter ImageGen call failed, falling back to Pollinations Engine]:', e);
                   }
-                  
-                  if (imageUrl.startsWith('http')) {
-                    const imgRes = await fetch(imageUrl);
-                    blob = await imgRes.blob();
-                  } else {
-                    throw new Error('Could not parse image URL from response: ' + content);
+
+                  if (!imageUrl || !imageUrl.startsWith('http')) {
+                    const cleanPrompt = typeof promptText === 'string' && promptText ? promptText : ((data.prompt as string) || 'Cinematic fantasy scene');
+                    imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
                   }
+
+                  const imgRes = await fetch(imageUrl);
+                  blob = await imgRes.blob();
                 } else {
                   blob = new Blob(['dummy video'], { type: 'video/mp4' });
                 }

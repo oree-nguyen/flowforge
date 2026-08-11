@@ -395,8 +395,8 @@ Hãy xuất ra JSON đúng schema scene nodes & edges.`;
 
     // Sanitize model ID: If LLM generated invalid/dummy model ID or unknown model, fallback to solid defaults
     let rawModel = (n.data?.model as string) || '';
-    if (!rawModel || rawModel.includes('banana') || rawModel.includes('veo') || !rawModel.includes('/')) {
-      rawModel = n.type === 'ai.videoGen' ? 'minimax/video-01' : 'black-forest-labs/flux-1-schnell';
+    if (!rawModel || rawModel.includes('banana') || rawModel.includes('veo') || rawModel.includes('schnell') || !rawModel.includes('/')) {
+      rawModel = n.type === 'ai.videoGen' ? 'minimax/video-01' : 'google/gemini-2.0-flash-001';
     }
 
     return {

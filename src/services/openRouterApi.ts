@@ -265,3 +265,44 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
   
   return new Blob(byteArrays, { type: mimeType });
 }
+
+export function resolveValidModelId(
+  requestedModel: string | undefined,
+  defaultFallback: string = 'google/gemini-2.0-flash-001',
+  fetchedModels: OpenRouterModel[] = []
+): string {
+  if (!requestedModel) return defaultFallback;
+
+  if (fetchedModels && fetchedModels.length > 0) {
+    if (fetchedModels.some(m => m.id === requestedModel)) {
+      return requestedModel;
+    }
+  }
+
+  const KNOWN_VALID = new Set([
+    'google/gemini-2.0-flash-001',
+    'google/gemini-2.0-flash-exp:free',
+    'google/gemini-1.5-flash',
+    'google/gemini-1.5-pro',
+    'openai/gpt-4o',
+    'openai/gpt-4o-mini',
+    'openai/o3-mini',
+    'openai/o1',
+    'deepseek/deepseek-chat',
+    'deepseek/deepseek-r1',
+    'deepseek/deepseek-r1:free',
+    'meta-llama/llama-3.3-70b-instruct',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'anthropic/claude-3.5-sonnet',
+    'anthropic/claude-3.7-sonnet',
+    'mistralai/mistral-nemo:free',
+    'google/gemma-2-9b-it:free',
+    'minimax/video-01',
+  ]);
+
+  if (KNOWN_VALID.has(requestedModel)) {
+    return requestedModel;
+  }
+
+  return defaultFallback;
+}
