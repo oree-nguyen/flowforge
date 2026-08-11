@@ -75,11 +75,12 @@ interface WorkflowState {
 
   isSettingsOpen: boolean;
   setIsSettingsOpen: (val: boolean) => void;
+  executingWorkflows: Record<string, WorkflowExecutionInfo>;
   activeAbortController: AbortController | null;
-  cancelExecution: () => void;
+  cancelExecution: (workflowId?: string) => void;
 
   isExecuting: boolean;
-  executeWorkflow: () => Promise<void>;
+  executeWorkflow: (targetWfId?: string) => Promise<void>;
 
   openVideoEditorNodeId: string | null;
   setOpenVideoEditorNodeId: (id: string | null) => void;
@@ -100,53 +101,430 @@ const DEFAULT_TOOLBAR_VISIBILITY: ToolbarVisibility = {
 
 const DEFAULT_WORKFLOW_ID = 'default_wf';
 
-// Topological Sort function for Execution Order
-function getExecutionOrder(nodes: NodeData[], edges: any[]): NodeData[] {
-  const nodeMap = new Map<string, NodeData>();
-  nodes.forEach(n => nodeMap.set(n.id, n));
+export interface WorkflowExecutionInfo {
+  isExecuting: boolean;
+  controller: AbortController;
+}
+
+// Compute Topological Waves for Level-Based Parallel Execution
+function getExecutionWaves(nodes: NodeData[], edges: any[]): NodeData[][] {
+  const aiNodes = nodes.filter(n => n?.type?.startsWith('ai.'));
+  if (aiNodes.length === 0) return [];
+
+  const aiNodeMap = new Map<string, NodeData>();
+  const aiNodeIds = new Set<string>();
+  aiNodes.forEach(n => {
+    aiNodeMap.set(n.id, n);
+    aiNodeIds.add(n.id);
+  });
 
   const inDegree = new Map<string, number>();
   const graph = new Map<string, string[]>();
 
-  nodes.forEach(n => {
+  aiNodes.forEach(n => {
     inDegree.set(n.id, 0);
     graph.set(n.id, []);
   });
 
   edges.forEach(e => {
-    if (nodeMap.has(e.source) && nodeMap.has(e.target)) {
+    const srcIsAi = aiNodeIds.has(e.source);
+    const tgtIsAi = aiNodeIds.has(e.target);
+
+    if (srcIsAi && tgtIsAi) {
       graph.get(e.source)!.push(e.target);
       inDegree.set(e.target, (inDegree.get(e.target) || 0) + 1);
+    } else if (srcIsAi && !tgtIsAi) {
+      const downstreamEdges = edges.filter(de => de.source === e.target && aiNodeIds.has(de.target));
+      downstreamEdges.forEach(de => {
+        graph.get(e.source)!.push(de.target);
+        inDegree.set(de.target, (inDegree.get(de.target) || 0) + 1);
+      });
     }
   });
 
-  const queue: string[] = [];
-  inDegree.forEach((degree, id) => {
-    if (degree === 0) queue.push(id);
-  });
+  const waves: NodeData[][] = [];
+  let remainingNodes = new Set(aiNodes.map(n => n.id));
 
-  const sorted: NodeData[] = [];
-  while (queue.length > 0) {
-    const currId = queue.shift()!;
-    const currNode = nodeMap.get(currId);
-    if (currNode) sorted.push(currNode);
-
-    const neighbors = graph.get(currId) || [];
-    for (const neighbor of neighbors) {
-      const newDeg = (inDegree.get(neighbor) || 0) - 1;
-      inDegree.set(neighbor, newDeg);
-      if (newDeg === 0) queue.push(neighbor);
-    }
-  }
-
-  // Fallback if graph has cycles or disconnected nodes
-  if (sorted.length < nodes.length) {
-    nodes.forEach(n => {
-      if (!sorted.includes(n)) sorted.push(n);
+  while (remainingNodes.size > 0) {
+    const currentWaveIds: string[] = [];
+    remainingNodes.forEach(id => {
+      if ((inDegree.get(id) || 0) <= 0) {
+        currentWaveIds.push(id);
+      }
     });
+
+    if (currentWaveIds.length === 0) {
+      const fallbackWave = Array.from(remainingNodes).map(id => aiNodeMap.get(id)!);
+      waves.push(fallbackWave);
+      break;
+    }
+
+    const currentWaveNodes: NodeData[] = [];
+    currentWaveIds.forEach(id => {
+      remainingNodes.delete(id);
+      const node = aiNodeMap.get(id);
+      if (node) currentWaveNodes.push(node);
+
+      const neighbors = graph.get(id) || [];
+      neighbors.forEach(tgtId => {
+        inDegree.set(tgtId, (inDegree.get(tgtId) || 0) - 1);
+      });
+    });
+
+    waves.push(currentWaveNodes);
   }
 
-  return sorted;
+  return waves;
+}
+
+// Single Node Execution Function
+async function executeSingleNode(
+  node: NodeData,
+  _allNodes: NodeData[],
+  allEdges: any[],
+  apiKey: string,
+  controller: AbortController,
+  targetWfId: string,
+  fetchedModels: OpenRouterModel[] = []
+): Promise<void> {
+  if (controller.signal.aborted) {
+    throw new Error('Execution cancelled');
+  }
+
+  const data = node.data || {};
+
+  const incomingEdges = allEdges.filter(e => e.target === node.id);
+  const textOrGeneralEdges = incomingEdges.filter(e => e.targetHandle === 'text' || !e.targetHandle || e.targetHandle === 'image');
+  const fileEdges = incomingEdges.filter(e => e.targetHandle === 'file');
+
+  for (const inEdge of incomingEdges) {
+    const srcNode = canvasEngine.getNode(inEdge.source);
+    if (!srcNode) continue;
+    if (srcNode.type?.startsWith('ai.')) {
+      if (srcNode.data?.output === undefined || srcNode.data?.output === 'Generating...') {
+        throw new Error(`Node "${data.label || node.id}" đang chờ output từ node nguồn "${srcNode.data?.label || srcNode.id}". Node nguồn chưa sẵn sàng!`);
+      }
+    }
+  }
+
+  const promptParts: string[] = [];
+
+  if (data.useOwnPrompt !== false && data.prompt) {
+    promptParts.push(data.prompt as string);
+  }
+
+  for (const edge of textOrGeneralEdges) {
+    const srcNode = canvasEngine.getNode(edge.source);
+    if (!srcNode) continue;
+    const srcData = srcNode.data || {};
+    const srcName = srcData.label || srcNode.type || srcNode.id;
+
+    if (srcNode.type === 'input.text' && srcData.text) {
+      promptParts.push(srcData.text as string);
+    } else if (srcNode.type === 'input.file' && srcData.extractedFile) {
+      const ef = srcData.extractedFile as any;
+      if (ef.text) {
+        const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
+        let lang = '';
+        if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
+        if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
+        if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
+        if (['.xml', '.svg'].includes(ext)) lang = 'xml';
+
+        const mdFormattedContent = lang
+          ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
+          : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
+
+        promptParts.push(mdFormattedContent);
+      }
+    } else if (srcNode.type === 'ai.textGen' && typeof srcData.output === 'string') {
+      promptParts.push(`=== Output từ node "${srcName}" ===\n${srcData.output}`);
+    }
+  }
+
+  const promptText = promptParts.join('\n\n---\n\n');
+
+  if (!promptText && node.type !== 'ai.videoGen') {
+    console.warn(`[FlowForge Engine] Skipping node ${node.id} - empty prompt.`);
+    return;
+  }
+
+  canvasEngine.updateNodeData(node.id, { isGenerating: true });
+
+  try {
+    const { chatCompletion, generateImage } = await import('../services/openRouterApi');
+    const { saveMediaBlob } = await import('../services/mediaStorage');
+    const { requestAccessToken, uploadFileToDrive } = await import('../services/googleDriveApi');
+
+    if (node.type === 'ai.textGen') {
+      canvasEngine.updateNodeData(node.id, { output: 'Generating...' });
+      const messages: any[] = [];
+      if (data.systemPrompt) messages.push({ role: 'system', content: data.systemPrompt });
+
+      const contentParts: any[] = [];
+
+      if (promptText) {
+        contentParts.push({ type: 'text', text: promptText });
+      }
+
+      const isClaudeModel = (data.model as string)?.includes('anthropic') || (data.model as string)?.includes('claude');
+
+      for (const fedge of fileEdges) {
+        const srcNode = canvasEngine.getNode(fedge.source);
+        if (!srcNode || srcNode.type !== 'input.file') continue;
+        const ef = srcNode.data?.extractedFile as any;
+        if (!ef) continue;
+
+        if (isClaudeModel && ef.base64 && ef.mimeType === 'application/pdf') {
+          contentParts.push({
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: ef.base64,
+            }
+          });
+        } else {
+          const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
+          let lang = '';
+          if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
+          if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
+          if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
+          if (['.xml', '.svg'].includes(ext)) lang = 'xml';
+
+          const mdFormattedContent = lang
+            ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
+            : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
+
+          contentParts.push({
+            type: 'text',
+            text: `\n\n${mdFormattedContent}\n\n`,
+          });
+        }
+      }
+
+      messages.push({ role: 'user', content: contentParts.length === 1 ? contentParts[0].text : contentParts });
+
+      const modelToUse = resolveValidModelId(data.model as string, 'deepseek/deepseek-chat', fetchedModels);
+      const hideReasoning = data.hideReasoning !== false;
+      const requestParams: any = {
+        temperature: typeof data.temperature === 'number' ? data.temperature : 0.7,
+        top_p: typeof data.topP === 'number' ? data.topP : 1,
+        max_tokens: data.maxTokens || 16000,
+        response_format: data.responseFormat === 'json' ? { type: 'json_object' } : undefined,
+      };
+
+      if (hideReasoning) {
+        requestParams.reasoning = { exclude: true };
+      }
+
+      const response = await chatCompletion(apiKey, modelToUse, messages, requestParams);
+
+      const choiceMessage = response.choices?.[0]?.message || {};
+      let rawContent = choiceMessage.content || '';
+      let reasoningTrace = choiceMessage.reasoning || choiceMessage.reasoning_content || '';
+
+      if (!reasoningTrace && typeof rawContent === 'string') {
+        const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/i);
+        if (thinkMatch) {
+          reasoningTrace = thinkMatch[1].trim();
+          rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        }
+      }
+
+      let finalOutput = rawContent;
+
+      if (!hideReasoning && reasoningTrace) {
+        finalOutput = `[Reasoning Trace]\n${reasoningTrace}\n\n[Final Output]\n${rawContent}`;
+      }
+
+      if (!finalOutput) {
+        finalOutput = typeof rawContent === 'string' ? rawContent : 'No output.';
+      }
+
+      canvasEngine.updateNodeData(node.id, { 
+        output: finalOutput, 
+        rawContent: rawContent,
+        debugReasoning: reasoningTrace,
+        isGenerating: false 
+      });
+
+      if (data.autoDownload) {
+        const blob = new Blob([finalOutput], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `output_${node.id}_${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      const allOutEdgesText = allEdges.filter(e => e.source === node.id);
+      for (const outEdge of allOutEdgesText) {
+        const targetNode = canvasEngine.getNode(outEdge.target);
+        if (targetNode?.type === 'input.text') {
+          canvasEngine.updateNodeData(outEdge.target, { text: rawContent || finalOutput, filledByAI: true });
+        }
+      }
+
+    } else if (node.type === 'ai.audioGen') {
+      canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
+      const modelToUse = resolveValidModelId(data.model as string, 'openai/tts-1', fetchedModels);
+      const hideReasoning = data.hideReasoning !== false;
+      const messages = [{ role: 'user', content: `Generate audio for: ${promptText}` }];
+      const response = await chatCompletion(apiKey, modelToUse, messages, {
+        max_tokens: 4096,
+        reasoning: hideReasoning ? { exclude: true } : undefined,
+      });
+      const content = response.choices?.[0]?.message?.content || '';
+      canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
+
+    } else if (node.type === 'ai.transcription') {
+      canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
+      const modelToUse = resolveValidModelId(data.model as string, 'openai/whisper', fetchedModels);
+      const hideReasoning = data.hideReasoning !== false;
+      const messages = [{ role: 'user', content: `Transcribe the audio from connected input. Content: ${promptText}` }];
+      const response = await chatCompletion(apiKey, modelToUse, messages, {
+        max_tokens: 4096,
+        reasoning: hideReasoning ? { exclude: true } : undefined,
+      });
+      const content = response.choices?.[0]?.message?.content || '';
+      canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
+
+    } else if (node.type === 'ai.imageGen' || node.type === 'ai.videoGen') {
+      canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Generating...' } });
+
+      let blob: Blob;
+      if (node.type === 'ai.imageGen') {
+        const imageEdges = incomingEdges.filter(e => e.targetHandle === 'image');
+        const imageSources: string[] = [];
+
+        for (const ie of imageEdges) {
+          const srcNode = canvasEngine.getNode(ie.source);
+          if (!srcNode) continue;
+          const srcUrl = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl || srcNode.data?.file;
+          if (srcUrl && typeof srcUrl === 'string' && srcUrl !== '[Embedded Image]') {
+            imageSources.push(srcUrl);
+          }
+        }
+
+        if (Array.isArray(data.referenceImageNodeIds)) {
+          for (const refId of data.referenceImageNodeIds as string[]) {
+            const refNode = canvasEngine.getNode(refId);
+            if (refNode) {
+              const srcUrl = refNode.data?.output?.previewUrl || refNode.data?.imageUrl || refNode.data?.file;
+              if (srcUrl && typeof srcUrl === 'string' && !imageSources.includes(srcUrl) && srcUrl !== '[Embedded Image]') {
+                imageSources.push(srcUrl);
+              }
+            }
+          }
+        }
+
+        let finalPrompt: any = promptText;
+
+        if (imageSources.length > 0) {
+          const contentParts: any[] = [];
+          for (const imgUrl of imageSources) {
+            let finalDataUrl = imgUrl;
+            if (imgUrl.startsWith('blob:') || (imgUrl.startsWith('http') && !imgUrl.startsWith('data:'))) {
+              try {
+                const imgRes = await fetch(imgUrl);
+                const imgBlob = await imgRes.blob();
+                finalDataUrl = await new Promise<string>((resolve, reject) => {
+                  const r = new FileReader();
+                  r.onloadend = () => resolve(r.result as string);
+                  r.onerror = reject;
+                  r.readAsDataURL(imgBlob);
+                });
+              } catch (e) {
+                console.warn('Failed converting blob image to data URI', e);
+              }
+            }
+            contentParts.push({
+              type: 'image_url',
+              image_url: { url: finalDataUrl }
+            });
+          }
+          contentParts.push({
+            type: 'text',
+            text: promptText || (data.prompt as string) || ''
+          });
+          finalPrompt = contentParts;
+        }
+
+        const validModel = resolveValidModelId(data.model as string, 'google/gemini-2.0-flash-001', fetchedModels);
+
+        let imageUrl = '';
+        try {
+          console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${validModel}):`, finalPrompt);
+          const response = await generateImage(apiKey, validModel, finalPrompt);
+          const content = response.choices?.[0]?.message?.content || '';
+          const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
+          if (match && match[1]) {
+            imageUrl = match[1];
+          }
+        } catch (e) {
+          console.warn('[FlowForge OpenRouter ImageGen call failed, falling back to Pollinations Engine]:', e);
+        }
+
+        if (!imageUrl || !imageUrl.startsWith('http')) {
+          const cleanPrompt = typeof promptText === 'string' && promptText ? promptText : ((data.prompt as string) || 'Cinematic fantasy scene');
+          imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
+        }
+
+        const imgRes = await fetch(imageUrl);
+        blob = await imgRes.blob();
+      } else {
+        blob = new Blob(['dummy video'], { type: 'video/mp4' });
+      }
+
+      const runId = Date.now().toString();
+      const indexedDbKey = `${targetWfId}:${node.id}:${runId}`;
+      await saveMediaBlob(indexedDbKey, blob, node.type === 'ai.imageGen' ? 'image' : 'video', targetWfId, node.id);
+
+      const previewUrl = URL.createObjectURL(blob);
+      let driveFileId: string | undefined;
+
+      const folderId = localStorage.getItem('flowforge_gdrive_folder');
+      if (folderId) {
+        try {
+          const token = await requestAccessToken();
+          driveFileId = await uploadFileToDrive(blob, `${node.id}_${runId}`, folderId, token);
+        } catch (e) {
+          console.error('Drive upload failed', e);
+        }
+      }
+
+      canvasEngine.updateNodeData(node.id, {
+        output: { previewUrl, indexedDbKey, driveFileId, sizeBytes: blob.size, createdAt: new Date().toISOString() },
+        isGenerating: false,
+      });
+
+      if (data.autoDownload) {
+        const a = document.createElement('a');
+        a.href = previewUrl;
+        const ext = node.type === 'ai.imageGen' ? 'png' : 'mp4';
+        a.download = `media_${node.id}_${Date.now()}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      const allOutEdgesMedia = allEdges.filter(e => e.source === node.id);
+      for (const outEdge of allOutEdgesMedia) {
+        const targetNode = canvasEngine.getNode(outEdge.target);
+        if (targetNode?.type === 'input.image') {
+          canvasEngine.updateNodeData(outEdge.target, { previewUrl, imageUrl: previewUrl });
+        }
+      }
+    }
+  } catch (err: any) {
+    console.error(`[FlowForge Execution Error] Node "${data.label || node.id}":`, err);
+    canvasEngine.updateNodeData(node.id, { errorDetails: err.message || 'Lỗi không xác định khi gọi API', isGenerating: false });
+    throw err;
+  }
 }
 
 export const useWorkflowStore = create<WorkflowState>()(
@@ -160,25 +538,36 @@ export const useWorkflowStore = create<WorkflowState>()(
       autoOpenProperties: false,
       isPropertiesPanelOpen: false,
       isSettingsOpen: false,
+      executingWorkflows: {},
       activeAbortController: null,
       isExecuting: false,
       fetchedModels: [],
 
       setIsSettingsOpen: (val) => set({ isSettingsOpen: val }),
-      cancelExecution: () => {
-        const { activeAbortController } = get();
-        if (activeAbortController) {
-          activeAbortController.abort();
+
+      cancelExecution: (workflowId?: string) => {
+        const wfId = workflowId || get().currentWorkflowId || DEFAULT_WORKFLOW_ID;
+        const execInfo = get().executingWorkflows[wfId];
+        if (execInfo?.controller) {
+          execInfo.controller.abort();
         }
-        // Reset generating state on all nodes
-        const nodes = canvasEngine.getNodes();
-        nodes.forEach(n => {
-          if (n.data?.isGenerating || n.data?.isConcatting) {
-            canvasEngine.updateNodeData(n.id, { isGenerating: false, isConcatting: false, statusMessage: 'Đã dừng theo dõi' });
-          }
+
+        if (wfId === get().currentWorkflowId) {
+          const nodes = canvasEngine.getNodes();
+          nodes.forEach(n => {
+            if (n.data?.isGenerating || n.data?.isConcatting) {
+              canvasEngine.updateNodeData(n.id, { isGenerating: false, isConcatting: false, statusMessage: 'Đã dừng theo dõi' });
+            }
+          });
+        }
+
+        set(state => {
+          const updated = { ...state.executingWorkflows };
+          delete updated[wfId];
+          return { executingWorkflows: updated };
         });
-        set({ isExecuting: false, activeAbortController: null });
-        toast.warning('Đã dừng theo dõi client. Lưu ý: Tác vụ Video/AI đã gửi lên OpenRouter server có thể vẫn tiếp tục hoàn tất và tính phí.');
+
+        toast.warning('Đã dừng thực thi workflow!');
       },
 
       savedWorkflows: [
@@ -439,7 +828,7 @@ export const useWorkflowStore = create<WorkflowState>()(
         }
       },
 
-      executeWorkflow: async () => {
+      executeWorkflow: async (targetWfId?: string) => {
         const { apiKey } = get();
         if (!apiKey) {
           set({ isSettingsOpen: true });
@@ -447,381 +836,65 @@ export const useWorkflowStore = create<WorkflowState>()(
           return;
         }
 
+        const wfId = targetWfId || get().currentWorkflowId || DEFAULT_WORKFLOW_ID;
+        const currentExec = get().executingWorkflows?.[wfId];
+        if (currentExec?.isExecuting) {
+          toast.warning('Workflow này đang chạy!');
+          return;
+        }
+
         const controller = new AbortController();
-        set({ isExecuting: true, activeAbortController: controller });
+        set(state => ({
+          executingWorkflows: {
+            ...(state.executingWorkflows || {}),
+            [wfId]: { isExecuting: true, controller }
+          }
+        }));
 
         try {
-          const allNodes = canvasEngine.getNodes();
-          const allEdges = canvasEngine.getEdges();
+          let allNodes: NodeData[] = [];
+          let allEdges: any[] = [];
 
-          // Compute topological order so source nodes run BEFORE target nodes
-          const orderedNodes = getExecutionOrder(allNodes, allEdges);
-          const aiNodes = orderedNodes.filter(n => n?.type?.startsWith('ai.'));
-
-          console.log('[FlowForge Engine] Starting execution in topological order:', aiNodes.map(n => `${n.data?.label || n.type} (${n.id})`));
-
-          for (const node of aiNodes) {
-            const data = node.data || {};
-            if (!data.model) continue;
-
-            // 1. Gather all incoming edges to this node
-            const incomingEdges = allEdges.filter(e => e.target === node.id);
-
-            // Separate into text/general handles vs file handle
-            const textOrGeneralEdges = incomingEdges.filter(e => e.targetHandle === 'text' || !e.targetHandle || e.targetHandle === 'image');
-            const fileEdges = incomingEdges.filter(e => e.targetHandle === 'file');
-
-            // Check if any source node is missing output
-            for (const inEdge of incomingEdges) {
-              const srcNode = canvasEngine.getNode(inEdge.source);
-              if (!srcNode) continue;
-              if (srcNode.type?.startsWith('ai.')) {
-                if (srcNode.data?.output === undefined || srcNode.data?.output === 'Generating...') {
-                  throw new Error(`Node "${data.label || node.id}" đang chờ output từ node nguồn "${srcNode.data?.label || srcNode.id}". Node nguồn chưa chạy xong!`);
-                }
-              }
+          if (wfId === get().currentWorkflowId) {
+            allNodes = canvasEngine.getNodes();
+            allEdges = canvasEngine.getEdges();
+          } else {
+            const savedWf = get().savedWorkflows.find(w => w.id === wfId);
+            if (savedWf?.canvasData) {
+              allNodes = savedWf.canvasData.nodes || [];
+              allEdges = savedWf.canvasData.edges || [];
             }
+          }
 
-            // 2. Build combined prompt from static user text + ALL connected source nodes
-            const promptParts: string[] = [];
+          const waves = getExecutionWaves(allNodes, allEdges);
+          console.log(`[FlowForge Wave Engine] Starting workflow "${wfId}" in ${waves.length} parallel waves:`, waves.map(w => w.map(n => n.id)));
 
-            // Add static prompt if available
-            if (data.useOwnPrompt !== false && data.prompt) {
-              promptParts.push(data.prompt as string);
-            }
+          for (let waveIdx = 0; waveIdx < waves.length; waveIdx++) {
+            if (controller.signal.aborted) break;
+            const currentWave = waves[waveIdx];
 
-            // Iterate over all connected source nodes for text/general handles
-            for (const edge of textOrGeneralEdges) {
-              const srcNode = canvasEngine.getNode(edge.source);
-              if (!srcNode) continue;
-              const srcData = srcNode.data || {};
-              const srcName = srcData.label || srcNode.type || srcNode.id;
+            console.log(`[FlowForge Wave Engine] Wave ${waveIdx + 1}/${waves.length}: Running ${currentWave.length} nodes in parallel...`);
 
-              if (srcNode.type === 'input.text' && srcData.text) {
-                promptParts.push(srcData.text as string);
-              } else if (srcNode.type === 'input.file' && srcData.extractedFile) {
-                const ef = srcData.extractedFile as any;
-                if (ef.text) {
-                  const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
-                  let lang = '';
-                  if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
-                  if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
-                  if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
-                  if (['.xml', '.svg'].includes(ext)) lang = 'xml';
+            const waveResults = await Promise.allSettled(
+              currentWave.map(node => executeSingleNode(node, allNodes, allEdges, apiKey, controller, wfId, get().fetchedModels))
+            );
 
-                  const mdFormattedContent = lang
-                    ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
-                    : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
+            if (controller.signal.aborted) break;
 
-                  promptParts.push(mdFormattedContent);
-                }
-              } else if (srcNode.type === 'ai.textGen' && typeof srcData.output === 'string') {
-                promptParts.push(`=== Output từ node "${srcName}" ===\n${srcData.output}`);
-              }
-            }
-
-            const promptText = promptParts.join('\n\n---\n\n');
-
-            if (!promptText && node.type !== 'ai.videoGen') {
-              console.warn(`[FlowForge Engine] Skipping node ${node.id} - empty prompt.`);
-              continue;
-            }
-
-            canvasEngine.updateNodeData(node.id, { isGenerating: true });
-
-            try {
-              const { chatCompletion, generateImage } = await import('../services/openRouterApi');
-              const { saveMediaBlob } = await import('../services/mediaStorage');
-              const { requestAccessToken, uploadFileToDrive } = await import('../services/googleDriveApi');
-
-              if (node.type === 'ai.textGen') {
-                canvasEngine.updateNodeData(node.id, { output: 'Generating...' });
-                const messages: any[] = [];
-                if (data.systemPrompt) messages.push({ role: 'system', content: data.systemPrompt });
-
-                // Build user message content parts (supports text + file)
-                const contentParts: any[] = [];
-
-                if (promptText) {
-                  contentParts.push({ type: 'text', text: promptText });
-                }
-
-                // Collect file content from input.file nodes connected via 'file' handle
-                const isClaudeModel = (data.model as string)?.includes('anthropic') || (data.model as string)?.includes('claude');
-
-                for (const fedge of fileEdges) {
-                  const srcNode = canvasEngine.getNode(fedge.source);
-                  if (!srcNode || srcNode.type !== 'input.file') continue;
-                  const ef = srcNode.data?.extractedFile as any;
-                  if (!ef) continue;
-
-                  if (isClaudeModel && ef.base64 && ef.mimeType === 'application/pdf') {
-                    contentParts.push({
-                      type: 'document',
-                      source: {
-                        type: 'base64',
-                        media_type: 'application/pdf',
-                        data: ef.base64,
-                      }
-                    });
-                  } else {
-                    const ext = ef.name ? ef.name.slice(ef.name.lastIndexOf('.')).toLowerCase() : '';
-                    let lang = '';
-                    if (['.json', '.js', '.ts', '.css', '.html', '.py'].includes(ext)) lang = ext.replace('.', '');
-                    if (['.csv', '.tsv'].includes(ext)) lang = 'csv';
-                    if (['.md', '.markdown'].includes(ext)) lang = 'markdown';
-                    if (['.xml', '.svg'].includes(ext)) lang = 'xml';
-
-                    const mdFormattedContent = lang
-                      ? `### 📄 File Content: \`${ef.name}\`\n\`\`\`${lang}\n${ef.text}\n\`\`\``
-                      : `### 📄 File Content: \`${ef.name}\`\n\n${ef.text}`;
-
-                    contentParts.push({
-                      type: 'text',
-                      text: `\n\n${mdFormattedContent}\n\n`,
-                    });
-                  }
-                }
-
-                messages.push({ role: 'user', content: contentParts.length === 1 ? contentParts[0].text : contentParts });
-
-                console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${data.model}):`, JSON.stringify(messages, null, 2));
-
-                const hideReasoning = data.hideReasoning !== false;
-                const requestParams: any = {
-                  temperature: typeof data.temperature === 'number' ? data.temperature : 0.7,
-                  top_p: typeof data.topP === 'number' ? data.topP : 1,
-                  max_tokens: data.maxTokens || 16000,
-                  response_format: data.responseFormat === 'json' ? { type: 'json_object' } : undefined,
-                };
-
-                if (hideReasoning) {
-                  requestParams.reasoning = { exclude: true };
-                }
-
-                console.log(`[FlowForge Request API Params] Node "${data.label || node.id}":`, requestParams);
-
-                const response = await chatCompletion(apiKey, data.model as string, messages, requestParams);
-
-                const choiceMessage = response.choices?.[0]?.message || {};
-                console.log(`[FlowForge Response Raw Message] Node "${data.label || node.id}":`, choiceMessage);
-
-                let rawContent = choiceMessage.content || '';
-                let reasoningTrace = choiceMessage.reasoning || choiceMessage.reasoning_content || '';
-
-                // Handle models that embed reasoning trace directly inside content with <think>...</think> or similar tags
-                if (!reasoningTrace && typeof rawContent === 'string') {
-                  const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/i);
-                  if (thinkMatch) {
-                    reasoningTrace = thinkMatch[1].trim();
-                    rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-                  }
-                }
-
-                let finalOutput = rawContent;
-
-                if (!hideReasoning && reasoningTrace) {
-                  finalOutput = `[Reasoning Trace]\n${reasoningTrace}\n\n[Final Output]\n${rawContent}`;
-                }
-
-                if (!finalOutput) {
-                  finalOutput = typeof rawContent === 'string' ? rawContent : 'No output.';
-                }
-
-                console.log(`[FlowForge Extracted Output] Node "${data.label || node.id}":`, finalOutput);
-
-                canvasEngine.updateNodeData(node.id, { 
-                  output: finalOutput, 
-                  rawContent: rawContent,
-                  debugReasoning: reasoningTrace,
-                  isGenerating: false 
-                });
-
-                // Auto Download Text Output
-                if (data.autoDownload) {
-                  const blob = new Blob([finalOutput], { type: 'text/plain' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `output_${node.id}_${Date.now()}.txt`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }
-
-                // Propagate text output to downstream input.text nodes
-                const allOutEdgesText = allEdges.filter(e => e.source === node.id);
-                for (const outEdge of allOutEdgesText) {
-                  const targetNode = canvasEngine.getNode(outEdge.target);
-                  if (targetNode?.type === 'input.text') {
-                    canvasEngine.updateNodeData(outEdge.target, { text: rawContent || finalOutput, filledByAI: true });
-                  }
-                }
-
-              } else if (node.type === 'ai.audioGen') {
-                canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
-                const hideReasoning = data.hideReasoning !== false;
-                const messages = [{ role: 'user', content: `Generate audio for: ${promptText}` }];
-                const response = await chatCompletion(apiKey, data.model as string, messages, {
-                  max_tokens: 4096,
-                  reasoning: hideReasoning ? { exclude: true } : undefined,
-                });
-                const content = response.choices?.[0]?.message?.content || '';
-                canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
-              } else if (node.type === 'ai.transcription') {
-                canvasEngine.updateNodeData(node.id, { output: null, isGenerating: true });
-                const hideReasoning = data.hideReasoning !== false;
-                const messages = [{ role: 'user', content: `Transcribe the audio from connected input. Content: ${promptText}` }];
-                const response = await chatCompletion(apiKey, data.model as string, messages, {
-                  max_tokens: 4096,
-                  reasoning: hideReasoning ? { exclude: true } : undefined,
-                });
-                const content = response.choices?.[0]?.message?.content || '';
-                canvasEngine.updateNodeData(node.id, { output: content, isGenerating: false });
-              } else if (node.type === 'ai.imageGen' || node.type === 'ai.videoGen') {
-                canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Generating...' } });
-
-                let blob: Blob;
-                if (node.type === 'ai.imageGen') {
-                  const imageEdges = incomingEdges.filter(e => e.targetHandle === 'image');
-                  const imageSources: string[] = [];
-
-                  for (const ie of imageEdges) {
-                    const srcNode = canvasEngine.getNode(ie.source);
-                    if (!srcNode) continue;
-                    const srcUrl = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl || srcNode.data?.file;
-                    if (srcUrl && typeof srcUrl === 'string' && srcUrl !== '[Embedded Image]') {
-                      imageSources.push(srcUrl);
-                    }
-                  }
-
-                  if (Array.isArray(data.referenceImageNodeIds)) {
-                    for (const refId of data.referenceImageNodeIds as string[]) {
-                      const refNode = canvasEngine.getNode(refId);
-                      if (refNode) {
-                        const srcUrl = refNode.data?.output?.previewUrl || refNode.data?.imageUrl || refNode.data?.file;
-                        if (srcUrl && typeof srcUrl === 'string' && !imageSources.includes(srcUrl) && srcUrl !== '[Embedded Image]') {
-                          imageSources.push(srcUrl);
-                        }
-                      }
-                    }
-                  }
-
-                  console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${data.model}) prompt:`, promptText, 'Image sources:', imageSources.length);
-
-                  let finalPrompt: any = promptText;
-
-                  if (imageSources.length > 0) {
-                    const contentParts: any[] = [];
-                    for (const imgUrl of imageSources) {
-                      let finalDataUrl = imgUrl;
-                      if (imgUrl.startsWith('blob:') || (imgUrl.startsWith('http') && !imgUrl.startsWith('data:'))) {
-                        try {
-                          const imgRes = await fetch(imgUrl);
-                          const imgBlob = await imgRes.blob();
-                          finalDataUrl = await new Promise<string>((resolve, reject) => {
-                            const r = new FileReader();
-                            r.onloadend = () => resolve(r.result as string);
-                            r.onerror = reject;
-                            r.readAsDataURL(imgBlob);
-                          });
-                        } catch (e) {
-                          console.warn('Failed converting blob image to data URI', e);
-                        }
-                      }
-                      contentParts.push({
-                        type: 'image_url',
-                        image_url: { url: finalDataUrl }
-                      });
-                    }
-                    contentParts.push({
-                      type: 'text',
-                      text: promptText || (data.prompt as string) || ''
-                    });
-                    finalPrompt = contentParts;
-                  }
-
-                  const fetchedModels = get().fetchedModels;
-                  const validModel = resolveValidModelId(data.model as string, 'google/gemini-2.0-flash-001', fetchedModels);
-
-                  let imageUrl = '';
-                  try {
-                    console.log(`[FlowForge Request Payload] Node "${data.label || node.id}" (${validModel}):`, finalPrompt);
-                    const response = await generateImage(apiKey, validModel, finalPrompt);
-                    const content = response.choices?.[0]?.message?.content || '';
-                    const match = content.match(/!\[.*?\]\((https?:\/\/[^\s\)]+)\)/) || content.match(/(https?:\/\/[^\s\)]+)/);
-                    if (match && match[1]) {
-                      imageUrl = match[1];
-                    }
-                  } catch (e) {
-                    console.warn('[FlowForge OpenRouter ImageGen call failed, falling back to Pollinations Engine]:', e);
-                  }
-
-                  if (!imageUrl || !imageUrl.startsWith('http')) {
-                    const cleanPrompt = typeof promptText === 'string' && promptText ? promptText : ((data.prompt as string) || 'Cinematic fantasy scene');
-                    imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
-                  }
-
-                  const imgRes = await fetch(imageUrl);
-                  blob = await imgRes.blob();
-                } else {
-                  blob = new Blob(['dummy video'], { type: 'video/mp4' });
-                }
-
-                const runId = Date.now().toString();
-                const workflowId = get().currentWorkflowId || 'current_workflow';
-                const indexedDbKey = `${workflowId}:${node.id}:${runId}`;
-                await saveMediaBlob(indexedDbKey, blob, node.type === 'ai.imageGen' ? 'image' : 'video', workflowId, node.id);
-
-                const previewUrl = URL.createObjectURL(blob);
-                let driveFileId: string | undefined;
-
-                const folderId = localStorage.getItem('flowforge_gdrive_folder');
-                if (folderId) {
-                  try {
-                    const token = await requestAccessToken();
-                    driveFileId = await uploadFileToDrive(blob, `${node.id}_${runId}`, folderId, token);
-                  } catch (e) {
-                    console.error('Drive upload failed', e);
-                  }
-                }
-
-                canvasEngine.updateNodeData(node.id, {
-                  output: { previewUrl, indexedDbKey, driveFileId, sizeBytes: blob.size, createdAt: new Date().toISOString() },
-                  isGenerating: false,
-                });
-
-                // Auto Download Media Output
-                if (data.autoDownload) {
-                  const a = document.createElement('a');
-                  a.href = previewUrl;
-                  const ext = node.type === 'ai.imageGen' ? 'png' : 'mp4';
-                  a.download = `media_${node.id}_${Date.now()}.${ext}`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                }
-
-                // Propagate image/video output to downstream input.image nodes
-                const allOutEdgesMedia = allEdges.filter(e => e.source === node.id);
-                for (const outEdge of allOutEdgesMedia) {
-                  const targetNode = canvasEngine.getNode(outEdge.target);
-                  if (targetNode?.type === 'input.image') {
-                    canvasEngine.updateNodeData(outEdge.target, { previewUrl, imageUrl: previewUrl });
-                  }
-                }
-              }
-            } catch (err: any) {
-              console.error(`[FlowForge Execution Error] Node "${data.label || node.id}":`, err);
-              canvasEngine.updateNodeData(node.id, { errorDetails: err.message || 'Lỗi không xác định khi gọi API', isGenerating: false });
-              throw err;
+            const failed = waveResults.filter(r => r.status === 'rejected');
+            if (failed.length > 0) {
+              const errorMsgs = failed.map(r => (r as PromiseRejectedResult).reason?.message || 'Lỗi không xác định').join('; ');
+              console.warn(`[FlowForge Wave Engine] Wave ${waveIdx + 1} completed with errors:`, errorMsgs);
             }
           }
         } catch (error: any) {
           toast.error('Workflow Execution error: ' + error.message);
         } finally {
-          set({ isExecuting: false });
+          set(state => {
+            const updated = { ...(state.executingWorkflows || {}) };
+            delete updated[wfId];
+            return { executingWorkflows: updated };
+          });
         }
       },
     }),

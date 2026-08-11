@@ -14,8 +14,10 @@ export function Toolbar({
   onOpenAutoMode?: () => void;
 }) {
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const isExecuting = useWorkflowStore(state => state.isExecuting);
-  const cancelExecution = useWorkflowStore(state => state.cancelExecution);
+  const currentWorkflowId = useWorkflowStore(state => state.currentWorkflowId);
+  const executingWorkflows = useWorkflowStore(state => state.executingWorkflows || {});
+  const isExecuting = Boolean(executingWorkflows[currentWorkflowId]?.isExecuting);
+  const cancelExecution = () => useWorkflowStore.getState().cancelExecution(currentWorkflowId);
   const toolMode = useWorkflowStore(state => state.toolMode);
   const setToolMode = useWorkflowStore(state => state.setToolMode);
   const toolbarVisibility = useWorkflowStore(state => state.toolbarVisibility || {});
@@ -100,7 +102,7 @@ export function Toolbar({
               ) : (
                 <button 
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-transform my-1 shadow-[0_0_15px_rgba(198,241,53,0.3)] bg-accent-lime hover:scale-105 text-canvas"
-                  onClick={() => useWorkflowStore.getState().executeWorkflow()}
+                  onClick={() => useWorkflowStore.getState().executeWorkflow(currentWorkflowId)}
                   title="Run Workflow"
                 >
                   <Play size={20} fill="currentColor" className="ml-0.5" />
