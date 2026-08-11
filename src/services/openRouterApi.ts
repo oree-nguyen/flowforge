@@ -173,11 +173,19 @@ export async function generateImagePollinations(
   const seed = options?.seed ?? Math.floor(Math.random() * 1000000);
   const width = options?.width || 1024;
   const height = options?.height || 1024;
-  // Ensure prompt is never empty — use generic fallback
-  const safePrompt = (promptText || '').trim() || 'cinematic professional photograph';
+  // Sanitize: strip formatting artifacts, collapse whitespace, truncate to 450 chars
+  const rawPrompt = (promptText || '').trim();
+  const cleanedPrompt = rawPrompt
+    .replace(/=== Output từ node ".*?" ===/g, '')   // strip node output headers
+    .replace(/---+/g, ' ')                           // strip markdown dividers
+    .replace(/#{1,6} /g, '')                         // strip markdown headings
+    .replace(/\s+/g, ' ')                            // collapse all whitespace
+    .trim()
+    .slice(0, 450);                                  // Pollinations URL safe limit
+  const safePrompt = cleanedPrompt || 'cinematic professional photograph';
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=${width}&height=${height}&nologo=true&seed=${seed}`;
   const res = await fetch(url, { signal: options?.signal });
-  if (!res.ok) throw new Error(`Pollinations image generation failed: ${res.statusText}`);
+  if (!res.ok) throw new Error(`Pollinations image generation failed (${res.status}): ${res.statusText}`);
   const blob = await res.blob();
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -256,18 +264,77 @@ export async function generateImage(
 }
 
 
-export async function fetchVideoContent(apiKey: string, generationId: string): Promise<Blob> {
+export async function generateVideoOpenRouter(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  referenceImageUrl?: string,
+  params: { resolution?: string; duration?: number } = {},
+  options?: { signal?: AbortSignal }
+): Promise<{ id: string; polling_url?: string }> {
+  const body: Record<string, any> = {
+    model,
+    prompt: prompt || 'cinematic short film scene',
+    ...params,
+  };
+  if (referenceImageUrl) body.image_url = referenceImageUrl;
+
+  const response = await fetch(`${OPENROUTER_API_URL}/videos`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
+      'X-Title': 'FlowForge',
+    },
+    body: JSON.stringify(body),
+    signal: options?.signal,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Video generation submit failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function pollVideoStatus(
+  apiKey: string,
+  jobId: string,
+  options?: { signal?: AbortSignal }
+): Promise<{ status: string; id: string; error?: string }> {
+  const response = await fetch(`${OPENROUTER_API_URL}/videos/${jobId}`, {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
+      'X-Title': 'FlowForge',
+    },
+    signal: options?.signal,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Video status check failed: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchVideoContent(apiKey: string, generationId: string, options?: { signal?: AbortSignal }): Promise<Blob> {
   const response = await fetch(`${OPENROUTER_API_URL}/videos/${generationId}/content?index=0`, {
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'HTTP-Referer': 'https://oree-nguyen.github.io/flowforge',
       'X-Title': 'FlowForge',
     },
+    signal: options?.signal,
   });
 
   if (!response.ok) throw new Error('Failed to fetch video content');
   return response.blob();
 }
+
 
 export async function transcribeAudio(
   apiKey: string,

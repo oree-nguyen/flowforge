@@ -52,7 +52,7 @@ export function AIVideoGenNode({ id, data, selected, onConnectStart, onDisconnec
 
       {/* Main Frame */}
       <div 
-        className={`w-[320px] bg-[#1a1a1a] rounded-xl relative transition-all ${selected ? `border-2 ${borderColor}` : 'border-2 border-border-subtle hover:border-text-muted'}`}
+        className={`w-[320px] bg-[#1a1a1a] rounded-xl overflow-hidden relative transition-all ${selected ? `border-2 ${borderColor}` : 'border-2 border-border-subtle hover:border-text-muted'}`}
         style={{ 
           aspectRatio, 
           boxShadow: selected ? `0 0 20px ${glowColor}` : 'none' 

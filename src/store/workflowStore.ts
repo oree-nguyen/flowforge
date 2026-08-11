@@ -506,7 +506,59 @@ async function executeSingleNode(
           blob = await imgRes.blob();
         }
       } else {
-        blob = new Blob(['dummy video'], { type: 'video/mp4' });
+        // ai.videoGen — OpenRouter /api/v1/videos with polling
+        const { generateVideoOpenRouter, pollVideoStatus, fetchVideoContent } = await import('../services/openRouterApi');
+
+        // Collect reference image from incoming image edges
+        const videoImgEdges = incomingEdges.filter(e => e.targetHandle === 'image');
+        let referenceImageUrl: string | undefined;
+        for (const ie of videoImgEdges) {
+          const srcNode = canvasEngine.getNode(ie.source);
+          if (srcNode) {
+            const url = srcNode.data?.output?.previewUrl || srcNode.data?.imageUrl;
+            if (url && typeof url === 'string') { referenceImageUrl = url; break; }
+          }
+        }
+
+        const videoModel = resolveValidModelId(data.model as string, 'minimax/video-01', fetchedModels);
+        const videoPrompt = promptText || (data.prompt as string) || 'cinematic short film scene';
+
+        canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: 'Đang gửi yêu cầu tạo video...' } });
+
+        const job = await generateVideoOpenRouter(
+          apiKey, videoModel, videoPrompt,
+          referenceImageUrl,
+          { resolution: '720p', duration: (data.duration as number) || 5 },
+          { signal: controller.signal }
+        );
+
+        const jobId = job.id;
+        canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý (ID: ${jobId.slice(0, 8)}...)` } });
+
+        // Poll every 15s, max 20 minutes
+        const MAX_POLL = 80;
+        let videoBlob: Blob | null = null;
+        for (let attempt = 0; attempt < MAX_POLL; attempt++) {
+          // Sleep 15s (abort-aware)
+          await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, 15000);
+            controller.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
+          });
+          if (controller.signal.aborted) { canvasEngine.updateNodeData(node.id, { isGenerating: false }); return; }
+
+          const status = await pollVideoStatus(apiKey, jobId, { signal: controller.signal });
+          canvasEngine.updateNodeData(node.id, { output: { previewUrl: null, status: `Video đang xử lý... lần ${attempt + 1} (${status.status})` } });
+
+          if (status.status === 'completed') {
+            videoBlob = await fetchVideoContent(apiKey, jobId, { signal: controller.signal });
+            break;
+          } else if (status.status === 'failed' || status.status === 'error') {
+            throw new Error(`Video generation failed: ${status.error || status.status}`);
+          }
+        }
+
+        if (!videoBlob) throw new Error('Video generation timed out after 20 minutes');
+        blob = videoBlob;
       }
 
       if (controller.signal.aborted) {
